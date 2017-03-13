@@ -30,6 +30,15 @@ build_args() {
 
 config_cores() {
 
+    case "$1" in
+    "io")
+        config_io $@
+        ;;
+    *)
+        echo -e ""$CR"error"$CE": $1 is not configurable"
+        ;;
+    esac
+
     case "$2" in
     "-b"|"--behavior")
         case "$3" in

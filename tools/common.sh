@@ -40,7 +40,7 @@ NUM_CORES=`grep -c ^processor /proc/cpuinfo`
 # ------------------------------------------------------------------------------
 # vmcall categories and their functions (see eapis exit handler vmcall_interface.h)
 # ------------------------------------------------------------------------------
-cat_io_instruction="0x1000"
+cat_io="0x1000"
 
 cat_vpid="0x2000"
     vpid_on="0x1"
@@ -69,6 +69,9 @@ cat_wbinvd="0x400"
     wbinvd_trap="0x1"
     wbinvd_pass_through="0x2"
 
+
+cat=""
+func=""
 
 # ------------------------------------------------------------------------------
 # Helpers
