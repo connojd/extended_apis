@@ -65,15 +65,6 @@ NATIVE_OUTDIR+=%BUILD_REL%/../bin
 ################################################################################
 
 SOURCES+=exit_handler_intel_x64_eapis.cpp
-SOURCES+=exit_handler_intel_x64_eapis_io_instruction_emulation.cpp
-SOURCES+=exit_handler_intel_x64_eapis_io_instruction_vmcall.cpp
-SOURCES+=exit_handler_intel_x64_eapis_monitor_trap_emulation.cpp
-SOURCES+=exit_handler_intel_x64_eapis_vpid_vmcall.cpp
-SOURCES+=exit_handler_intel_x64_eapis_msr_vmcall.cpp
-SOURCES+=exit_handler_intel_x64_eapis_rdmsr_emulation.cpp
-SOURCES+=exit_handler_intel_x64_eapis_rdmsr_vmcall.cpp
-SOURCES+=exit_handler_intel_x64_eapis_wrmsr_emulation.cpp
-SOURCES+=exit_handler_intel_x64_eapis_wrmsr_vmcall.cpp
 
 INCLUDE_PATHS+=../../../include
 INCLUDE_PATHS+=%HYPER_ABS%/include/
