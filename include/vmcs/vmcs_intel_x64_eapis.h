@@ -84,7 +84,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    virtual void enable_vpid();
+    void enable_vpid();
 
     /// Disable VPID
     ///
@@ -98,7 +98,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    virtual void disable_vpid();
+    void disable_vpid();
 
     /// Enable IO Bitmaps
     ///
@@ -110,7 +110,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    virtual void enable_io_bitmaps();
+    void enable_io_bitmaps();
 
     /// Disable IO Bitmaps
     ///
@@ -122,7 +122,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    virtual void disable_io_bitmaps();
+    void disable_io_bitmaps();
 
     /// Trap On IO Access
     ///
@@ -141,7 +141,7 @@ public:
     ///
     /// @param port the port to trap on
     ///
-    virtual void trap_on_io_access(port_type port);
+    void trap_on_io_access(port_type port);
 
     /// Trap On All IO Access
     ///
@@ -158,7 +158,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    virtual void trap_on_all_io_accesses();
+    void trap_on_all_io_accesses();
 
     /// Pass Through IO Access
     ///
@@ -177,7 +177,7 @@ public:
     ///
     /// @param port the port to pass through
     ///
-    virtual void pass_through_io_access(port_type port);
+    void pass_through_io_access(port_type port);
 
     /// Pass Through All IO Access
     ///
@@ -194,7 +194,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    virtual void pass_through_all_io_accesses();
+    void pass_through_all_io_accesses();
 
     /// White List IO Access
     ///
@@ -214,7 +214,7 @@ public:
     ///
     /// @param ports the ports to whitelist
     ///
-    virtual void whitelist_io_access(const port_list_type &ports);
+    void whitelist_io_access(const port_list_type &ports);
 
     /// Black List IO Access
     ///
@@ -234,7 +234,7 @@ public:
     ///
     /// @param ports the ports to blacklist
     ///
-    virtual void blacklist_io_access(const port_list_type &ports);
+    void blacklist_io_access(const port_list_type &ports);
 
     /// Enable EPT
     ///
@@ -251,7 +251,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    virtual void enable_ept();
+    void enable_ept();
 
     /// Disable EPT
     ///
@@ -265,7 +265,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    virtual void disable_ept();
+    void disable_ept();
 
     /// Set EPTP
     ///
@@ -283,7 +283,7 @@ public:
     /// @param eptp the eptp value to use. This should come from the
     ///     root_ept_intel_x64->eptp() function.
     ///
-    virtual void set_eptp(integer_pointer eptp);
+    void set_eptp(integer_pointer eptp);
 
     /// Enable MSR Bitmap
     ///
@@ -295,7 +295,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    virtual void enable_msr_bitmap();
+    void enable_msr_bitmap();
 
     /// Disable MSR Bitmap
     ///
@@ -307,7 +307,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    virtual void disable_msr_bitmap();
+    void disable_msr_bitmap();
 
     /// Trap On Read MSR Access
     ///
@@ -325,7 +325,7 @@ public:
     ///
     /// @param msr the msr to trap on
     ///
-    virtual void trap_on_rdmsr_access(msr_type msr);
+    void trap_on_rdmsr_access(msr_type msr);
 
     /// Trap On Write MSR Access
     ///
@@ -343,7 +343,7 @@ public:
     ///
     /// @param msr the msr to trap on
     ///
-    virtual void trap_on_wrmsr_access(msr_type msr);
+    void trap_on_wrmsr_access(msr_type msr);
 
     /// Trap On All Read MSR Accesses
     ///
@@ -359,7 +359,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    virtual void trap_on_all_rdmsr_accesses();
+    void trap_on_all_rdmsr_accesses();
 
     /// Trap On All Write MSR Accesses
     ///
@@ -375,7 +375,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    virtual void trap_on_all_wrmsr_accesses();
+    void trap_on_all_wrmsr_accesses();
 
     /// Pass Through Read MSR Access
     ///
@@ -393,7 +393,7 @@ public:
     ///
     /// @param msr the msr to pass through
     ///
-    virtual void pass_through_rdmsr_access(msr_type msr);
+    void pass_through_rdmsr_access(msr_type msr);
 
     /// Pass Through Write MSR Access
     ///
@@ -411,7 +411,7 @@ public:
     ///
     /// @param msr the msr to pass through
     ///
-    virtual void pass_through_wrmsr_access(msr_type msr);
+    void pass_through_wrmsr_access(msr_type msr);
 
     /// Pass Through All Read MSR Access
     ///
@@ -427,7 +427,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    virtual void pass_through_all_rdmsr_accesses();
+    void pass_through_all_rdmsr_accesses();
 
     /// Pass Through All Write MSR Access
     ///
@@ -443,7 +443,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    virtual void pass_through_all_wrmsr_accesses();
+    void pass_through_all_wrmsr_accesses();
 
     /// White List Read MST Access
     ///
@@ -462,7 +462,7 @@ public:
     ///
     /// @param msrs the msrs to whitelist
     ///
-    virtual void whitelist_rdmsr_access(msr_list_type msrs);
+    void whitelist_rdmsr_access(msr_list_type msrs);
 
     /// White List Write MST Access
     ///
@@ -481,7 +481,7 @@ public:
     ///
     /// @param msrs the msrs to whitelist
     ///
-    virtual void whitelist_wrmsr_access(msr_list_type msrs);
+    void whitelist_wrmsr_access(msr_list_type msrs);
 
     /// Black List Read MSR Access
     ///
@@ -500,7 +500,7 @@ public:
     ///
     /// @param msrs the msrs to blacklist
     ///
-    virtual void blacklist_rdmsr_access(msr_list_type msrs);
+    void blacklist_rdmsr_access(msr_list_type msrs);
 
     /// Black List Read MSR Access
     ///
@@ -519,7 +519,7 @@ public:
     ///
     /// @param msrs the msrs to blacklist
     ///
-    virtual void blacklist_wrmsr_access(msr_list_type msrs);
+    void blacklist_wrmsr_access(msr_list_type msrs);
 
 protected:
 
