@@ -19,68 +19,12 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-#include <to_string.h>
-
 #include <exit_handler/exit_handler_intel_x64_eapis.h>
 #include <exit_handler/exit_handler_intel_x64_eapis_vmcall_interface.h>
-
-#include <exit_handler/exit_handler_intel_x64_eapis_verifiers.h>
-#include <exit_handler/exit_handler_intel_x64_eapis_io_instruction_verifiers.h>
 
 using namespace x64;
 using namespace intel_x64;
 using namespace vmcs;
-
-void
-exit_handler_intel_x64_eapis::register_json_vmcall__io_instruction()
-{
-    m_json_commands["enable_io_bitmaps"] = [&](const auto & ijson, auto & ojson)
-    {
-        this->handle_vmcall__enable_io_bitmaps(ijson.at("enabled"));
-        this->json_success(ojson);
-    };
-
-    m_json_commands["trap_on_io_access"] = [&](const auto & ijson, auto & ojson)
-    {
-        this->handle_vmcall__trap_on_io_access(json_hex_or_dec<port_type>(ijson, "port"));
-        this->json_success(ojson);
-    };
-
-    m_json_commands["pass_through_io_access"] = [&](const auto & ijson, auto & ojson)
-    {
-        this->handle_vmcall__pass_through_io_access(json_hex_or_dec<port_type>(ijson, "port"));
-        this->json_success(ojson);
-    };
-
-    m_json_commands["whitelist_io_access"] = [&](const auto & ijson, auto & ojson)
-    {
-        this->handle_vmcall__whitelist_io_access(json_hex_or_dec_array<port_type>(ijson, "ports"));
-        this->json_success(ojson);
-    };
-
-    m_json_commands["blacklist_io_access"] = [&](const auto & ijson, auto & ojson)
-    {
-        this->handle_vmcall__blacklist_io_access(json_hex_or_dec_array<port_type>(ijson, "ports"));
-        this->json_success(ojson);
-    };
-
-    m_json_commands["log_io_access"] = [&](const auto & ijson, auto & ojson)
-    {
-        this->handle_vmcall__log_io_access(ijson.at("enabled"));
-        this->json_success(ojson);
-    };
-
-    m_json_commands["clear_io_access_log"] = [&](const auto &, auto & ojson)
-    {
-        this->handle_vmcall__clear_io_access_log();
-        this->json_success(ojson);
-    };
-
-    m_json_commands["io_access_log"] = [&](const auto &, auto & ojson)
-    {
-        this->handle_vmcall__io_access_log(ojson);
-    };
-}
 
 void
 exit_handler_intel_x64_eapis::handle_vmcall_registers__io_instruction(
@@ -121,9 +65,6 @@ void
 exit_handler_intel_x64_eapis::handle_vmcall__enable_io_bitmaps(
     bool enabled)
 {
-    if (policy(enable_io_bitmaps)->verify(enabled) != vmcall_verifier::allow)
-        policy(enable_io_bitmaps)->deny_vmcall();
-
     if (enabled)
     {
         m_vmcs_eapis->enable_io_bitmaps();
@@ -140,9 +81,6 @@ void
 exit_handler_intel_x64_eapis::handle_vmcall__trap_on_io_access(
     port_type port)
 {
-    if (policy(trap_on_io_access)->verify(port) != vmcall_verifier::allow)
-        policy(trap_on_io_access)->deny_vmcall();
-
     m_vmcs_eapis->trap_on_io_access(port);
     vmcall_debug << "trap_on_io_access: " << std::hex << std::uppercase << "0x" << port << bfendl;
 }
@@ -150,9 +88,6 @@ exit_handler_intel_x64_eapis::handle_vmcall__trap_on_io_access(
 void
 exit_handler_intel_x64_eapis::handle_vmcall__trap_on_all_io_accesses()
 {
-    if (policy(trap_on_all_io_accesses)->verify() != vmcall_verifier::allow)
-        policy(trap_on_all_io_accesses)->deny_vmcall();
-
     m_vmcs_eapis->trap_on_all_io_accesses();
     vmcall_debug << "trap_on_all_io_accesses: success" << bfendl;
 }
@@ -161,9 +96,6 @@ void
 exit_handler_intel_x64_eapis::handle_vmcall__pass_through_io_access(
     port_type port)
 {
-    if (policy(pass_through_io_access)->verify(port) != vmcall_verifier::allow)
-        policy(pass_through_io_access)->deny_vmcall();
-
     m_vmcs_eapis->pass_through_io_access(port);
     vmcall_debug << "pass_through_io_access: " << std::hex << std::uppercase << "0x" << port << bfendl;
 }
@@ -171,9 +103,6 @@ exit_handler_intel_x64_eapis::handle_vmcall__pass_through_io_access(
 void
 exit_handler_intel_x64_eapis::handle_vmcall__pass_through_all_io_accesses()
 {
-    if (policy(pass_through_all_io_accesses)->verify() != vmcall_verifier::allow)
-        policy(pass_through_all_io_accesses)->deny_vmcall();
-
     m_vmcs_eapis->pass_through_all_io_accesses();
     vmcall_debug << "trap_on_all_io_accesses: success" << bfendl;
 }
@@ -182,9 +111,6 @@ void
 exit_handler_intel_x64_eapis::handle_vmcall__whitelist_io_access(
     const port_list_type &ports)
 {
-    if (policy(whitelist_io_access)->verify(ports) != vmcall_verifier::allow)
-        policy(whitelist_io_access)->deny_vmcall();
-
     m_vmcs_eapis->whitelist_io_access(ports);
 
     vmcall_debug << "whitelist_io_access: " << bfendl;
@@ -196,9 +122,6 @@ void
 exit_handler_intel_x64_eapis::handle_vmcall__blacklist_io_access(
     const port_list_type &ports)
 {
-    if (policy(blacklist_io_access)->verify(ports) != vmcall_verifier::allow)
-        policy(blacklist_io_access)->deny_vmcall();
-
     m_vmcs_eapis->blacklist_io_access(ports);
 
     vmcall_debug << "blacklist_io_access: " << bfendl;
@@ -210,9 +133,6 @@ void
 exit_handler_intel_x64_eapis::handle_vmcall__log_io_access(
     bool enabled)
 {
-    if (policy(log_io_access)->verify(enabled) != vmcall_verifier::allow)
-        policy(log_io_access)->deny_vmcall();
-
     log_io_access(enabled);
     vmcall_debug << "log_io_access: " << std::boolalpha << enabled << bfendl;
 }
@@ -220,21 +140,6 @@ exit_handler_intel_x64_eapis::handle_vmcall__log_io_access(
 void
 exit_handler_intel_x64_eapis::handle_vmcall__clear_io_access_log()
 {
-    if (policy(clear_io_access_log)->verify() != vmcall_verifier::allow)
-        policy(clear_io_access_log)->deny_vmcall();
-
     clear_io_access_log();
     vmcall_debug << "clear_io_access_log: success" << bfendl;
-}
-
-void
-exit_handler_intel_x64_eapis::handle_vmcall__io_access_log(json &ojson)
-{
-    if (policy(io_access_log)->verify() != vmcall_verifier::allow)
-        policy(io_access_log)->deny_vmcall();
-
-    for (auto pair : m_io_access_log)
-        ojson[bfn::to_string(pair.first, 16)] = pair.second;
-
-    vmcall_debug << "dump io_access_log: success" << bfendl;
 }

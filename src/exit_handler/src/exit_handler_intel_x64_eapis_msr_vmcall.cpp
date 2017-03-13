@@ -19,27 +19,12 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-#include <to_string.h>
-
 #include <exit_handler/exit_handler_intel_x64_eapis.h>
 #include <exit_handler/exit_handler_intel_x64_eapis_vmcall_interface.h>
-
-#include <exit_handler/exit_handler_intel_x64_eapis_verifiers.h>
-#include <exit_handler/exit_handler_intel_x64_eapis_msr_verifiers.h>
 
 using namespace x64;
 using namespace intel_x64;
 using namespace vmcs;
-
-void
-exit_handler_intel_x64_eapis::register_json_vmcall__msr()
-{
-    m_json_commands["enable_msr_bitmap"] = [&](const auto & ijson, auto & ojson)
-    {
-        this->handle_vmcall__enable_msr_bitmap(ijson.at("enabled"));
-        this->json_success(ojson);
-    };
-}
 
 void
 exit_handler_intel_x64_eapis::handle_vmcall_registers__msr(
@@ -64,9 +49,6 @@ void
 exit_handler_intel_x64_eapis::handle_vmcall__enable_msr_bitmap(
     bool enabled)
 {
-    if (policy(enable_msr_bitmap)->verify(enabled) != vmcall_verifier::allow)
-        policy(enable_msr_bitmap)->deny_vmcall();
-
     if (enabled)
     {
         m_vmcs_eapis->enable_msr_bitmap();

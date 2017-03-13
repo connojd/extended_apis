@@ -53,8 +53,8 @@ enum eapis_vmcall_functions
     eapis_fun__pass_through_io_access = 0x5,
     eapis_fun__pass_through_all_io_accesses = 0x6,
 
-    eapis_fun__enable_vpid = 0x1,
-    eapis_fun__disable_vpid = 0x2,
+    eapis_fun__vpid_on = 0x1,
+    eapis_fun__vpid_off = 0x2,
 
     eapis_fun__enable_msr_bitmap = 0x1,
     eapis_fun__disable_msr_bitmap = 0x2,

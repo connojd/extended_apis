@@ -33,14 +33,14 @@ exit_handler_intel_x64_eapis::exit_handler_intel_x64_eapis() :
     m_io_access_log_enabled(false),
     m_vmcs_eapis(nullptr)
 {
-    init_policy();
+//    init_policy();
 
-    register_json_vmcall__verifiers();
-    register_json_vmcall__io_instruction();
-    register_json_vmcall__vpid();
-    register_json_vmcall__msr();
-    register_json_vmcall__rdmsr();
-    register_json_vmcall__wrmsr();
+//    register_json_vmcall__verifiers();
+//    register_json_vmcall__io_instruction();
+//    register_json_vmcall__vpid();
+//    register_json_vmcall__msr();
+//    register_json_vmcall__rdmsr();
+//    register_json_vmcall__wrmsr();
 }
 
 void
@@ -113,13 +113,13 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
     }
 }
 
-void
-exit_handler_intel_x64_eapis::handle_vmcall_data_string_json(
-    const json &ijson, json &ojson)
-{
-    m_json_commands.at(ijson.at("command"))(ijson, ojson);
-}
-
-void
-exit_handler_intel_x64_eapis::json_success(json &ojson)
-{ ojson = {"success"}; }
+//void
+//exit_handler_intel_x64_eapis::handle_vmcall_data_string_json(
+//    const json &ijson, json &ojson)
+//{
+//    m_json_commands.at(ijson.at("command"))(ijson, ojson);
+//}
+//
+//void
+//exit_handler_intel_x64_eapis::json_success(json &ojson)
+//{ ojson = {"success"}; }

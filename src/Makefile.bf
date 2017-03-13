@@ -25,7 +25,6 @@
 
 PARENT_SUBDIRS += exit_handler
 PARENT_SUBDIRS += vcpu_factory
-PARENT_SUBDIRS += vmcall_policy
 PARENT_SUBDIRS += vmcs
 PARENT_SUBDIRS += misc
 

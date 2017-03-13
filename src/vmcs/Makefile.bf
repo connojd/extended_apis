@@ -25,7 +25,7 @@
 
 SUBDIRS += src
 SUBDIRS += bin
-SUBDIRS += test
+# SUBDIRS += test
 
 ################################################################################
 # Common

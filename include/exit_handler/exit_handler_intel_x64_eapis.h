@@ -23,13 +23,11 @@
 #define EXIT_HANDLER_INTEL_X64_EAPIS_H
 
 #include <vector>
-#include <functional>
 
 #include <vmcs/vmcs_intel_x64_eapis.h>
 #include <vmcs/vmcs_intel_x64_32bit_control_fields.h>
 
 #include <exit_handler/exit_handler_intel_x64.h>
-#include <exit_handler/exit_handler_intel_x64_eapis_verifiers.h>
 
 #include <debug.h>
 #include <intrinsics/portio_x64.h>
@@ -52,8 +50,6 @@ public:
     using port_type = x64::portio::port_addr_type;
     using port_list_type = std::vector<port_type>;
     using port_log_type = std::map<port_type, count_type>;
-    using denial_list_type = std::vector<std::string>;
-    using policy_type = std::map<vp::index_type, std::unique_ptr<vmcall_verifier>>;
     using msr_type = x64::msrs::field_type;
     using msr_list_type = std::vector<msr_type>;
     using msr_log_type = std::map<msr_type, count_type>;
@@ -264,7 +260,6 @@ private:
 protected:
 
     void handle_vmcall_registers(vmcall_registers_t &regs) override;
-    void handle_vmcall_data_string_json(const json &ijson, json &ojson) override;
 
 private:
 
@@ -273,12 +268,6 @@ private:
     void handle_vmcall_registers__msr(vmcall_registers_t &regs);
     void handle_vmcall_registers__rdmsr(vmcall_registers_t &regs);
     void handle_vmcall_registers__wrmsr(vmcall_registers_t &regs);
-
-private:
-
-    void handle_vmcall__clear_denials();
-    void handle_vmcall__dump_policy(json &ojson);
-    void handle_vmcall__dump_denials(json &ojson);
 
 private:
 
@@ -291,7 +280,6 @@ private:
     void handle_vmcall__blacklist_io_access(const port_list_type &ports);
     void handle_vmcall__log_io_access(bool enabled);
     void handle_vmcall__clear_io_access_log();
-    void handle_vmcall__io_access_log(json &ojson);
 
 private:
 
@@ -309,7 +297,6 @@ private:
     void handle_vmcall__blacklist_rdmsr_access(msr_list_type msrs);
     void handle_vmcall__log_rdmsr_access(bool enabled);
     void handle_vmcall__clear_rdmsr_access_log();
-    void handle_vmcall__rdmsr_access_log(json &ojson);
 
     void handle_vmcall__trap_on_wrmsr_access(msr_type msr);
     void handle_vmcall__trap_on_all_wrmsr_accesses();
@@ -319,7 +306,6 @@ private:
     void handle_vmcall__blacklist_wrmsr_access(msr_list_type msrs);
     void handle_vmcall__log_wrmsr_access(bool enabled);
     void handle_vmcall__clear_wrmsr_access_log();
-    void handle_vmcall__wrmsr_access_log(json &ojson);
 
 private:
 
@@ -340,32 +326,6 @@ private:
     msr_log_type m_rdmsr_access_log;
     msr_log_type m_wrmsr_access_log;
 
-private:
-
-    void clear_denials()
-    { m_denials.clear(); }
-
-    template <class T>
-    T *get_verifier(vp::index_type index)
-    { return static_cast<T *>(m_verifiers[index].get()); }
-
-    void init_policy();
-    denial_list_type m_denials;
-    policy_type m_verifiers;
-
-private:
-
-    void json_success(json &ojson);
-
-    void register_json_vmcall__verifiers();
-    void register_json_vmcall__io_instruction();
-    void register_json_vmcall__vpid();
-    void register_json_vmcall__msr();
-    void register_json_vmcall__rdmsr();
-    void register_json_vmcall__wrmsr();
-
-    std::map<std::string, std::function<void(const json &ijson, json &ojson)>> m_json_commands;
-
 public:
 
     // The following are only marked public for unit testing. Do not use
@@ -379,8 +339,6 @@ public:
     }
 
     vmcs_intel_x64_eapis *m_vmcs_eapis;
-
-public:
 
     friend class eapis_ut;
 
