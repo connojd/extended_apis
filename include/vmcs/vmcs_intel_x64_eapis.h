@@ -34,9 +34,9 @@
 #include <intrinsics/portio_x64.h>
 
 #ifdef ECR_DEBUG
-    #define ecr_debug bfdebug
+    #define ecr_dbg bfdebug
 #else
-    #define ecr_debug if (0) bfdebug
+    #define ecr_dbg if (0) bfdebug
 #endif
 
 /// WARNING:

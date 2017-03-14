@@ -335,8 +335,6 @@ vmcs_intel_x64_eapis::enable_vpid()
 {
     vmcs::virtual_processor_identifier::set(m_vpid);
     secondary_processor_based_vm_execution_controls::enable_vpid::enable();
-
-    bfdebug << "vcpuid " << m_state_save->vcpuid << ": vpid on " << bfendl;
 }
 
 void
@@ -344,7 +342,4 @@ vmcs_intel_x64_eapis::disable_vpid()
 {
     vmcs::virtual_processor_identifier::set(0UL);
     secondary_processor_based_vm_execution_controls::enable_vpid::disable();
-
-    bfdebug << "vcpuid " << m_state_save->vcpuid << ": vpid off " << bfendl;
 }
-

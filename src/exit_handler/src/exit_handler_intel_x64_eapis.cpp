@@ -150,14 +150,14 @@ exit_handler_intel_x64_eapis::handle_vmcall__trap_on_io_access(
     port_type port)
 {
     m_vmcs_eapis->trap_on_io_access(port);
-    ecr_debug << "trap_on_io_access: " << std::hex << "0x" << port << bfendl;
+    ecr_dbg << "trap_on_io_access: " << std::hex << "0x" << port << bfendl;
 }
 
 void
 exit_handler_intel_x64_eapis::handle_vmcall__trap_on_all_io_accesses()
 {
     m_vmcs_eapis->trap_on_all_io_accesses();
-    ecr_debug << "trap_on_all_io_accesses: success" << bfendl;
+    ecr_dbg << "trap_on_all_io_accesses: success" << bfendl;
 }
 
 void
@@ -165,14 +165,14 @@ exit_handler_intel_x64_eapis::handle_vmcall__pass_through_io_access(
     port_type port)
 {
     m_vmcs_eapis->pass_through_io_access(port);
-    ecr_debug << "pass_through_io_access: " << std::hex << "0x" << port << bfendl;
+    ecr_dbg << "pass_through_io_access: " << std::hex << "0x" << port << bfendl;
 }
 
 void
 exit_handler_intel_x64_eapis::handle_vmcall__pass_through_all_io_accesses()
 {
     m_vmcs_eapis->pass_through_all_io_accesses();
-    ecr_debug << "pass_through_all_io_accesses: success" << bfendl;
+    ecr_dbg << "pass_through_all_io_accesses: success" << bfendl;
 }
 
 void
@@ -203,7 +203,7 @@ exit_handler_intel_x64_eapis::handle_exit__rdmsr()
     this->handle_rdmsr();
 
     if (rdmsr_print) {
-        ecr_debug << "handled rdmsr: " << m_state_save->rcx << bfendl;
+        ecr_dbg << "handled rdmsr: " << m_state_save->rcx << bfendl;
         rdmsr_print = false;
     }
 
@@ -242,14 +242,14 @@ exit_handler_intel_x64_eapis::handle_vmcall__trap_on_rdmsr_access(
     msr_type msr)
 {
     m_vmcs_eapis->trap_on_rdmsr_access(msr);
-    ecr_debug << "trap_on_rdmsr_access: " << std::hex << "0x" << msr << bfendl;
+    ecr_dbg << "trap_on_rdmsr_access: " << std::hex << "0x" << msr << bfendl;
 }
 
 void
 exit_handler_intel_x64_eapis::handle_vmcall__trap_on_all_rdmsr_accesses()
 {
     m_vmcs_eapis->trap_on_all_rdmsr_accesses();
-    ecr_debug << "trap_on_all_rdmsr_accesses: success" << bfendl;
+    ecr_dbg << "trap_on_all_rdmsr_accesses: success" << bfendl;
 }
 
 void
@@ -257,14 +257,14 @@ exit_handler_intel_x64_eapis::handle_vmcall__pass_through_rdmsr_access(
     msr_type msr)
 {
     m_vmcs_eapis->pass_through_rdmsr_access(msr);
-    ecr_debug << "pass_through_rdmsr_access: " << std::hex << "0x" << msr << bfendl;
+    ecr_dbg << "pass_through_rdmsr_access: " << std::hex << "0x" << msr << bfendl;
 }
 
 void
 exit_handler_intel_x64_eapis::handle_vmcall__pass_through_all_rdmsr_accesses()
 {
     m_vmcs_eapis->pass_through_all_rdmsr_accesses();
-    ecr_debug << "pass_through_on_all_rdmsr_accesses: success" << bfendl;
+    ecr_dbg << "pass_through_on_all_rdmsr_accesses: success" << bfendl;
 }
 
 void
@@ -275,7 +275,7 @@ exit_handler_intel_x64_eapis::handle_exit__wrmsr()
     this->handle_wrmsr();
 
     if (wrmsr_print) {
-        ecr_debug << "handled wrmsr: " << m_state_save->rcx << bfendl;
+        ecr_dbg << "handled wrmsr: " << m_state_save->rcx << bfendl;
         wrmsr_print = false;
     }
 
@@ -314,14 +314,14 @@ exit_handler_intel_x64_eapis::handle_vmcall__trap_on_wrmsr_access(
     msr_type msr)
 {
     m_vmcs_eapis->trap_on_wrmsr_access(msr);
-    ecr_debug << "trap_on_wrmsr_access: " << std::hex << "0x" << msr << bfendl;
+    ecr_dbg << "trap_on_wrmsr_access: " << std::hex << "0x" << msr << bfendl;
 }
 
 void
 exit_handler_intel_x64_eapis::handle_vmcall__trap_on_all_wrmsr_accesses()
 {
     m_vmcs_eapis->trap_on_all_wrmsr_accesses();
-    ecr_debug << "trap_on_all_wrmsr_accesses: success" << bfendl;
+    ecr_dbg << "trap_on_all_wrmsr_accesses: success" << bfendl;
 }
 
 void
@@ -329,14 +329,14 @@ exit_handler_intel_x64_eapis::handle_vmcall__pass_through_wrmsr_access(
     msr_type msr)
 {
     m_vmcs_eapis->pass_through_wrmsr_access(msr);
-    ecr_debug << "pass_through_wrmsr_access: " << std::hex << "0x" << msr << bfendl;
+    ecr_dbg << "pass_through_wrmsr_access: " << std::hex << "0x" << msr << bfendl;
 }
 
 void
 exit_handler_intel_x64_eapis::handle_vmcall__pass_through_all_wrmsr_accesses()
 {
     m_vmcs_eapis->pass_through_all_wrmsr_accesses();
-    ecr_debug << "pass_through_on_all_wrmsr_accesses: success" << bfendl;
+    ecr_dbg << "pass_through_on_all_wrmsr_accesses: success" << bfendl;
 }
 
 void
@@ -364,11 +364,11 @@ exit_handler_intel_x64_eapis::handle_vmcall__enable_vpid(bool enabled)
     if (enabled)
     {
         m_vmcs_eapis->enable_vpid();
-        ecr_debug << "enable_vpid: success" << bfendl;
+        ecr_dbg << "enable_vpid: success" << bfendl;
     }
     else
     {
         m_vmcs_eapis->disable_vpid();
-        ecr_debug << "disable_vpid: success" << bfendl;
+        ecr_dbg << "disable_vpid: success" << bfendl;
     }
 }
