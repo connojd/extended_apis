@@ -34,9 +34,9 @@
 #include <intrinsics/portio_x64.h>
 
 #ifdef ECR_DEBUG
-    #define vmcall_debug bfdebug
+    #define ecr_debug bfdebug
 #else
-    #define vmcall_debug if (0) bfdebug
+    #define ecr_debug if (0) bfdebug
 #endif
 
 /// WARNING:
@@ -57,9 +57,7 @@ public:
 
     using integer_pointer = uintptr_t;
     using port_type = x64::portio::port_addr_type;
-    using port_list_type = std::vector<port_type>;
     using msr_type = x64::msrs::field_type;
-    using msr_list_type = std::vector<msr_type>;
     using preemption_value_type = x64::msrs::value_type;
 
     /// Default Constructor
@@ -201,46 +199,6 @@ public:
     /// @ensures
     ///
     void pass_through_all_io_accesses();
-
-    /// White List IO Access
-    ///
-    /// Runs trap_on_all_io_accesses, and then runs pass_through_io_access on
-    /// each port provided (i.e. white-listed ports are passed through, all
-    /// other ports trap to the hypervisor)
-    ///
-    /// Example:
-    /// @code
-    /// // Pass through PCI configuration space reads / write and
-    /// // trap on all other port accesses
-    /// this->whitelist_io_access({0xCF8});
-    /// @endcode
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param ports the ports to whitelist
-    ///
-    void whitelist_io_access(const port_list_type &ports);
-
-    /// Black List IO Access
-    ///
-    /// Runs pass_through_all_io_accessed, and then runs trap_on_io_access on
-    /// each port provided (i.e. black-listed ports are trapped, all
-    /// other ports are passed through)
-    ///
-    /// Example:
-    /// @code
-    /// // Trap on PCI configuration space reads / write and
-    /// // pass through all other port accesses
-    /// this->whitelist_io_access({0xCF8});
-    /// @endcode
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param ports the ports to blacklist
-    ///
-    void blacklist_io_access(const port_list_type &ports);
 
     /// Enable EPT
     ///
@@ -450,82 +408,6 @@ public:
     /// @ensures
     ///
     void pass_through_all_wrmsr_accesses();
-
-    /// White List Read MST Access
-    ///
-    /// Runs trap_on_all_rdmsr_accesses, and then runs
-    /// pass_through_rdmsr_access on each msr provided
-    /// (i.e. white-listed msrs are passed through, all
-    /// other msrs trap to the hypervisor)
-    ///
-    /// Example:
-    /// @code
-    /// this->whitelist_rdmsr_access({0x42});
-    /// @endcode
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param msrs the msrs to whitelist
-    ///
-    void whitelist_rdmsr_access(msr_list_type msrs);
-
-    /// White List Write MST Access
-    ///
-    /// Runs trap_on_all_wrmsr_accesses, and then runs
-    /// pass_through_wrmsr_access on each msr provided
-    /// (i.e. white-listed msrs are passed through, all
-    /// other msrs trap to the hypervisor)
-    ///
-    /// Example:
-    /// @code
-    /// this->whitelist_wrmsr_access({0x42});
-    /// @endcode
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param msrs the msrs to whitelist
-    ///
-    void whitelist_wrmsr_access(msr_list_type msrs);
-
-    /// Black List Read MSR Access
-    ///
-    /// Runs pass_through_all_rdmsr_accesses, and then runs
-    /// trap_on_rdmsr_access on each msr provided
-    /// (i.e. black-listed msrs are trapped, all
-    /// other msrs are passed through)
-    ///
-    /// Example:
-    /// @code
-    /// this->blacklist_rdmsr_access({0xCF8});
-    /// @endcode
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param msrs the msrs to blacklist
-    ///
-    void blacklist_rdmsr_access(msr_list_type msrs);
-
-    /// Black List Read MSR Access
-    ///
-    /// Runs pass_through_all_wrmsr_accesses, and then runs
-    /// trap_on_wrmsr_access on each msr provided
-    /// (i.e. black-listed msrs are trapped, all
-    /// other msrs are passed through)
-    ///
-    /// Example:
-    /// @code
-    /// this->blacklist_wrmsr_access({0xCF8});
-    /// @endcode
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param msrs the msrs to blacklist
-    ///
-    void blacklist_wrmsr_access(msr_list_type msrs);
 
 protected:
 

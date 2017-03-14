@@ -43,8 +43,6 @@ public:
     using count_type = uint64_t;
     using port_type = x64::portio::port_addr_type;
     using msr_type = x64::msrs::field_type;
-    using msr_list_type = std::vector<msr_type>;
-    using msr_log_type = std::map<msr_type, count_type>;
 
     /// Default Constructor
     ///
@@ -143,70 +141,6 @@ public:
     ///
     void clear_monitor_trap();
 
-    /// Log Read MSR Access
-    ///
-    /// Enables / disables read MSR access logging.
-    ///
-    /// Example:
-    /// @code
-    /// this->log_rdmsr_access(true);
-    /// @endcode
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param enable set to true to enable read MSR access logging,
-    ///     false otherwise
-    ///
-    void log_rdmsr_access(bool enable);
-
-    /// Log Write MSR Access
-    ///
-    /// Enables / disables write MSR access logging.
-    ///
-    /// Example:
-    /// @code
-    /// this->log_wrmsr_access(true);
-    /// @endcode
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param enable set to true to enable write MSR access logging,
-    ///     false otherwise
-    ///
-    void log_wrmsr_access(bool enable);
-
-    /// Clear Read MSR Access Log
-    ///
-    /// Clears the read MSR access log. All previously logged read MSR
-    /// accesses will be removed.
-    ///
-    /// Example:
-    /// @code
-    /// this->clear_rdmsr_access_log();
-    /// @endcode
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    void clear_rdmsr_access_log();
-
-    /// Clear Write MSR Access Log
-    ///
-    /// Clears the write MSR access log. All previously logged write MSR
-    /// accesses will be removed.
-    ///
-    /// Example:
-    /// @code
-    /// this->clear_wrmsr_access_log();
-    /// @endcode
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    void clear_wrmsr_access_log();
-
 protected:
 
     void handle_exit(intel_x64::vmcs::value_type reason) override;
@@ -226,7 +160,6 @@ private:
 
     void handle_vmcall_registers__io_instruction(vmcall_registers_t &regs);
     void handle_vmcall_registers__vpid(vmcall_registers_t &regs);
-    void handle_vmcall_registers__msr(vmcall_registers_t &regs);
     void handle_vmcall_registers__rdmsr(vmcall_registers_t &regs);
     void handle_vmcall_registers__wrmsr(vmcall_registers_t &regs);
 
@@ -243,25 +176,15 @@ private:
 
 private:
 
-    void handle_vmcall__enable_msr_bitmap(bool enabled);
-
     void handle_vmcall__trap_on_rdmsr_access(msr_type msr);
     void handle_vmcall__trap_on_all_rdmsr_accesses();
     void handle_vmcall__pass_through_rdmsr_access(msr_type msr);
     void handle_vmcall__pass_through_all_rdmsr_accesses();
-    void handle_vmcall__whitelist_rdmsr_access(msr_list_type msrs);
-    void handle_vmcall__blacklist_rdmsr_access(msr_list_type msrs);
-    void handle_vmcall__log_rdmsr_access(bool enabled);
-    void handle_vmcall__clear_rdmsr_access_log();
 
     void handle_vmcall__trap_on_wrmsr_access(msr_type msr);
     void handle_vmcall__trap_on_all_wrmsr_accesses();
     void handle_vmcall__pass_through_wrmsr_access(msr_type msr);
     void handle_vmcall__pass_through_all_wrmsr_accesses();
-    void handle_vmcall__whitelist_wrmsr_access(msr_list_type msrs);
-    void handle_vmcall__blacklist_wrmsr_access(msr_list_type msrs);
-    void handle_vmcall__log_wrmsr_access(bool enabled);
-    void handle_vmcall__clear_wrmsr_access_log();
 
 private:
 
@@ -271,13 +194,6 @@ private:
 private:
 
     void trap_on_io_access_callback();
-
-private:
-
-    bool m_rdmsr_access_log_enabled;
-    bool m_wrmsr_access_log_enabled;
-    msr_log_type m_rdmsr_access_log;
-    msr_log_type m_wrmsr_access_log;
 
 public:
 

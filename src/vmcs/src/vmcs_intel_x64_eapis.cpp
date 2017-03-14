@@ -195,6 +195,9 @@ vmcs_intel_x64_eapis::enable_msr_bitmap()
 
     address_of_msr_bitmap::set(g_mm->virtptr_to_physint(m_msr_bitmap.get()));
     primary_processor_based_vm_execution_controls::use_msr_bitmap::enable();
+
+    pass_through_all_rdmsr_accesses();
+    pass_through_all_wrmsr_accesses();
 }
 
 void
@@ -325,38 +328,6 @@ vmcs_intel_x64_eapis::pass_through_all_wrmsr_accesses()
         throw std::runtime_error("msr bitmap not enabled");
 
     __builtin_memset(&m_msr_bitmap_view[2048], 0x0, x64::page_size / 2);
-}
-
-void
-vmcs_intel_x64_eapis::whitelist_rdmsr_access(msr_list_type msrs)
-{
-    trap_on_all_rdmsr_accesses();
-    for (auto msr : msrs)
-        pass_through_rdmsr_access(msr);
-}
-
-void
-vmcs_intel_x64_eapis::whitelist_wrmsr_access(msr_list_type msrs)
-{
-    trap_on_all_wrmsr_accesses();
-    for (auto msr : msrs)
-        pass_through_wrmsr_access(msr);
-}
-
-void
-vmcs_intel_x64_eapis::blacklist_rdmsr_access(msr_list_type msrs)
-{
-    pass_through_all_rdmsr_accesses();
-    for (auto msr : msrs)
-        trap_on_rdmsr_access(msr);
-}
-
-void
-vmcs_intel_x64_eapis::blacklist_wrmsr_access(msr_list_type msrs)
-{
-    pass_through_all_wrmsr_accesses();
-    for (auto msr : msrs)
-        trap_on_wrmsr_access(msr);
 }
 
 void

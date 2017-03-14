@@ -50,12 +50,17 @@ cat_vpid="0x2000"
     vpid_on="0x1"
     vpid_off="0x2"
 
-cat_msr="0x3000"
-
 cat_rdmsr="0x4000"
+    trap_rdmsr_access="0x1"
+    trap_all_rdmsr_access="0x2"
+    pass_rdmsr_access="0x3"
+    pass_all_rdmsr_access="0x4"
 
 cat_wrmsr="0x5000"
-
+    trap_wrmsr_access="0x1"
+    trap_all_wrmsr_access="0x2"
+    pass_wrmsr_access="0x3"
+    pass_all_wrmsr_access="0x4"
 
 cat_util="0x100"
     verbose_on="0x1"

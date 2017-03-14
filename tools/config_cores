@@ -2,6 +2,7 @@
 
 source extended_apis/tools/common.sh
 source extended_apis/tools/config_io.sh
+source extended_apis/tools/config_msr.sh
 
 build_args() {
     case "$1" in
@@ -37,6 +38,14 @@ config_cores() {
         fi
 
         config_io $@
+        ;;
+    "rdmsr"|"wrmsr")
+        if [[ $# -lt 2 ]]; then
+            msr_usage
+            exit 0
+        fi
+
+        config_msr $@
         ;;
     *)
         echo -e ""$CR"error"$CE": $1 configuration is not supported"
@@ -93,7 +102,7 @@ config_cores() {
 if [[ $# -eq 0 ]]; then
     printf ""$CY"syntax"$CE": ./vmconfig <cat> for category-specific"
     printf " syntax \n"
-    echo -e ""$CY"syntax"$CE":    <cat> = io"
+    echo -e ""$CY"syntax"$CE": <cat> = io | msr"
     exit 0
 fi
 

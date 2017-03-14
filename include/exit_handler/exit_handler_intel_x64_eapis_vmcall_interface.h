@@ -36,7 +36,8 @@ enum eapis_vmcall_categories
 {
     eapis_cat__io_instruction = 0x1000,
     eapis_cat__vpid = 0x2000,
-    eapis_cat__msr = 0x3000,
+// unused
+//    eapis_cat__msr = 0x3000,
     eapis_cat__rdmsr = 0x4000,
     eapis_cat__wrmsr = 0x5000,
 };
@@ -46,8 +47,9 @@ enum eapis_vmcall_categories
  */
 enum eapis_vmcall_functions
 {
-    eapis_fun__enable_io_bitmaps = 0x1,
-    eapis_fun__disable_io_bitmaps = 0x2,
+// unused
+//    eapis_fun__enable_io_bitmaps = 0x1,
+//    eapis_fun__disable_io_bitmaps = 0x2,
     eapis_fun__trap_on_io_access = 0x3,
     eapis_fun__trap_on_all_io_accesses = 0x4,
     eapis_fun__pass_through_io_access = 0x5,
@@ -56,8 +58,9 @@ enum eapis_vmcall_functions
     eapis_fun__vpid_on = 0x1,
     eapis_fun__vpid_off = 0x2,
 
-    eapis_fun__enable_msr_bitmap = 0x1,
-    eapis_fun__disable_msr_bitmap = 0x2,
+// unsused
+//    eapis_fun__enable_msr_bitmap = 0x1,
+//    eapis_fun__disable_msr_bitmap = 0x2,
 
     eapis_fun__trap_on_rdmsr_access = 0x1,
     eapis_fun__trap_on_all_rdmsr_accesses = 0x2,
