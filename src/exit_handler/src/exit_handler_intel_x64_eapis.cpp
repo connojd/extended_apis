@@ -32,7 +32,6 @@ using namespace vmcs;
 
 exit_handler_intel_x64_eapis::exit_handler_intel_x64_eapis() :
     m_monitor_trap_callback(&exit_handler_intel_x64_eapis::unhandled_monitor_trap_callback),
-    m_io_access_log_enabled(false),
     m_vmcs_eapis(nullptr)
 {
 }
@@ -108,14 +107,6 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
 }
 
 void
-exit_handler_intel_x64_eapis::log_io_access(bool enable)
-{ m_io_access_log_enabled = enable; }
-
-void
-exit_handler_intel_x64_eapis::clear_io_access_log()
-{ m_io_access_log.clear(); }
-
-void
 exit_handler_intel_x64_eapis::trap_on_io_access_callback()
 {
     primary_processor_based_vm_execution_controls::use_io_bitmaps::enable();
@@ -127,9 +118,6 @@ exit_handler_intel_x64_eapis::handle_exit__io_instruction()
 {
     register_monitor_trap(&exit_handler_intel_x64_eapis::trap_on_io_access_callback);
 
-    if (m_io_access_log_enabled)
-        m_io_access_log[exit_qualification::io_instruction::port_number::get()]++;
-
     primary_processor_based_vm_execution_controls::use_io_bitmaps::disable();
     this->resume();
 }
@@ -140,14 +128,6 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__io_instruction(
 {
     switch (regs.r03)
     {
-        case eapis_fun__enable_io_bitmaps:
-            handle_vmcall__enable_io_bitmaps(true);
-            break;
-
-        case eapis_fun__disable_io_bitmaps:
-            handle_vmcall__enable_io_bitmaps(false);
-            break;
-
         case eapis_fun__trap_on_io_access:
             handle_vmcall__trap_on_io_access(gsl::narrow_cast<port_type>(regs.r04));
             break;
@@ -170,27 +150,11 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__io_instruction(
 }
 
 void
-exit_handler_intel_x64_eapis::handle_vmcall__enable_io_bitmaps(
-    bool enabled)
-{
-    if (enabled)
-    {
-        m_vmcs_eapis->enable_io_bitmaps();
-        vmcall_debug << "enable_io_bitmaps: success" << bfendl;
-    }
-    else
-    {
-        m_vmcs_eapis->disable_io_bitmaps();
-        vmcall_debug << "disable_io_bitmaps: success" << bfendl;
-    }
-}
-
-void
 exit_handler_intel_x64_eapis::handle_vmcall__trap_on_io_access(
     port_type port)
 {
     m_vmcs_eapis->trap_on_io_access(port);
-    vmcall_debug << "trap_on_io_access: " << std::hex << std::uppercase << "0x" << port << bfendl;
+    vmcall_debug << "trap_on_io_access: " << std::hex << "0x" << port << bfendl;
 }
 
 void
@@ -205,51 +169,14 @@ exit_handler_intel_x64_eapis::handle_vmcall__pass_through_io_access(
     port_type port)
 {
     m_vmcs_eapis->pass_through_io_access(port);
-    vmcall_debug << "pass_through_io_access: " << std::hex << std::uppercase << "0x" << port << bfendl;
+    vmcall_debug << "pass_through_io_access: " << std::hex << "0x" << port << bfendl;
 }
 
 void
 exit_handler_intel_x64_eapis::handle_vmcall__pass_through_all_io_accesses()
 {
     m_vmcs_eapis->pass_through_all_io_accesses();
-    vmcall_debug << "trap_on_all_io_accesses: success" << bfendl;
-}
-
-void
-exit_handler_intel_x64_eapis::handle_vmcall__whitelist_io_access(
-    const port_list_type &ports)
-{
-    m_vmcs_eapis->whitelist_io_access(ports);
-
-    vmcall_debug << "whitelist_io_access: " << bfendl;
-    for (auto port : ports)
-        vmcall_debug << "  - " << std::hex << std::uppercase << "0x" << port << bfendl;
-}
-
-void
-exit_handler_intel_x64_eapis::handle_vmcall__blacklist_io_access(
-    const port_list_type &ports)
-{
-    m_vmcs_eapis->blacklist_io_access(ports);
-
-    vmcall_debug << "blacklist_io_access: " << bfendl;
-    for (auto port : ports)
-        vmcall_debug << "  - " << std::hex << std::uppercase << "0x" << port << bfendl;
-}
-
-void
-exit_handler_intel_x64_eapis::handle_vmcall__log_io_access(
-    bool enabled)
-{
-    log_io_access(enabled);
-    vmcall_debug << "log_io_access: " << std::boolalpha << enabled << bfendl;
-}
-
-void
-exit_handler_intel_x64_eapis::handle_vmcall__clear_io_access_log()
-{
-    clear_io_access_log();
-    vmcall_debug << "clear_io_access_log: success" << bfendl;
+    vmcall_debug << "pass_through_all_io_accesses: success" << bfendl;
 }
 
 void
@@ -357,7 +284,7 @@ exit_handler_intel_x64_eapis::handle_vmcall__trap_on_rdmsr_access(
     msr_type msr)
 {
     m_vmcs_eapis->trap_on_rdmsr_access(msr);
-    vmcall_debug << "trap_on_rdmsr_access: " << std::hex << std::uppercase << "0x" << msr << bfendl;
+    vmcall_debug << "trap_on_rdmsr_access: " << std::hex << "0x" << msr << bfendl;
 }
 
 void
@@ -372,14 +299,14 @@ exit_handler_intel_x64_eapis::handle_vmcall__pass_through_rdmsr_access(
     msr_type msr)
 {
     m_vmcs_eapis->pass_through_rdmsr_access(msr);
-    vmcall_debug << "pass_through_rdmsr_access: " << std::hex << std::uppercase << "0x" << msr << bfendl;
+    vmcall_debug << "pass_through_rdmsr_access: " << std::hex << "0x" << msr << bfendl;
 }
 
 void
 exit_handler_intel_x64_eapis::handle_vmcall__pass_through_all_rdmsr_accesses()
 {
     m_vmcs_eapis->pass_through_all_rdmsr_accesses();
-    vmcall_debug << "trap_on_all_io_accesses: success" << bfendl;
+    vmcall_debug << "pass_through_on_all_rdmsr_accesses: success" << bfendl;
 }
 
 void
@@ -390,7 +317,7 @@ exit_handler_intel_x64_eapis::handle_vmcall__whitelist_rdmsr_access(
 
     vmcall_debug << "whitelist_rdmsr_access: " << bfendl;
     for (auto msr : msrs)
-        vmcall_debug << "  - " << std::hex << std::uppercase << "0x" << msr << bfendl;
+        vmcall_debug << "  - " << std::hex << "0x" << msr << bfendl;
 }
 
 void
@@ -401,7 +328,7 @@ exit_handler_intel_x64_eapis::handle_vmcall__blacklist_rdmsr_access(
 
     vmcall_debug << "blacklist_rdmsr_access: " << bfendl;
     for (auto msr : msrs)
-        vmcall_debug << "  - " << std::hex << std::uppercase << "0x" << msr << bfendl;
+        vmcall_debug << "  - " << std::hex << "0x" << msr << bfendl;
 }
 
 void
@@ -503,7 +430,7 @@ exit_handler_intel_x64_eapis::handle_vmcall__trap_on_wrmsr_access(
     msr_type msr)
 {
     m_vmcs_eapis->trap_on_wrmsr_access(msr);
-    vmcall_debug << "trap_on_wrmsr_access: " << std::hex << std::uppercase << "0x" << msr << bfendl;
+    vmcall_debug << "trap_on_wrmsr_access: " << std::hex << "0x" << msr << bfendl;
 }
 
 void
@@ -518,14 +445,14 @@ exit_handler_intel_x64_eapis::handle_vmcall__pass_through_wrmsr_access(
     msr_type msr)
 {
     m_vmcs_eapis->pass_through_wrmsr_access(msr);
-    vmcall_debug << "pass_through_wrmsr_access: " << std::hex << std::uppercase << "0x" << msr << bfendl;
+    vmcall_debug << "pass_through_wrmsr_access: " << std::hex << "0x" << msr << bfendl;
 }
 
 void
 exit_handler_intel_x64_eapis::handle_vmcall__pass_through_all_wrmsr_accesses()
 {
     m_vmcs_eapis->pass_through_all_wrmsr_accesses();
-    vmcall_debug << "trap_on_all_io_accesses: success" << bfendl;
+    vmcall_debug << "pass_through_on_all_wrmsr_accesses: success" << bfendl;
 }
 
 void
@@ -536,7 +463,7 @@ exit_handler_intel_x64_eapis::handle_vmcall__whitelist_wrmsr_access(
 
     vmcall_debug << "whitelist_wrmsr_access: " << bfendl;
     for (auto msr : msrs)
-        vmcall_debug << "  - " << std::hex << std::uppercase << "0x" << msr << bfendl;
+        vmcall_debug << "  - " << std::hex << "0x" << msr << bfendl;
 }
 
 void
@@ -547,7 +474,7 @@ exit_handler_intel_x64_eapis::handle_vmcall__blacklist_wrmsr_access(
 
     vmcall_debug << "blacklist_wrmsr_access: " << bfendl;
     for (auto msr : msrs)
-        vmcall_debug << "  - " << std::hex << std::uppercase << "0x" << msr << bfendl;
+        vmcall_debug << "  - " << std::hex << "0x" << msr << bfendl;
 }
 
 void
@@ -555,7 +482,7 @@ exit_handler_intel_x64_eapis::handle_vmcall__log_wrmsr_access(
     bool enabled)
 {
     log_wrmsr_access(enabled);
-    vmcall_debug << "log_wrmsr_access: " << std::boolalpha << enabled << bfendl;
+    vmcall_debug << "log_wrmsr_access: " << enabled << bfendl;
 }
 
 void

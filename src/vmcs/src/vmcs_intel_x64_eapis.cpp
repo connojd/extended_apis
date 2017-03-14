@@ -47,7 +47,7 @@ vmcs_intel_x64_eapis::write_fields(gsl::not_null<vmcs_intel_x64_state *> host_st
 
     this->disable_ept();
     this->disable_vpid();
-    this->disable_io_bitmaps();
+    this->enable_io_bitmaps();
     this->enable_msr_bitmap();
 }
 
@@ -89,6 +89,7 @@ vmcs_intel_x64_eapis::enable_io_bitmaps()
     address_of_io_bitmap_b::set(g_mm->virtptr_to_physint(m_io_bitmapb.get()));
 
     primary_processor_based_vm_execution_controls::use_io_bitmaps::enable();
+    pass_through_all_io_accesses();
 }
 
 void
@@ -159,22 +160,6 @@ vmcs_intel_x64_eapis::pass_through_all_io_accesses()
 
     __builtin_memset(m_io_bitmapa.get(), 0, x64::page_size);
     __builtin_memset(m_io_bitmapb.get(), 0, x64::page_size);
-}
-
-void
-vmcs_intel_x64_eapis::whitelist_io_access(const port_list_type &ports)
-{
-    trap_on_all_io_accesses();
-    for (auto port : ports)
-        pass_through_io_access(port);
-}
-
-void
-vmcs_intel_x64_eapis::blacklist_io_access(const port_list_type &ports)
-{
-    pass_through_all_io_accesses();
-    for (auto port : ports)
-        trap_on_io_access(port);
 }
 
 /// Note:

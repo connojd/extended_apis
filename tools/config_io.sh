@@ -1,81 +1,80 @@
 #!/bin/bash
 
-source extended_apis/tools/common.sh
+port=""
 
-set_io_func {
+io_usage() {
+    printf ""$CY"syntax"$CE": ./vmconfig io -f <fun> -p <port>"
+    printf " -c <cores>\n"
+    echo -e ""$CY"syntax"$CE":    <fun> = t | trap | p | pass"
+    echo -e ""$CY"syntax"$CE":    <port> = all | 0x<hex>"
+    echo -e ""$CY"syntax"$CE":    <hex> = 16bit port addr"
+    echo -e ""$CY"syntax"$CE":    <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
+}
 
-    cat="$cat_io"
+set_io_regs() {
 
-    if [[ "$2" -eq "all" ]]; then
-        if [[ "$1" -eq "trap" || "$1" -eq "t" ]]; then
-            func="0x4"
+    r2="$cat_io"
+
+    fun="$1"
+    port="$2"
+
+    if [[ "$port" = "all" ]]; then
+
+        if [[ "$fun" = "trap" || "$fun" = "t" ]]; then
+            r3=$trap_all_io_access
             return
-        elif [[ "$1" -eq "pass" || "$1" -eq "p" ]]; then
-            func="0x6"
+        elif [[ "$fun" = "pass" || "$fun" = "p" ]]; then
+            r3=$pass_all_io_access
             return
         else
-            echo -e ""$CR"error"$CE": invalid args behavior for io"
+            echo -e ""$CR"error"$CE": invalid io function"
+            io_usage
+            exit 22
         fi
     fi
 
-    if (( "$2">=0x0 && "$2"<=0xffff )); then
-        if [[ "$1" -eq "trap" || "$1" -eq "t" ]]; then
-            func="0x3"
-            return
-        elif [[ "$1" -eq "pass" || "$1" -eq "p" ]]; then
-            func="0x5"
-            return
-        else
-            echo -e ""$CR"error"$CE": invalid args behavior for io"
-        fi
+    # assume port conforms to syntax
+    r4="$port"
+    echo "r4: $r4"
+
+    if [[ "$fun" = "trap" || "$fun" = "t" ]]; then
+        r3=$trap_io_access
+        return
+    elif [[ "$fun" = "pass" || "$fun" = "p" ]]; then
+        r3=$pass_io_access
+        return
+    else
+        echo -e ""$CR"error"$CE": invalid io function"
+        io_usage
+        exit 22
     fi
 }
 
-config_io {
+config_io() {
 
-    case "$2" in
-    "-b"|"behavior")
-        case "$4" in
-        "-p"|"--port")
-            set_io_func $3 $5
-            ;;
-        *)
-            echo -e ""$CR"error"$CE": must specify io port(s)"
-            ;;
-        esac
-    ;;
-    *)
-        echo -e ""$CR"error"$CE": must specify io behavior"
-        ;;
-    esac
+    # set eapi_cat (r2) and eapi_fun (r3) (and maybe port #, r4)
+    if [[ "$2" = "-f" && "$4" = "-p" ]]; then
+        set_io_regs $3 $5
+    else
+        echo -e ""$CR"error"$CE": unknown io option(s): $2 $4"
+        io_usage
+        exit 22
+    fi
 
-    case "$6" in
-    "-c"|"--cores")
-        case "$7" in
-        "all")
-            run_on_all_cores "$cat $func"
+    if [[ "$6" != "-c" ]]; then
+        echo -e ""$CR"error"$CE": unknown io option: $6"
+        io_usage
+        exit 22
+    fi
+
+    if [[ "$7" = "all" ]]; then
+            config_all_cores "$r2 $r3 $r4"
             exit 0
-            ;;
-        *)
-            shift 6
-            nargs="$#"
+    fi
 
-            for (( i=1; i<=nargs; i++ ))
-            do
-                if (( "$1">=0 && "$1"<NUM_CORES )); then
-                    run_on_one_core "$1" "$cat $func"
-                else
-                    echo -e ""$CR"error"$CE": $1 is not a valid core number"
-                    exit 22
-                fi
-                shift
-            done
-            exit 0
-            ;;
-        esac
-    ;;
-    *)
-        echo -e ""$CR"error"$CE": must specify cores"
-        ;;
-    esac
+    shift 6
+    ncores="$#"
+    cores="$@"
+
+    config_select_cores "$r2 $r3 $r4" $ncores $cores
 }

@@ -33,6 +33,12 @@
 #include <intrinsics/msrs_x64.h>
 #include <intrinsics/portio_x64.h>
 
+#ifdef ECR_DEBUG
+    #define vmcall_debug bfdebug
+#else
+    #define vmcall_debug if (0) bfdebug
+#endif
+
 /// WARNING:
 ///
 /// All of these APIs operate on the currently loaded VMCS, as well as on

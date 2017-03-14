@@ -48,7 +48,7 @@ CROSS_CXXFLAGS+=
 CROSS_ASMFLAGS+=
 CROSS_LDFLAGS+=
 CROSS_ARFLAGS+=
-CROSS_DEFINES+=
+CROSS_DEFINES+=ECR_DEBUG
 
 ################################################################################
 # Output

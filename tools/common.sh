@@ -41,6 +41,10 @@ NUM_CORES=`grep -c ^processor /proc/cpuinfo`
 # vmcall categories and their functions (see eapis exit handler vmcall_interface.h)
 # ------------------------------------------------------------------------------
 cat_io="0x1000"
+    trap_io_access="0x3"
+    trap_all_io_access="0x4"
+    pass_io_access="0x5"
+    pass_all_io_access="0x6"
 
 cat_vpid="0x2000"
     vpid_on="0x1"
@@ -69,9 +73,14 @@ cat_wbinvd="0x400"
     wbinvd_trap="0x1"
     wbinvd_pass_through="0x2"
 
+# eapis_cat
+r2=""
 
-cat=""
-func=""
+# eapis_fun
+r3=""
+
+# arg to eapis_fun
+r4=""
 
 # ------------------------------------------------------------------------------
 # Helpers
@@ -86,14 +95,39 @@ footer() {
     echo ""
 }
 
-run_on_all_cores() {
+vmcall_select_core() {
+    echo "register args = $2"
+    echo "cpuid = $1"
+
+    ARGS="--cpuid $1 registers $2" make vmcall > /dev/null
+}
+
+config_all_cores() {
     for (( core=0; core<$NUM_CORES; core++ ))
     do
-        echo "registers args = $1"
-        ARGS="--cpuid $core registers $1" make vmcall > /dev/null
+        vmcall_select_core $core "$1"
     done
 }
 
-run_on_one_core() {
-    ARGS="--cpuid $1 registers $2" make vmcall > /dev/null
+config_select_cores() {
+
+    args="$1"
+    ncores="$2"
+
+    echo "args: $args"
+    echo "ncores: $ncores"
+
+    shift 2
+
+    for (( i=1; i<="$ncores"; i++ ))
+    do
+        if (( "$1">=0 && "$1"<NUM_CORES )); then
+            vmcall_select_core "$1" "$args"
+        else
+            echo -e ""$CR"error"$CE": $1 is not a valid core number"
+            echo -e ""$CR"error"$CE": ensure 0 =< core number < NUM_CORES"
+            exit 22
+        fi
+        shift
+    done
 }

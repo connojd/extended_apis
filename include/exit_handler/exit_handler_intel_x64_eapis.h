@@ -32,12 +32,6 @@
 #include <debug.h>
 #include <intrinsics/portio_x64.h>
 
-#ifdef SHOW_VMCALLS
-#define vmcall_debug bfdebug
-#else
-#define vmcall_debug if (0) bfdebug
-#endif
-
 class exit_handler_intel_x64_eapis : public exit_handler_intel_x64
 {
 public:
@@ -48,8 +42,6 @@ public:
 
     using count_type = uint64_t;
     using port_type = x64::portio::port_addr_type;
-    using port_list_type = std::vector<port_type>;
-    using port_log_type = std::map<port_type, count_type>;
     using msr_type = x64::msrs::field_type;
     using msr_list_type = std::vector<msr_type>;
     using msr_log_type = std::map<msr_type, count_type>;
@@ -151,37 +143,6 @@ public:
     ///
     void clear_monitor_trap();
 
-    /// Log IO Access
-    ///
-    /// Enables / disables IO access logging.
-    ///
-    /// Example:
-    /// @code
-    /// this->log_io_access(true);
-    /// @endcode
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param enable set to true to enable IO access logging, false otherwise
-    ///
-    void log_io_access(bool enable);
-
-    /// Clear IO Access Log
-    ///
-    /// Clears the IO access log. All previously logged IO accesses will be
-    /// removed.
-    ///
-    /// Example:
-    /// @code
-    /// this->clear_io_access_log();
-    /// @endcode
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    void clear_io_access_log();
-
     /// Log Read MSR Access
     ///
     /// Enables / disables read MSR access logging.
@@ -271,15 +232,10 @@ private:
 
 private:
 
-    void handle_vmcall__enable_io_bitmaps(bool enabled);
     void handle_vmcall__trap_on_io_access(port_type port);
     void handle_vmcall__trap_on_all_io_accesses();
     void handle_vmcall__pass_through_io_access(port_type port);
     void handle_vmcall__pass_through_all_io_accesses();
-    void handle_vmcall__whitelist_io_access(const port_list_type &ports);
-    void handle_vmcall__blacklist_io_access(const port_list_type &ports);
-    void handle_vmcall__log_io_access(bool enabled);
-    void handle_vmcall__clear_io_access_log();
 
 private:
 
@@ -315,9 +271,6 @@ private:
 private:
 
     void trap_on_io_access_callback();
-
-    bool m_io_access_log_enabled;
-    port_log_type m_io_access_log;
 
 private:
 

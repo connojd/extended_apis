@@ -1,8 +1,7 @@
 #!/bin/bash
 
 source extended_apis/tools/common.sh
-
-args=""
+source extended_apis/tools/config_io.sh
 
 build_args() {
     case "$1" in
@@ -32,65 +31,69 @@ config_cores() {
 
     case "$1" in
     "io")
-        config_io $@
-        ;;
-    *)
-        echo -e ""$CR"error"$CE": $1 is not configurable"
-        ;;
-    esac
-
-    case "$2" in
-    "-b"|"--behavior")
-        case "$3" in
-        "t"|"trap"|"on")
-            build_args $1 "0x1"
-            ;;
-        "p"|"pass"|"pass_through"|"off")
-            build_args $1 "0x2"
-            ;;
-        *)
-            echo -e ""$CR"error"$CE": $3 is an invalid behavior"
-            ;;
-        esac
-        ;;
-    *)
-        echo -e ""$CR"error"$CE": $2 is an invalid option"
-        ;;
-    esac
-
-    case "$4" in
-    "-c"|"--cores")
-        shift 4
-        nargs="$#"
-
-        if [[ "$1" == "all" ]]; then
-            run_on_all_cores "$args"
+        if [[ $# -lt 2 ]]; then
+            io_usage
             exit 0
         fi
 
-        for (( i=1; i<=nargs; i++ ))
-        do
-            if [[ "$1" -ge 0 && "$1" -lt NUM_CORES ]]; then
-                echo "$args"
-                run_on_one_core "$1" "$args"
-            else
-                echo -e ""$CR"error"$CE": $1 is not a valid core number"
-                exit 22
-            fi
-            shift
-        done
+        config_io $@
         ;;
     *)
-        echo -e ""$CR"error"$CE": must specify core list with -c or --cores"
+        echo -e ""$CR"error"$CE": $1 configuration is not supported"
         ;;
     esac
+
+#    case "$2" in
+#    "-b"|"--behavior")
+#        case "$3" in
+#        "t"|"trap"|"on")
+#            build_args $1 "0x1"
+#            ;;
+#        "p"|"pass"|"pass_through"|"off")
+#            build_args $1 "0x2"
+#            ;;
+#        *)
+#            echo -e ""$CR"error"$CE": $3 is an invalid behavior"
+#            ;;
+#        esac
+#        ;;
+#    *)
+#        echo -e ""$CR"error"$CE": $2 is an invalid option"
+#        ;;
+#    esac
+#
+#    case "$4" in
+#    "-c"|"--cores")
+#        shift 4
+#        nargs="$#"
+#
+#        if [[ "$1" == "all" ]]; then
+#            run_on_all_cores "$args"
+#            exit 0
+#        fi
+#
+#        for (( i=1; i<=nargs; i++ ))
+#        do
+#            if [[ "$1" -ge 0 && "$1" -lt NUM_CORES ]]; then
+#                echo "$args"
+#                run_on_one_core "$1" "$args"
+#            else
+#                echo -e ""$CR"error"$CE": $1 is not a valid core number"
+#                exit 22
+#            fi
+#            shift
+#        done
+#        ;;
+#    *)
+#        echo -e ""$CR"error"$CE": must specify core list with -c or --cores"
+#        ;;
+#    esac
 }
 
-if [[ $# -le 2 ]]; then
-    printf ""$CC"USAGE"$CE": ./config_cores <category> -b|--behavior"
-    printf "where <category> = rdrand | rdseed | wbinvd | verbose | vpid\n"
-    printf "      <behavior> = t | trap | p | pass | pass_through | on | off\n"
-    printf "      <core_list> = all | [0..numcores-1]+\n"
+if [[ $# -eq 0 ]]; then
+    printf ""$CY"syntax"$CE": ./vmconfig <cat> for category-specific"
+    printf " syntax \n"
+    echo -e ""$CY"syntax"$CE":    <cat> = io"
     exit 0
 fi
 
