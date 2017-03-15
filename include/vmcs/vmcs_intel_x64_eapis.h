@@ -409,6 +409,12 @@ public:
     ///
     void pass_through_all_wrmsr_accesses();
 
+    /// Configure the current vmcs to exit on rdrand
+    void trap_on_rdrand();
+
+    /// Configure the current vmcs to pass through rdrand
+    void pass_through_on_rdrand();
+
 protected:
 
     void write_fields(gsl::not_null<vmcs_intel_x64_state *> host_state,

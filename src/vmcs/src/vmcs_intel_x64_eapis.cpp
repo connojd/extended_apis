@@ -343,3 +343,16 @@ vmcs_intel_x64_eapis::disable_vpid()
     vmcs::virtual_processor_identifier::set(0UL);
     secondary_processor_based_vm_execution_controls::enable_vpid::disable();
 }
+
+void
+vmcs_intel_x64_eapis::trap_on_rdrand()
+{
+    secondary_processor_based_vm_execution_controls::rdrand_exiting::enable();
+}
+
+void
+vmcs_intel_x64_eapis::pass_through_on_rdrand()
+{
+    secondary_processor_based_vm_execution_controls::rdrand_exiting::disable();
+}
+

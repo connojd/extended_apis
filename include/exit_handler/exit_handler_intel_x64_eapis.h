@@ -32,6 +32,17 @@
 #include <debug.h>
 #include <intrinsics/portio_x64.h>
 
+enum instr_gpr {
+    rax, rcx, rdx, rbx, rsp, rbp, rsi, rdi,
+    r8, r9, r10, r11, r12, r13, r14, r15
+};
+
+enum ret_code {
+    success = 0,
+    invl_sz = -1,
+    invl_gpr = -2
+};
+
 class exit_handler_intel_x64_eapis : public exit_handler_intel_x64
 {
 public:
@@ -151,6 +162,7 @@ private:
     void handle_exit__io_instruction();
     void handle_exit__rdmsr();
     void handle_exit__wrmsr();
+    void handle_exit__rdrand();
 
 protected:
 
@@ -162,6 +174,7 @@ private:
     void handle_vmcall_registers__vpid(vmcall_registers_t &regs);
     void handle_vmcall_registers__rdmsr(vmcall_registers_t &regs);
     void handle_vmcall_registers__wrmsr(vmcall_registers_t &regs);
+    void handle_vmcall_registers__rdrand(vmcall_registers_t &regs);
 
 private:
 
@@ -186,6 +199,9 @@ private:
     void handle_vmcall__pass_through_wrmsr_access(msr_type msr);
     void handle_vmcall__pass_through_all_wrmsr_accesses();
 
+    void handle_vmcall__trap_on_rdrand();
+    void handle_vmcall__pass_through_on_rdrand();
+
 private:
 
     void unhandled_monitor_trap_callback();
@@ -194,6 +210,8 @@ private:
 private:
 
     void trap_on_io_access_callback();
+
+    ret_code write_gpr(instr_gpr gpr, uint64_t val, uint64_t nbytes);
 
 public:
 

@@ -24,11 +24,17 @@
 
 #include <vmcs/vmcs_intel_x64_32bit_read_only_data_fields.h>
 #include <vmcs/vmcs_intel_x64_32bit_control_fields.h>
+#include <vmcs/vmcs_intel_x64_32bit_guest_state_fields.h>
 #include <vmcs/vmcs_intel_x64_natural_width_read_only_data_fields.h>
+#include <vmcs/vmcs_intel_x64_natural_width_guest_state_fields.h>
+
+#include <intrinsics/rdrand_x64.h>
 
 using namespace x64;
 using namespace intel_x64;
 using namespace vmcs;
+
+namespace exit_instr_info = vm_exit_instruction_information;
 
 exit_handler_intel_x64_eapis::exit_handler_intel_x64_eapis() :
     m_monitor_trap_callback(&exit_handler_intel_x64_eapis::unhandled_monitor_trap_callback),
@@ -70,6 +76,10 @@ exit_handler_intel_x64_eapis::handle_exit(vmcs::value_type reason)
             handle_exit__wrmsr();
             break;
 
+        case vmcs::exit_reason::basic_exit_reason::rdrand:
+            handle_exit__rdrand();
+            break;
+
         default:
             exit_handler_intel_x64::handle_exit(reason);
             break;
@@ -95,6 +105,10 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
 
         case eapis_cat__wrmsr:
             handle_vmcall_registers__wrmsr(regs);
+            break;
+
+        case eapis_cat__rdrand:
+            handle_vmcall_registers__rdrand(regs);
             break;
 
         default:
@@ -371,4 +385,104 @@ exit_handler_intel_x64_eapis::handle_vmcall__enable_vpid(bool enabled)
         m_vmcs_eapis->disable_vpid();
         ecr_dbg << "disable_vpid: success" << bfendl;
     }
+}
+
+ret_code
+exit_handler_intel_x64_eapis::write_gpr(instr_gpr id, uint64_t val,
+    uint64_t nbytes)
+{
+    uint64_t mask = 0xffffffffffffffff;
+
+    switch (nbytes) {
+        case 2: break;
+        case 1: mask = 0xffffffff; break;
+        case 0: mask = 0xffff; break;
+        default: bfdebug << "op size = " << nbytes << bfendl; return invl_sz;
+    }
+
+    val &= mask;
+
+    switch (id) {
+        case rax: m_state_save->rax |= val; break;
+        case rcx: m_state_save->rcx |= val; break;
+        case rdx: m_state_save->rdx |= val; break;
+        case rbx: m_state_save->rbx |= val; break;
+        case rsp: m_state_save->rsp |= val; break;
+        case rbp: m_state_save->rbp |= val; break;
+        case rsi: m_state_save->rsi |= val; break;
+        case rdi: m_state_save->rdi |= val; break;
+//        case r8: m_state_save->r8 |= val; break; <- no in m_state_save rn
+//        case r9: m_state_save->r9 |= val; break;
+        case r10: m_state_save->r10 |= val; break;
+        case r11: m_state_save->r11 |= val; break;
+        case r12: m_state_save->r12 |= val; break;
+        case r13: m_state_save->r13 |= val; break;
+        case r14: m_state_save->r14 |= val; break;
+        case r15: m_state_save->r15 |= val; break;
+        default: return invl_gpr;
+    }
+
+    return success;
+}
+
+void
+exit_handler_intel_x64_eapis::handle_exit__rdrand()
+{
+    instr_gpr dest = static_cast<instr_gpr>
+        (exit_instr_info::rdrand::destination_register::get());
+    uint64_t size = exit_instr_info::rdrand::operand_size::get();
+
+    int64_t ret = 0;
+
+    ret = (guest_ss_access_rights::dpl::get() > 0) ?
+        write_gpr(dest, 0xffffffffffffffff, size) :
+        write_gpr(dest, x64::rdrand::get(), size);
+
+    if (invl_sz == ret)
+        bferror << "invalid rdrand operand size" << bfendl;
+
+    if (invl_gpr == ret)
+        bferror << "invalid rdrand destination register" << bfendl;
+
+    vmcs::guest_rflags::carry_flag::enable();
+    vmcs::guest_rflags::overflow_flag::disable();
+    vmcs::guest_rflags::sign_flag::disable();
+    vmcs::guest_rflags::zero_flag::disable();
+    vmcs::guest_rflags::auxiliary_carry_flag::disable();
+    vmcs::guest_rflags::parity_flag::disable();
+
+    this->advance_and_resume();
+}
+
+void
+exit_handler_intel_x64_eapis::handle_vmcall_registers__rdrand(
+    vmcall_registers_t &regs)
+{
+    switch (regs.r03)
+    {
+        case eapis_fun__trap_on_rdrand:
+            handle_vmcall__trap_on_rdrand();
+            break;
+
+        case eapis_fun__pass_through_on_rdrand:
+            handle_vmcall__pass_through_on_rdrand();
+            break;
+
+        default:
+            throw std::runtime_error("unknown vmcall function");
+    }
+}
+
+void
+exit_handler_intel_x64_eapis::handle_vmcall__trap_on_rdrand()
+{
+    m_vmcs_eapis->trap_on_rdrand();
+    ecr_dbg << "trap_on_rdrand: success" << bfendl;
+}
+
+void
+exit_handler_intel_x64_eapis::handle_vmcall__pass_through_on_rdrand()
+{
+    m_vmcs_eapis->pass_through_on_rdrand();
+    ecr_dbg << "pass_through_on_rdrand: success" << bfendl;
 }

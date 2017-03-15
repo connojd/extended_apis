@@ -62,13 +62,9 @@ cat_wrmsr="0x5000"
     pass_wrmsr_access="0x3"
     pass_all_wrmsr_access="0x4"
 
-cat_util="0x100"
-    verbose_on="0x1"
-    verbose_off="0x2"
-
-cat_rdrand="0x200"
-    rdrand_trap="0x1"
-    rdrand_pass_through="0x2"
+cat_rdrand="0x6000"
+    trap_rdrand="0x1"
+    pass_through_rdrand="0x2"
 
 cat_rdseed="0x300"
     rdseed_trap="0x1"

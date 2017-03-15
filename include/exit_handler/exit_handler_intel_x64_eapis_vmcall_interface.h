@@ -40,6 +40,7 @@ enum eapis_vmcall_categories
 //    eapis_cat__msr = 0x3000,
     eapis_cat__rdmsr = 0x4000,
     eapis_cat__wrmsr = 0x5000,
+    eapis_cat__rdrand = 0x6000
 };
 
 /*
@@ -71,6 +72,9 @@ enum eapis_vmcall_functions
     eapis_fun__trap_on_all_wrmsr_accesses = 0x2,
     eapis_fun__pass_through_wrmsr_access = 0x3,
     eapis_fun__pass_through_all_wrmsr_accesses = 0x4,
+
+    eapis_fun__trap_on_rdrand = 0x1,
+    eapis_fun__pass_through_on_rdrand = 0x2
 };
 
 /**
