@@ -1,44 +1,44 @@
 #!/bin/bash
 
-rdrand_usage() {
-    printf ""$CY"syntax"$CE": ./vmconfig rdrand -f <fun>"
+rdseed_usage() {
+    printf ""$CY"syntax"$CE": ./vmconfig rdseed -f <fun>"
     printf " -c <cores>\n"
     echo -e ""$CY"syntax"$CE":    <fun> = t | trap | p | pass"
     echo -e ""$CY"syntax"$CE":    <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
 }
 
-set_rdrand_regs() {
+set_rdseed_regs() {
 
-    r2="$cat_rdrand"
+    r2="$cat_rdseed"
     fun="$1"
 
     if [[ "$fun" = "trap" || "$fun" = "t" ]]; then
-        r3=$trap_rdrand
+        r3=$trap_rdseed
         return
     elif [[ "$fun" = "pass" || "$fun" = "p" ]]; then
-        r3=$pass_through_rdrand
+        r3=$pass_through_rdseed
         return
     else
-        echo -e ""$CR"error"$CE": invalid rdrand function"
-        rdrand_usage
+        echo -e ""$CR"error"$CE": invalid rdseed function"
+        rdseed_usage
         exit 22
     fi
 }
 
-config_rdrand() {
+config_rdseed() {
 
     # set eapi_cat (r2) and eapi_fun (r3)
     if [[ "$2" = "-f" && "$4" = "-c" ]]; then
-        set_rdrand_regs $3
+        set_rdseed_regs $3
     else
-        echo -e ""$CR"error"$CE": unknown rdrand option(s): $2 $4"
-        rdrand_usage
+        echo -e ""$CR"error"$CE": unknown rdseed option(s): $2 $4"
+        rdseed_usage
         exit 22
     fi
 
     if [[ "$4" != "-c" ]]; then
-        echo -e ""$CR"error"$CE": unknown rdrand option: $4"
-        rdrand_usage
+        echo -e ""$CR"error"$CE": unknown rdseed option: $4"
+        rdseed_usage
         exit 22
     fi
 

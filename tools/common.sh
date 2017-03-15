@@ -66,9 +66,9 @@ cat_rdrand="0x6000"
     trap_rdrand="0x1"
     pass_through_rdrand="0x2"
 
-cat_rdseed="0x300"
-    rdseed_trap="0x1"
-    rdseed_pass_through="0x2"
+cat_rdseed="0x7000"
+    trap_rdseed="0x1"
+    pass_through_rdseed="0x2"
 
 cat_wbinvd="0x400"
     wbinvd_trap="0x1"

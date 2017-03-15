@@ -6,6 +6,7 @@ source extended_apis/tools/config_io.sh
 source extended_apis/tools/config_msr.sh
 source extended_apis/tools/config_vpid.sh
 source extended_apis/tools/config_rdrand.sh
+source extended_apis/tools/config_rdseed.sh
 
 config_cores() {
 
@@ -26,6 +27,10 @@ config_cores() {
         if [[ $# -lt 2 ]]; then rdrand_usage; exit 0; fi
         config_rdrand $@
         ;;
+    "rdseed")
+        if [[ $# -lt 2 ]]; then rdseed_usage; exit 0; fi
+        config_rdseed $@
+        ;;
     *)
         echo -e ""$CR"error"$CE": live $1 configuration is unsupported"
         ;;
@@ -35,7 +40,7 @@ config_cores() {
 if [[ $# -eq 0 ]]; then
     printf ""$CY"syntax"$CE": ./vmconfig <cat> for category-specific"
     printf " syntax \n"
-    echo -e ""$CY"syntax"$CE": <cat> = io | rdmsr | wrmsr | vpid | rdrand"
+    echo -e ""$CY"syntax"$CE": <cat> = io | rdmsr | wrmsr | vpid | rdrand | rdseed"
     exit 0
 fi
 

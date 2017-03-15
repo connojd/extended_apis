@@ -415,6 +415,12 @@ public:
     /// Configure the current vmcs to pass through rdrand
     void pass_through_on_rdrand();
 
+    /// Configure the current vmcs to exit on rdseed
+    void trap_on_rdseed();
+
+    /// Configure the current vmcs to pass through rdseed
+    void pass_through_on_rdseed();
+
 protected:
 
     void write_fields(gsl::not_null<vmcs_intel_x64_state *> host_state,

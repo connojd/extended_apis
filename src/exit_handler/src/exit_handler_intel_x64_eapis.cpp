@@ -80,6 +80,10 @@ exit_handler_intel_x64_eapis::handle_exit(vmcs::value_type reason)
             handle_exit__rdrand();
             break;
 
+        case vmcs::exit_reason::basic_exit_reason::rdseed:
+            handle_exit__rdseed();
+            break;
+
         default:
             exit_handler_intel_x64::handle_exit(reason);
             break;
@@ -109,6 +113,10 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
 
         case eapis_cat__rdrand:
             handle_vmcall_registers__rdrand(regs);
+            break;
+
+        case eapis_cat__rdseed:
+            handle_vmcall_registers__rdseed(regs);
             break;
 
         default:
@@ -485,4 +493,53 @@ exit_handler_intel_x64_eapis::handle_vmcall__pass_through_on_rdrand()
 {
     m_vmcs_eapis->pass_through_on_rdrand();
     ecr_dbg << "pass_through_on_rdrand: success" << bfendl;
+}
+
+void
+exit_handler_intel_x64_eapis::handle_exit__rdseed()
+{
+    instr_gpr dest = static_cast<instr_gpr>
+        (exit_instr_info::rdseed::destination_register::get());
+    uint64_t size = exit_instr_info::rdseed::operand_size::get();
+
+    int64_t ret = 0;
+
+    ret = (guest_ss_access_rights::dpl::get() > 0) ?
+        write_gpr(dest, 0xbeefcafebeefcafe, size) :
+        write_gpr(dest, x64::rdseed::get(), size);
+
+    if (invl_sz == ret)
+        bferror << "invalid rdseed operand size" << bfendl;
+
+    if (invl_gpr == ret)
+        bferror << "invalid rdseed destination register" << bfendl;
+
+    vmcs::guest_rflags::carry_flag::enable();
+    vmcs::guest_rflags::overflow_flag::disable();
+    vmcs::guest_rflags::sign_flag::disable();
+    vmcs::guest_rflags::zero_flag::disable();
+    vmcs::guest_rflags::auxiliary_carry_flag::disable();
+    vmcs::guest_rflags::parity_flag::disable();
+
+    this->advance_and_resume();
+}
+
+void
+exit_handler_intel_x64_eapis::handle_vmcall_registers__rdseed(
+    vmcall_registers_t &regs)
+{
+    switch (regs.r03) {
+        case eapis_fun__trap_on_rdseed:
+            m_vmcs_eapis->trap_on_rdseed();
+            ecr_dbg << "trap_on_rdseed: success" << bfendl;
+            break;
+
+        case eapis_fun__pass_through_on_rdseed:
+            m_vmcs_eapis->pass_through_on_rdseed();
+            ecr_dbg << "pass_through_on_rdseed: success" << bfendl;
+            break;
+
+        default:
+            throw std::runtime_error("unknown vmcall function");
+    }
 }
