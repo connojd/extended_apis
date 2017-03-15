@@ -165,6 +165,7 @@ private:
     void handle_exit__rdrand();
     void handle_exit__rdseed();
     void handle_exit__wbinvd();
+    void handle_exit__rdpmc();
 
 protected:
 
@@ -179,6 +180,7 @@ private:
     void handle_vmcall_registers__rdrand(vmcall_registers_t &regs);
     void handle_vmcall_registers__rdseed(vmcall_registers_t &regs);
     void handle_vmcall_registers__wbinvd(vmcall_registers_t &regs);
+    void handle_vmcall_registers__rdpmc(vmcall_registers_t &regs);
 
 private:
 
@@ -214,6 +216,7 @@ private:
 private:
 
     void trap_on_io_access_callback();
+    void trap_on_rdpmc_callback();
 
     ret_code write_gpr(instr_gpr gpr, uint64_t val, uint64_t nbytes);
 

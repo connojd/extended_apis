@@ -409,23 +409,17 @@ public:
     ///
     void pass_through_all_wrmsr_accesses();
 
-    /// Configure the current vmcs to exit on rdrand
     void trap_on_rdrand();
-
-    /// Configure the current vmcs to pass through rdrand
     void pass_through_on_rdrand();
 
-    /// Configure the current vmcs to exit on rdseed
     void trap_on_rdseed();
-
-    /// Configure the current vmcs to pass through rdseed
     void pass_through_on_rdseed();
 
-    /// Configure the current vmcs to exit on wbinvd
     void trap_on_wbinvd();
-
-    /// Configure the current vmcs to pass through wbinvd
     void pass_through_on_wbinvd();
+
+    void trap_on_rdpmc();
+    void pass_through_on_rdpmc();
 
 protected:
 

@@ -89,6 +89,10 @@ exit_handler_intel_x64_eapis::handle_exit(vmcs::value_type reason)
             handle_exit__wbinvd();
             break;
 
+        case vmcs::exit_reason::basic_exit_reason::rdpmc:
+            handle_exit__rdpmc();
+            break;
+
         default:
             exit_handler_intel_x64::handle_exit(reason);
             break;
@@ -126,6 +130,10 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
 
         case eapis_cat__wbinvd:
             handle_vmcall_registers__wbinvd(regs);
+            break;
+
+        case eapis_cat__rdpmc:
+            handle_vmcall_registers__rdpmc(regs);
             break;
 
         default:
@@ -573,6 +581,50 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__wbinvd(
         case eapis_fun__pass_through_on_wbinvd:
             m_vmcs_eapis->pass_through_on_wbinvd();
             ecr_dbg << "pass_through_on_wbinvd: success" << bfendl;
+            break;
+
+        default:
+            throw std::runtime_error("unknown vmcall function");
+    }
+}
+
+void
+exit_handler_intel_x64_eapis::trap_on_rdpmc_callback()
+{
+    primary_processor_based_vm_execution_controls::rdpmc_exiting::enable();
+    this->resume();
+}
+
+void
+exit_handler_intel_x64_eapis::handle_exit__rdpmc()
+{
+    static bool rdpmc_print = true;
+
+    register_monitor_trap(&exit_handler_intel_x64_eapis::trap_on_rdpmc_callback);
+    primary_processor_based_vm_execution_controls::rdpmc_exiting::disable();
+
+    if (rdpmc_print) {
+        ecr_dbg << "handling rdpmc: " << std::hex << "0x"
+            << m_state_save->rcx << bfendl;
+        rdpmc_print = false;
+    }
+
+    this->resume();
+}
+
+void
+exit_handler_intel_x64_eapis::handle_vmcall_registers__rdpmc(
+    vmcall_registers_t &regs)
+{
+    switch (regs.r03) {
+        case eapis_fun__trap_on_rdpmc:
+            m_vmcs_eapis->trap_on_rdpmc();
+            ecr_dbg << "trap_on_rdpmc: success" << bfendl;
+            break;
+
+        case eapis_fun__pass_through_on_rdpmc:
+            m_vmcs_eapis->pass_through_on_rdpmc();
+            ecr_dbg << "pass_through_on_rdpmc: success" << bfendl;
             break;
 
         default:

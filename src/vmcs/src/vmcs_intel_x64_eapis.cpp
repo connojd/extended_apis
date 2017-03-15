@@ -363,7 +363,6 @@ vmcs_intel_x64_eapis::trap_on_rdseed()
 }
 
 void
-
 vmcs_intel_x64_eapis::pass_through_on_rdseed()
 {
     secondary_processor_based_vm_execution_controls::rdseed_exiting::disable();
@@ -376,8 +375,20 @@ vmcs_intel_x64_eapis::trap_on_wbinvd()
 }
 
 void
-
 vmcs_intel_x64_eapis::pass_through_on_wbinvd()
 {
     secondary_processor_based_vm_execution_controls::wbinvd_exiting::disable();
 }
+
+void
+vmcs_intel_x64_eapis::trap_on_rdpmc()
+{
+    primary_processor_based_vm_execution_controls::rdpmc_exiting::enable_if_allowed();
+}
+
+void
+vmcs_intel_x64_eapis::pass_through_on_rdpmc()
+{
+    primary_processor_based_vm_execution_controls::rdpmc_exiting::disable();
+}
+

@@ -74,6 +74,10 @@ cat_wbinvd="0x8000"
     trap_wbinvd="0x1"
     pass_through_wbinvd="0x2"
 
+cat_rdpmc="0x9000"
+    trap_rdpmc="0x1"
+    pass_through_rdpmc="0x2"
+
 # eapis_cat
 r2=""
 
