@@ -421,6 +421,12 @@ public:
     /// Configure the current vmcs to pass through rdseed
     void pass_through_on_rdseed();
 
+    /// Configure the current vmcs to exit on wbinvd
+    void trap_on_wbinvd();
+
+    /// Configure the current vmcs to pass through wbinvd
+    void pass_through_on_wbinvd();
+
 protected:
 
     void write_fields(gsl::not_null<vmcs_intel_x64_state *> host_state,

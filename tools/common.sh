@@ -70,9 +70,9 @@ cat_rdseed="0x7000"
     trap_rdseed="0x1"
     pass_through_rdseed="0x2"
 
-cat_wbinvd="0x400"
-    wbinvd_trap="0x1"
-    wbinvd_pass_through="0x2"
+cat_wbinvd="0x8000"
+    trap_wbinvd="0x1"
+    pass_through_wbinvd="0x2"
 
 # eapis_cat
 r2=""

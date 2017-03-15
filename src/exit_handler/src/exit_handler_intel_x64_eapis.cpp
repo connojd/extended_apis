@@ -29,6 +29,7 @@
 #include <vmcs/vmcs_intel_x64_natural_width_guest_state_fields.h>
 
 #include <intrinsics/rdrand_x64.h>
+#include <intrinsics/cache_x64.h>
 
 using namespace x64;
 using namespace intel_x64;
@@ -84,6 +85,10 @@ exit_handler_intel_x64_eapis::handle_exit(vmcs::value_type reason)
             handle_exit__rdseed();
             break;
 
+        case vmcs::exit_reason::basic_exit_reason::wbinvd:
+            handle_exit__wbinvd();
+            break;
+
         default:
             exit_handler_intel_x64::handle_exit(reason);
             break;
@@ -117,6 +122,10 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
 
         case eapis_cat__rdseed:
             handle_vmcall_registers__rdseed(regs);
+            break;
+
+        case eapis_cat__wbinvd:
+            handle_vmcall_registers__wbinvd(regs);
             break;
 
         default:
@@ -537,6 +546,33 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__rdseed(
         case eapis_fun__pass_through_on_rdseed:
             m_vmcs_eapis->pass_through_on_rdseed();
             ecr_dbg << "pass_through_on_rdseed: success" << bfendl;
+            break;
+
+        default:
+            throw std::runtime_error("unknown vmcall function");
+    }
+}
+
+void
+exit_handler_intel_x64_eapis::handle_exit__wbinvd()
+{
+    x64::cache::wbinvd();
+    this->advance_and_resume();
+}
+
+void
+exit_handler_intel_x64_eapis::handle_vmcall_registers__wbinvd(
+    vmcall_registers_t &regs)
+{
+    switch (regs.r03) {
+        case eapis_fun__trap_on_wbinvd:
+            m_vmcs_eapis->trap_on_wbinvd();
+            ecr_dbg << "trap_on_wbinvd: success" << bfendl;
+            break;
+
+        case eapis_fun__pass_through_on_wbinvd:
+            m_vmcs_eapis->pass_through_on_wbinvd();
+            ecr_dbg << "pass_through_on_wbinvd: success" << bfendl;
             break;
 
         default:

@@ -7,6 +7,7 @@ source extended_apis/tools/config_msr.sh
 source extended_apis/tools/config_vpid.sh
 source extended_apis/tools/config_rdrand.sh
 source extended_apis/tools/config_rdseed.sh
+source extended_apis/tools/config_wbinvd.sh
 
 config_cores() {
 
@@ -31,6 +32,10 @@ config_cores() {
         if [[ $# -lt 2 ]]; then rdseed_usage; exit 0; fi
         config_rdseed $@
         ;;
+    "wbinvd")
+        if [[ $# -lt 2 ]]; then wbinvd_usage; exit 0; fi
+        config_wbinvd $@
+        ;;
     *)
         echo -e ""$CR"error"$CE": live $1 configuration is unsupported"
         ;;
@@ -41,6 +46,7 @@ if [[ $# -eq 0 ]]; then
     printf ""$CY"syntax"$CE": ./vmconfig <cat> for category-specific"
     printf " syntax \n"
     echo -e ""$CY"syntax"$CE": <cat> = io | rdmsr | wrmsr | vpid | rdrand | rdseed"
+    echo -e ""$CY"syntax"$CE":       | wbinvd"
     exit 0
 fi
 

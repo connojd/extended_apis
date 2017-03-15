@@ -164,6 +164,7 @@ private:
     void handle_exit__wrmsr();
     void handle_exit__rdrand();
     void handle_exit__rdseed();
+    void handle_exit__wbinvd();
 
 protected:
 
@@ -177,6 +178,7 @@ private:
     void handle_vmcall_registers__wrmsr(vmcall_registers_t &regs);
     void handle_vmcall_registers__rdrand(vmcall_registers_t &regs);
     void handle_vmcall_registers__rdseed(vmcall_registers_t &regs);
+    void handle_vmcall_registers__wbinvd(vmcall_registers_t &regs);
 
 private:
 
