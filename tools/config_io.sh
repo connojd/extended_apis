@@ -5,10 +5,10 @@ port=""
 io_usage() {
     printf ""$CY"syntax"$CE": ./vmconfig io -f <fun> -p <port>"
     printf " -c <cores>\n"
-    echo -e ""$CY"syntax"$CE":    <fun> = t | trap | p | pass"
-    echo -e ""$CY"syntax"$CE":    <port> = all | 0x<hex>"
-    echo -e ""$CY"syntax"$CE":    <hex> = 16bit port addr"
-    echo -e ""$CY"syntax"$CE":    <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
+    echo -e ""$CY"syntax"$CE": <fun> = t | trap | p | pass"
+    echo -e ""$CY"syntax"$CE": <port> = all | 0x<hex>"
+    echo -e ""$CY"syntax"$CE": <hex> = 16-bit port addr"
+    echo -e ""$CY"syntax"$CE": <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
 }
 
 set_io_regs() {

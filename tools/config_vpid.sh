@@ -4,8 +4,8 @@ source extended_apis/tools/common.sh
 
 vpid_usage() {
     printf ""$CY"syntax"$CE": ./vmconfig vpid -f <fun> -c <cores>\n"
-    echo -e ""$CY"syntax"$CE":    <fun> = on | off"
-    echo -e ""$CY"syntax"$CE":    <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
+    echo -e ""$CY"syntax"$CE": <fun> = on | off"
+    echo -e ""$CY"syntax"$CE": <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
 }
 
 set_vpid_func() {

@@ -346,49 +346,40 @@ vmcs_intel_x64_eapis::disable_vpid()
 
 void
 vmcs_intel_x64_eapis::trap_on_rdrand()
-{
-    secondary_processor_based_vm_execution_controls::rdrand_exiting::enable_if_allowed(true);
-}
+{ secondary_processor_based_vm_execution_controls::rdrand_exiting::enable_if_allowed(true); }
 
 void
 vmcs_intel_x64_eapis::pass_through_on_rdrand()
-{
-    secondary_processor_based_vm_execution_controls::rdrand_exiting::disable();
-}
+{ secondary_processor_based_vm_execution_controls::rdrand_exiting::disable(); }
 
 void
 vmcs_intel_x64_eapis::trap_on_rdseed()
-{
-    secondary_processor_based_vm_execution_controls::rdseed_exiting::enable_if_allowed(true);
-}
+{ secondary_processor_based_vm_execution_controls::rdseed_exiting::enable_if_allowed(true); }
 
 void
 vmcs_intel_x64_eapis::pass_through_on_rdseed()
-{
-    secondary_processor_based_vm_execution_controls::rdseed_exiting::disable();
-}
+{ secondary_processor_based_vm_execution_controls::rdseed_exiting::disable(); }
 
 void
 vmcs_intel_x64_eapis::trap_on_wbinvd()
-{
-    secondary_processor_based_vm_execution_controls::wbinvd_exiting::enable_if_allowed(true);
-}
+{ secondary_processor_based_vm_execution_controls::wbinvd_exiting::enable_if_allowed(true); }
 
 void
 vmcs_intel_x64_eapis::pass_through_on_wbinvd()
-{
-    secondary_processor_based_vm_execution_controls::wbinvd_exiting::disable();
-}
+{ secondary_processor_based_vm_execution_controls::wbinvd_exiting::disable(); }
 
 void
 vmcs_intel_x64_eapis::trap_on_rdpmc()
-{
-    primary_processor_based_vm_execution_controls::rdpmc_exiting::enable_if_allowed();
-}
+{ primary_processor_based_vm_execution_controls::rdpmc_exiting::enable(); }
 
 void
 vmcs_intel_x64_eapis::pass_through_on_rdpmc()
-{
-    primary_processor_based_vm_execution_controls::rdpmc_exiting::disable();
-}
+{ primary_processor_based_vm_execution_controls::rdpmc_exiting::disable(); }
 
+void
+vmcs_intel_x64_eapis::trap_on_rdtsc()
+{ primary_processor_based_vm_execution_controls::rdtsc_exiting::enable(); }
+
+void
+vmcs_intel_x64_eapis::pass_through_on_rdtsc()
+{ primary_processor_based_vm_execution_controls::rdtsc_exiting::disable(); }

@@ -3,8 +3,8 @@
 rdseed_usage() {
     printf ""$CY"syntax"$CE": ./vmconfig rdseed -f <fun>"
     printf " -c <cores>\n"
-    echo -e ""$CY"syntax"$CE":    <fun> = t | trap | p | pass"
-    echo -e ""$CY"syntax"$CE":    <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
+    echo -e ""$CY"syntax"$CE": <fun> = t | trap | p | pass"
+    echo -e ""$CY"syntax"$CE": <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
 }
 
 set_rdseed_regs() {

@@ -421,6 +421,13 @@ public:
     void trap_on_rdpmc();
     void pass_through_on_rdpmc();
 
+    /// Note: enable_rdtscp is enabled on startup, which means when
+    /// rdtsc_exiting = 0, rdtsc and rdtscp pass through.  When rdtsc = 1,
+    /// rdtsc *and* rdtscp exit, so you have to have exit handlers ready
+    /// for both of them.
+    void trap_on_rdtsc();
+    void pass_through_on_rdtsc();
+
 protected:
 
     void write_fields(gsl::not_null<vmcs_intel_x64_state *> host_state,

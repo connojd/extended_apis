@@ -9,6 +9,7 @@ source extended_apis/tools/config_rdrand.sh
 source extended_apis/tools/config_rdseed.sh
 source extended_apis/tools/config_wbinvd.sh
 source extended_apis/tools/config_rdpmc.sh
+source extended_apis/tools/config_rdtsc.sh
 
 config_cores() {
 
@@ -41,6 +42,10 @@ config_cores() {
         if [[ $# -lt 2 ]]; then rdpmc_usage; exit 0; fi
         config_rdpmc $@
         ;;
+    "rdtsc"|"rdtscp")
+        if [[ $# -lt 2 ]]; then rdtsc_usage; exit 0; fi
+        config_rdtsc $@
+        ;;
     *)
         echo -e ""$CR"error"$CE": live $1 configuration is unsupported"
         ;;
@@ -50,8 +55,9 @@ config_cores() {
 if [[ $# -eq 0 ]]; then
     printf ""$CY"syntax"$CE": ./vmconfig <cat> for category-specific"
     printf " syntax \n"
-    echo -e ""$CY"syntax"$CE": <cat> = io | rdmsr | wrmsr | vpid | rdrand | rdseed"
-    echo -e ""$CY"syntax"$CE":       | wbinvd | rdpmc"
+    echo -e ""$CY"syntax"$CE": <cat> = io | rdmsr | wrmsr | vpid | rdrand"
+    echo -e ""$CY"syntax"$CE":       | rdseed | wbinvd | rdpmc | rdtsc"
+    echo -e ""$CY"syntax"$CE":       | rdtscp"
     exit 0
 fi
 

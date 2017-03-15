@@ -78,6 +78,10 @@ cat_rdpmc="0x9000"
     trap_rdpmc="0x1"
     pass_through_rdpmc="0x2"
 
+cat_rdtsc="0xA000"
+    trap_rdtsc="0x1"
+    pass_through_rdtsc="0x2"
+
 # eapis_cat
 r2=""
 
@@ -101,8 +105,10 @@ footer() {
 }
 
 vmcall_select_core() {
-    echo "register args = $2"
-    echo "cpuid = $1"
+    if [[ $DBG -eq 1 ]]; then
+        echo ""$CG"debug"$CE"cat fun: $2"
+        echo ""$CG"debug"$CE"cpuid: $1"
+    fi
 
     ARGS="--cpuid $1 registers $2" make vmcall > /dev/null
 }
@@ -118,9 +124,6 @@ config_select_cores() {
 
     args="$1"
     ncores="$2"
-
-    echo "args: $args"
-    echo "ncores: $ncores"
 
     shift 2
 

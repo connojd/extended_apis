@@ -93,6 +93,11 @@ exit_handler_intel_x64_eapis::handle_exit(vmcs::value_type reason)
             handle_exit__rdpmc();
             break;
 
+        case vmcs::exit_reason::basic_exit_reason::rdtsc:
+        case vmcs::exit_reason::basic_exit_reason::rdtscp:
+            handle_exit__rdtsc();
+            break;
+
         default:
             exit_handler_intel_x64::handle_exit(reason);
             break;
@@ -134,6 +139,10 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
 
         case eapis_cat__rdpmc:
             handle_vmcall_registers__rdpmc(regs);
+            break;
+
+        case eapis_cat__rdtsc:
+            handle_vmcall_registers__rdtsc(regs);
             break;
 
         default:
@@ -436,7 +445,7 @@ exit_handler_intel_x64_eapis::write_gpr(instr_gpr id, uint64_t val,
         case rbp: m_state_save->rbp |= val; break;
         case rsi: m_state_save->rsi |= val; break;
         case rdi: m_state_save->rdi |= val; break;
-//        case r8: m_state_save->r8 |= val; break; <- no in m_state_save rn
+//        case r8: m_state_save->r8 |= val; break; <- not in m_state_save rn
 //        case r9: m_state_save->r9 |= val; break;
         case r10: m_state_save->r10 |= val; break;
         case r11: m_state_save->r11 |= val; break;
@@ -625,6 +634,56 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__rdpmc(
         case eapis_fun__pass_through_on_rdpmc:
             m_vmcs_eapis->pass_through_on_rdpmc();
             ecr_dbg << "pass_through_on_rdpmc: success" << bfendl;
+            break;
+
+        default:
+            throw std::runtime_error("unknown vmcall function");
+    }
+}
+
+void
+exit_handler_intel_x64_eapis::trap_on_rdtsc_callback()
+{
+    primary_processor_based_vm_execution_controls::rdtsc_exiting::enable();
+    this->resume();
+}
+
+void
+exit_handler_intel_x64_eapis::handle_exit__rdtsc()
+{
+    static bool rdtsc_print = true;
+
+    register_monitor_trap(&exit_handler_intel_x64_eapis::trap_on_rdtsc_callback);
+    primary_processor_based_vm_execution_controls::rdtsc_exiting::disable();
+
+    if (rdtsc_print) {
+        auto reason = exit_reason::basic_exit_reason::get();
+
+        if (reason == exit_reason::basic_exit_reason::rdtsc) {
+            ecr_dbg << "handling rdtsc" << bfendl;
+        } else {
+            ecr_dbg << "handling rdtscp" << bfendl;
+        }
+
+        rdtsc_print = false;
+    }
+
+    this->resume();
+}
+
+void
+exit_handler_intel_x64_eapis::handle_vmcall_registers__rdtsc(
+    vmcall_registers_t &regs)
+{
+    switch (regs.r03) {
+        case eapis_fun__trap_on_rdtsc:
+            m_vmcs_eapis->trap_on_rdtsc();
+            ecr_dbg << "trapping on rdtsc & rdtscp" << bfendl;
+            break;
+
+        case eapis_fun__pass_through_on_rdtsc:
+            m_vmcs_eapis->pass_through_on_rdtsc();
+            ecr_dbg << "passing through on rdtsc & rdtscp" << bfendl;
             break;
 
         default:

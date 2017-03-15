@@ -6,9 +6,9 @@ msr=""
 
 msr_usage() {
     printf ""$CY"syntax"$CE": ./vmconfig {rd|wr}msr -f <fun> -r <msr> -c <cores>\n"
-    echo -e ""$CY"syntax"$CE":    <fun> = t | trap | p | pass"
-    echo -e ""$CY"syntax"$CE":    <msr> = all | 0x<msr_addr>"
-    echo -e ""$CY"syntax"$CE":    <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
+    echo -e ""$CY"syntax"$CE": <fun> = t | trap | p | pass"
+    echo -e ""$CY"syntax"$CE": <msr> = all | 0x<msr_addr>"
+    echo -e ""$CY"syntax"$CE": <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
 }
 
 set_msr_cat() {
