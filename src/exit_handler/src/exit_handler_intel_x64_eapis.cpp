@@ -39,6 +39,12 @@ namespace exit_instr_info = vm_exit_instruction_information;
 namespace exec_ctls1 = primary_processor_based_vm_execution_controls;
 namespace exec_ctls2 = secondary_processor_based_vm_execution_controls;
 
+#ifdef ECR_DEBUG
+    #define verbose true
+#else
+    #define verbose false
+#endif
+
 exit_handler_intel_x64_eapis::exit_handler_intel_x64_eapis() :
     m_monitor_trap_callback(&exit_handler_intel_x64_eapis::unhandled_monitor_trap_callback),
     m_vmcs_eapis(nullptr)
@@ -110,6 +116,10 @@ exit_handler_intel_x64_eapis::handle_exit(vmcs::value_type reason)
             handle_exit__desc_table();
             break;
 
+        case vmcs::exit_reason::basic_exit_reason::control_register_accesses:
+            handle_exit__ctl_reg_access();
+            break;
+
         default:
             exit_handler_intel_x64::handle_exit(reason);
             break;
@@ -163,6 +173,10 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
 
         case eapis_cat__desc_table:
             handle_vmcall_registers__desc_table(regs);
+            break;
+
+        case eapis_cat__cr3_store:
+            handle_vmcall_registers__cr3_store(regs);
             break;
 
         default:
@@ -771,12 +785,12 @@ exit_handler_intel_x64_eapis::trap_on_desc_table_callback()
 void
 exit_handler_intel_x64_eapis::handle_exit__desc_table()
 {
-    static bool desc_table_print = true;
+    static bool dt_print = true;
 
     register_monitor_trap(&exit_handler_intel_x64_eapis::trap_on_desc_table_callback);
     exec_ctls2::descriptor_table_exiting::disable();
 
-    if (desc_table_print) {
+    if (dt_print) {
 
         auto reason = exit_reason::basic_exit_reason::get();
         if (reason == exit_reason::basic_exit_reason::access_to_gdtr_or_idtr) {
@@ -785,7 +799,7 @@ exit_handler_intel_x64_eapis::handle_exit__desc_table()
             ecr_dbg << "handling access to LDTR or TR"  << bfendl;
         }
 
-        desc_table_print = false;
+        dt_print = false;
     }
 
     this->resume();
@@ -811,4 +825,51 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__desc_table(
     }
 }
 
+void
+exit_handler_intel_x64_eapis::trap_on_cr3_store_callback()
+{
+    exec_ctls1::cr3_store_exiting::enable();
+    this->resume();
+}
 
+void
+exit_handler_intel_x64_eapis::handle_exit__ctl_reg_access()
+{
+    using namespace exit_qualification::control_register_access;
+
+    auto cr = control_register_number::get();
+    auto type = access_type::get();
+
+    if (cr == 3 && type == access_type::mov_from_cr) {
+        register_monitor_trap(&exit_handler_intel_x64_eapis::trap_on_cr3_store_callback);
+        exec_ctls1::cr3_store_exiting::disable_if_allowed(verbose);
+
+        static bool cr3_st_print = true;
+        if (cr3_st_print) {
+            ecr_dbg << "handling MOV from CR3" << bfendl;
+            cr3_st_print = false;
+        }
+    }
+
+    this->resume();
+}
+
+void
+exit_handler_intel_x64_eapis::handle_vmcall_registers__cr3_store(
+    vmcall_registers_t &regs)
+{
+    switch (regs.r03) {
+        case eapis_fun__trap_on_cr3_store:
+            m_vmcs_eapis->trap_on_cr3_store();
+            ecr_dbg << "trapping on MOV from CR3" << bfendl;
+            break;
+
+        case eapis_fun__pass_through_on_cr3_store:
+            m_vmcs_eapis->pass_through_on_cr3_store();
+            ecr_dbg << "passing through on MOV from CR3" << bfendl;
+            break;
+
+        default:
+            throw std::runtime_error("unknown vmcall function");
+    }
+}

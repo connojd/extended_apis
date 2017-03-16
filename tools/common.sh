@@ -90,6 +90,10 @@ cat_desc_table="0xC000"
     trap_desc_table="0x1"
     pass_through_desc_table="0x2"
 
+cat_cr3_store="0xD000"
+    trap_cr3_store="0x1"
+    pass_through_cr3_store="0x2"
+
 # eapis_cat
 r2=""
 

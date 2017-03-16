@@ -441,6 +441,9 @@ public:
     void trap_on_desc_table();
     void pass_through_on_desc_table();
 
+    void trap_on_cr3_store();
+    void pass_through_on_cr3_store();
+
 protected:
 
     void write_fields(gsl::not_null<vmcs_intel_x64_state *> host_state,

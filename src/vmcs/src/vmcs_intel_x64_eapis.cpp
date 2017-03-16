@@ -410,3 +410,11 @@ vmcs_intel_x64_eapis::trap_on_desc_table()
 void
 vmcs_intel_x64_eapis::pass_through_on_desc_table()
 { exec_ctls2::descriptor_table_exiting::disable(); }
+
+void
+vmcs_intel_x64_eapis::trap_on_cr3_store()
+{ exec_ctls1::cr3_store_exiting::enable(); }
+
+void
+vmcs_intel_x64_eapis::pass_through_on_cr3_store()
+{ exec_ctls1::cr3_store_exiting::disable_if_allowed(verbose); }

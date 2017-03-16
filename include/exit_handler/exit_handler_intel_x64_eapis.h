@@ -169,6 +169,7 @@ private:
     void handle_exit__rdtsc();
     void handle_exit__invlpg();
     void handle_exit__desc_table();
+    void handle_exit__ctl_reg_access();
 
 protected:
 
@@ -187,6 +188,7 @@ private:
     void handle_vmcall_registers__rdtsc(vmcall_registers_t &regs);
     void handle_vmcall_registers__invlpg(vmcall_registers_t &regs);
     void handle_vmcall_registers__desc_table(vmcall_registers_t &regs);
+    void handle_vmcall_registers__cr3_store(vmcall_registers_t &regs);
 
 private:
 
@@ -226,6 +228,7 @@ private:
     void trap_on_rdtsc_callback();
     void trap_on_invlpg_callback();
     void trap_on_desc_table_callback();
+    void trap_on_cr3_store_callback();
 
     ret_code write_gpr(instr_gpr gpr, uint64_t val, uint64_t nbytes);
 

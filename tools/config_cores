@@ -12,6 +12,7 @@ source extended_apis/tools/config_rdpmc.sh
 source extended_apis/tools/config_rdtsc.sh
 source extended_apis/tools/config_invlpg.sh
 source extended_apis/tools/config_desc_table.sh
+source extended_apis/tools/config_cr3_store.sh
 
 config_cores() {
 
@@ -56,6 +57,10 @@ config_cores() {
         if [[ $# -lt 2 ]]; then desc_table_usage; exit 0; fi
         config_desc_table $@
         ;;
+    "cr3-store")
+        if [[ $# -lt 2 ]]; then cr3_store_usage; exit 0; fi
+        config_cr3_store $@
+        ;;
     *)
         echo -e ""$CR"error"$CE": live $1 configuration is unsupported"
         ;;
@@ -63,11 +68,11 @@ config_cores() {
 }
 
 if [[ $# -eq 0 ]]; then
-    printf ""$CY"syntax"$CE": ./vmconfig <cat> for category-specific"
-    printf " syntax \n"
+    echo -e ""$CY"syntax"$CE": ./vmconfig <cat> for category-specific syntax"
     echo -e ""$CY"syntax"$CE": <cat> = io | rdmsr | wrmsr | vpid | rdrand"
-    echo -e ""$CY"syntax"$CE":       | rdseed | wbinvd | rdpmc | rdtsc"
-    echo -e ""$CY"syntax"$CE":       | rdtscp | invlpg | invpcid | desc-table"
+    echo -e ""$CY"syntax"$CE": | rdseed | wbinvd | rdpmc | rdtsc"
+    echo -e ""$CY"syntax"$CE": | rdtscp | invlpg | invpcid | desc-table"
+    echo -e ""$CY"syntax"$CE": | cr3-store"
     exit 0
 fi
 
