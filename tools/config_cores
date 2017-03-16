@@ -10,6 +10,7 @@ source extended_apis/tools/config_rdseed.sh
 source extended_apis/tools/config_wbinvd.sh
 source extended_apis/tools/config_rdpmc.sh
 source extended_apis/tools/config_rdtsc.sh
+source extended_apis/tools/config_invlpg.sh
 
 config_cores() {
 
@@ -46,6 +47,10 @@ config_cores() {
         if [[ $# -lt 2 ]]; then rdtsc_usage; exit 0; fi
         config_rdtsc $@
         ;;
+    "invlpg"|"invpcid")
+        if [[ $# -lt 2 ]]; then invlpg_usage; exit 0; fi
+        config_invlpg $@
+        ;;
     *)
         echo -e ""$CR"error"$CE": live $1 configuration is unsupported"
         ;;
@@ -57,7 +62,7 @@ if [[ $# -eq 0 ]]; then
     printf " syntax \n"
     echo -e ""$CY"syntax"$CE": <cat> = io | rdmsr | wrmsr | vpid | rdrand"
     echo -e ""$CY"syntax"$CE":       | rdseed | wbinvd | rdpmc | rdtsc"
-    echo -e ""$CY"syntax"$CE":       | rdtscp"
+    echo -e ""$CY"syntax"$CE":       | rdtscp | invlpg | invpcid"
     exit 0
 fi
 

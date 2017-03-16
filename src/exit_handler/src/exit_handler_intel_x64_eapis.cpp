@@ -36,6 +36,7 @@ using namespace intel_x64;
 using namespace vmcs;
 
 namespace exit_instr_info = vm_exit_instruction_information;
+namespace exec_ctls1 = primary_processor_based_vm_execution_controls;
 
 exit_handler_intel_x64_eapis::exit_handler_intel_x64_eapis() :
     m_monitor_trap_callback(&exit_handler_intel_x64_eapis::unhandled_monitor_trap_callback),
@@ -98,6 +99,11 @@ exit_handler_intel_x64_eapis::handle_exit(vmcs::value_type reason)
             handle_exit__rdtsc();
             break;
 
+        case vmcs::exit_reason::basic_exit_reason::invlpg:
+        case vmcs::exit_reason::basic_exit_reason::invpcid:
+            handle_exit__invlpg();
+            break;
+
         default:
             exit_handler_intel_x64::handle_exit(reason);
             break;
@@ -145,6 +151,10 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
             handle_vmcall_registers__rdtsc(regs);
             break;
 
+        case eapis_cat__invlpg:
+            handle_vmcall_registers__invlpg(regs);
+            break;
+
         default:
             throw std::runtime_error("unknown vmcall category");
     }
@@ -153,7 +163,7 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
 void
 exit_handler_intel_x64_eapis::trap_on_io_access_callback()
 {
-    primary_processor_based_vm_execution_controls::use_io_bitmaps::enable();
+    exec_ctls1::use_io_bitmaps::enable();
     this->resume();
 }
 
@@ -162,7 +172,7 @@ exit_handler_intel_x64_eapis::handle_exit__io_instruction()
 {
     register_monitor_trap(&exit_handler_intel_x64_eapis::trap_on_io_access_callback);
 
-    primary_processor_based_vm_execution_controls::use_io_bitmaps::disable();
+    exec_ctls1::use_io_bitmaps::disable();
     this->resume();
 }
 
@@ -226,7 +236,7 @@ exit_handler_intel_x64_eapis::handle_vmcall__pass_through_all_io_accesses()
 void
 exit_handler_intel_x64_eapis::clear_monitor_trap()
 {
-    primary_processor_based_vm_execution_controls::monitor_trap_flag::disable();
+    exec_ctls1::monitor_trap_flag::disable();
     m_monitor_trap_callback = &exit_handler_intel_x64_eapis::unhandled_monitor_trap_callback;
 }
 
@@ -600,7 +610,7 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__wbinvd(
 void
 exit_handler_intel_x64_eapis::trap_on_rdpmc_callback()
 {
-    primary_processor_based_vm_execution_controls::rdpmc_exiting::enable();
+    exec_ctls1::rdpmc_exiting::enable();
     this->resume();
 }
 
@@ -610,7 +620,7 @@ exit_handler_intel_x64_eapis::handle_exit__rdpmc()
     static bool rdpmc_print = true;
 
     register_monitor_trap(&exit_handler_intel_x64_eapis::trap_on_rdpmc_callback);
-    primary_processor_based_vm_execution_controls::rdpmc_exiting::disable();
+    exec_ctls1::rdpmc_exiting::disable();
 
     if (rdpmc_print) {
         ecr_dbg << "handling rdpmc: " << std::hex << "0x"
@@ -644,7 +654,7 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__rdpmc(
 void
 exit_handler_intel_x64_eapis::trap_on_rdtsc_callback()
 {
-    primary_processor_based_vm_execution_controls::rdtsc_exiting::enable();
+    exec_ctls1::rdtsc_exiting::enable();
     this->resume();
 }
 
@@ -654,7 +664,7 @@ exit_handler_intel_x64_eapis::handle_exit__rdtsc()
     static bool rdtsc_print = true;
 
     register_monitor_trap(&exit_handler_intel_x64_eapis::trap_on_rdtsc_callback);
-    primary_processor_based_vm_execution_controls::rdtsc_exiting::disable();
+    exec_ctls1::rdtsc_exiting::disable();
 
     if (rdtsc_print) {
         auto reason = exit_reason::basic_exit_reason::get();
@@ -684,6 +694,56 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__rdtsc(
         case eapis_fun__pass_through_on_rdtsc:
             m_vmcs_eapis->pass_through_on_rdtsc();
             ecr_dbg << "passing through on rdtsc & rdtscp" << bfendl;
+            break;
+
+        default:
+            throw std::runtime_error("unknown vmcall function");
+    }
+}
+
+void
+exit_handler_intel_x64_eapis::trap_on_invlpg_callback()
+{
+    exec_ctls1::invlpg_exiting::enable();
+    this->resume();
+}
+
+void
+exit_handler_intel_x64_eapis::handle_exit__invlpg()
+{
+    static bool invlpg_print = true;
+
+    register_monitor_trap(&exit_handler_intel_x64_eapis::trap_on_invlpg_callback);
+    exec_ctls1::invlpg_exiting::disable();
+
+    if (invlpg_print) {
+        auto reason = exit_reason::basic_exit_reason::get();
+
+        if (reason == exit_reason::basic_exit_reason::invlpg) {
+            ecr_dbg << "handling invlpg" << bfendl;
+        } else {
+            ecr_dbg << "handling invpcid" << bfendl;
+        }
+
+        invlpg_print = false;
+    }
+
+    this->resume();
+}
+
+void
+exit_handler_intel_x64_eapis::handle_vmcall_registers__invlpg(
+    vmcall_registers_t &regs)
+{
+    switch (regs.r03) {
+        case eapis_fun__trap_on_invlpg:
+            m_vmcs_eapis->trap_on_invlpg();
+            ecr_dbg << "trapping on invlpg & invpcid" << bfendl;
+            break;
+
+        case eapis_fun__pass_through_on_invlpg:
+            m_vmcs_eapis->pass_through_on_invlpg();
+            ecr_dbg << "passing through on invlpg & invpcid" << bfendl;
             break;
 
         default:

@@ -428,6 +428,16 @@ public:
     void trap_on_rdtsc();
     void pass_through_on_rdtsc();
 
+    /// Note: enable_invpcid is enabled on startup if it's allowed,
+    /// which means when invlpg_exiting = 0, invlpg and invpcid pass through.
+    /// When invlpg = 1, invlpg *and* invpcid exit, so you have to have
+    /// exit handlers ready for both of them.
+    ///
+    /// If enable_invpcid is not allowed to be 1, then it passes through
+    /// regardless of invlpg_exiting.
+    void trap_on_invlpg();
+    void pass_through_on_invlpg();
+
 protected:
 
     void write_fields(gsl::not_null<vmcs_intel_x64_state *> host_state,

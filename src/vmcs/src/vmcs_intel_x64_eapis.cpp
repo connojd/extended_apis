@@ -33,6 +33,15 @@
 using namespace intel_x64;
 using namespace vmcs;
 
+namespace exec_ctls1 = primary_processor_based_vm_execution_controls;
+namespace exec_ctls2 = secondary_processor_based_vm_execution_controls;
+
+#ifdef ECR_DEBUG
+    #define verbose true
+#else
+    #define verbose false
+#endif
+
 vmcs_intel_x64_eapis::vmcs_intel_x64_eapis()
 {
     static intel_x64::vmcs::value_type g_vpid = 1;
@@ -49,12 +58,14 @@ vmcs_intel_x64_eapis::write_fields(gsl::not_null<vmcs_intel_x64_state *> host_st
     this->disable_vpid();
     this->enable_io_bitmaps();
     this->enable_msr_bitmap();
+
+    exec_ctls2::enable_rdtscp::enable_if_allowed(verbose);
 }
 
 void
 vmcs_intel_x64_eapis::enable_ept()
 {
-    secondary_processor_based_vm_execution_controls::enable_ept::enable();
+    exec_ctls2::enable_ept::enable();
     intel_x64::vmx::invept_global();
 }
 
@@ -62,7 +73,7 @@ void
 vmcs_intel_x64_eapis::disable_ept()
 {
     intel_x64::vmx::invept_global();
-    secondary_processor_based_vm_execution_controls::enable_ept::disable();
+    exec_ctls2::enable_ept::disable();
 
     ept_pointer::set(0UL);
 }
@@ -88,14 +99,14 @@ vmcs_intel_x64_eapis::enable_io_bitmaps()
     address_of_io_bitmap_a::set(g_mm->virtptr_to_physint(m_io_bitmapa.get()));
     address_of_io_bitmap_b::set(g_mm->virtptr_to_physint(m_io_bitmapb.get()));
 
-    primary_processor_based_vm_execution_controls::use_io_bitmaps::enable();
+    exec_ctls1::use_io_bitmaps::enable();
     pass_through_all_io_accesses();
 }
 
 void
 vmcs_intel_x64_eapis::disable_io_bitmaps()
 {
-    primary_processor_based_vm_execution_controls::use_io_bitmaps::disable();
+    exec_ctls1::use_io_bitmaps::disable();
 
     address_of_io_bitmap_a::set(0UL);
     address_of_io_bitmap_b::set(0UL);
@@ -194,7 +205,7 @@ vmcs_intel_x64_eapis::enable_msr_bitmap()
     m_msr_bitmap_view = gsl::make_span(m_msr_bitmap, x64::page_size);
 
     address_of_msr_bitmap::set(g_mm->virtptr_to_physint(m_msr_bitmap.get()));
-    primary_processor_based_vm_execution_controls::use_msr_bitmap::enable();
+    exec_ctls1::use_msr_bitmap::enable();
 
     pass_through_all_rdmsr_accesses();
     pass_through_all_wrmsr_accesses();
@@ -203,7 +214,7 @@ vmcs_intel_x64_eapis::enable_msr_bitmap()
 void
 vmcs_intel_x64_eapis::disable_msr_bitmap()
 {
-    primary_processor_based_vm_execution_controls::use_msr_bitmap::disable();
+    exec_ctls1::use_msr_bitmap::disable();
     address_of_msr_bitmap::set(0UL);
 
     m_msr_bitmap_view = gsl::span<uint8_t>(nullptr);
@@ -334,52 +345,60 @@ void
 vmcs_intel_x64_eapis::enable_vpid()
 {
     vmcs::virtual_processor_identifier::set(m_vpid);
-    secondary_processor_based_vm_execution_controls::enable_vpid::enable();
+    exec_ctls2::enable_vpid::enable();
 }
 
 void
 vmcs_intel_x64_eapis::disable_vpid()
 {
     vmcs::virtual_processor_identifier::set(0UL);
-    secondary_processor_based_vm_execution_controls::enable_vpid::disable();
+    exec_ctls2::enable_vpid::disable();
 }
 
 void
 vmcs_intel_x64_eapis::trap_on_rdrand()
-{ secondary_processor_based_vm_execution_controls::rdrand_exiting::enable_if_allowed(true); }
+{ exec_ctls2::rdrand_exiting::enable_if_allowed(true); }
 
 void
 vmcs_intel_x64_eapis::pass_through_on_rdrand()
-{ secondary_processor_based_vm_execution_controls::rdrand_exiting::disable(); }
+{ exec_ctls2::rdrand_exiting::disable(); }
 
 void
 vmcs_intel_x64_eapis::trap_on_rdseed()
-{ secondary_processor_based_vm_execution_controls::rdseed_exiting::enable_if_allowed(true); }
+{ exec_ctls2::rdseed_exiting::enable_if_allowed(true); }
 
 void
 vmcs_intel_x64_eapis::pass_through_on_rdseed()
-{ secondary_processor_based_vm_execution_controls::rdseed_exiting::disable(); }
+{ exec_ctls2::rdseed_exiting::disable(); }
 
 void
 vmcs_intel_x64_eapis::trap_on_wbinvd()
-{ secondary_processor_based_vm_execution_controls::wbinvd_exiting::enable_if_allowed(true); }
+{ exec_ctls2::wbinvd_exiting::enable_if_allowed(true); }
 
 void
 vmcs_intel_x64_eapis::pass_through_on_wbinvd()
-{ secondary_processor_based_vm_execution_controls::wbinvd_exiting::disable(); }
+{ exec_ctls2::wbinvd_exiting::disable(); }
 
 void
 vmcs_intel_x64_eapis::trap_on_rdpmc()
-{ primary_processor_based_vm_execution_controls::rdpmc_exiting::enable(); }
+{ exec_ctls1::rdpmc_exiting::enable(); }
 
 void
 vmcs_intel_x64_eapis::pass_through_on_rdpmc()
-{ primary_processor_based_vm_execution_controls::rdpmc_exiting::disable(); }
+{ exec_ctls1::rdpmc_exiting::disable(); }
 
 void
 vmcs_intel_x64_eapis::trap_on_rdtsc()
-{ primary_processor_based_vm_execution_controls::rdtsc_exiting::enable(); }
+{ exec_ctls1::rdtsc_exiting::enable(); }
 
 void
 vmcs_intel_x64_eapis::pass_through_on_rdtsc()
-{ primary_processor_based_vm_execution_controls::rdtsc_exiting::disable(); }
+{ exec_ctls1::rdtsc_exiting::disable(); }
+
+void
+vmcs_intel_x64_eapis::trap_on_invlpg()
+{ exec_ctls1::invlpg_exiting::enable(); }
+
+void
+vmcs_intel_x64_eapis::pass_through_on_invlpg()
+{ exec_ctls1::invlpg_exiting::disable(); }
