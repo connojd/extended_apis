@@ -13,6 +13,7 @@ source extended_apis/tools/config_rdtsc.sh
 source extended_apis/tools/config_invlpg.sh
 source extended_apis/tools/config_desc_table.sh
 source extended_apis/tools/config_cr3_store.sh
+source extended_apis/tools/config_cr3_load.sh
 
 config_cores() {
 
@@ -61,6 +62,10 @@ config_cores() {
         if [[ $# -lt 2 ]]; then cr3_store_usage; exit 0; fi
         config_cr3_store $@
         ;;
+    "cr3-load")
+        if [[ $# -lt 2 ]]; then cr3_load_usage; exit 0; fi
+        config_cr3_load $@
+        ;;
     *)
         echo -e ""$CR"error"$CE": live $1 configuration is unsupported"
         ;;
@@ -72,7 +77,7 @@ if [[ $# -eq 0 ]]; then
     echo -e ""$CY"syntax"$CE": <cat> = io | rdmsr | wrmsr | vpid | rdrand"
     echo -e ""$CY"syntax"$CE": | rdseed | wbinvd | rdpmc | rdtsc"
     echo -e ""$CY"syntax"$CE": | rdtscp | invlpg | invpcid | desc-table"
-    echo -e ""$CY"syntax"$CE": | cr3-store"
+    echo -e ""$CY"syntax"$CE": | cr3-store | cr3-load"
     exit 0
 fi
 

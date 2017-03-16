@@ -179,6 +179,10 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
             handle_vmcall_registers__cr3_store(regs);
             break;
 
+        case eapis_cat__cr3_load:
+            handle_vmcall_registers__cr3_load(regs);
+            break;
+
         default:
             throw std::runtime_error("unknown vmcall category");
     }
@@ -833,14 +837,18 @@ exit_handler_intel_x64_eapis::trap_on_cr3_store_callback()
 }
 
 void
-exit_handler_intel_x64_eapis::handle_exit__ctl_reg_access()
+exit_handler_intel_x64_eapis::trap_on_cr3_load_callback()
+{
+    exec_ctls1::cr3_load_exiting::enable();
+    cr3_target_count::set(0U);
+    this->resume();
+}
+
+void exit_handler_intel_x64_eapis::handle_exit__cr3_access(uint64_t type)
 {
     using namespace exit_qualification::control_register_access;
 
-    auto cr = control_register_number::get();
-    auto type = access_type::get();
-
-    if (cr == 3 && type == access_type::mov_from_cr) {
+    if (type == access_type::mov_from_cr) {
         register_monitor_trap(&exit_handler_intel_x64_eapis::trap_on_cr3_store_callback);
         exec_ctls1::cr3_store_exiting::disable_if_allowed(verbose);
 
@@ -849,6 +857,36 @@ exit_handler_intel_x64_eapis::handle_exit__ctl_reg_access()
             ecr_dbg << "handling MOV from CR3" << bfendl;
             cr3_st_print = false;
         }
+    } else if (type == access_type::mov_to_cr) {
+        register_monitor_trap(&exit_handler_intel_x64_eapis::trap_on_cr3_load_callback);
+        exec_ctls1::cr3_load_exiting::disable_if_allowed(verbose);
+
+        static bool cr3_ld_print = true;
+        if (cr3_ld_print) {
+            ecr_dbg << "handling MOV to CR3" << bfendl;
+            cr3_ld_print = false;
+        }
+    } else {
+        bferror << "invalid MOV control register type" << bfendl;
+    }
+}
+
+void
+exit_handler_intel_x64_eapis::handle_exit__ctl_reg_access()
+{
+    using namespace exit_qualification::control_register_access;
+
+    auto cr = control_register_number::get();
+    auto type = access_type::get();
+
+    switch (cr) {
+        case 3:
+            handle_exit__cr3_access(type);
+            break;
+
+        default:
+            bferror << "unimplemented control register access" << bfendl;
+            break;
     }
 
     this->resume();
@@ -867,6 +905,26 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__cr3_store(
         case eapis_fun__pass_through_on_cr3_store:
             m_vmcs_eapis->pass_through_on_cr3_store();
             ecr_dbg << "passing through on MOV from CR3" << bfendl;
+            break;
+
+        default:
+            throw std::runtime_error("unknown vmcall function");
+    }
+}
+
+void
+exit_handler_intel_x64_eapis::handle_vmcall_registers__cr3_load(
+    vmcall_registers_t &regs)
+{
+    switch (regs.r03) {
+        case eapis_fun__trap_on_cr3_load:
+            m_vmcs_eapis->trap_on_cr3_load();
+            ecr_dbg << "trapping on MOV to CR3" << bfendl;
+            break;
+
+        case eapis_fun__pass_through_on_cr3_load:
+            m_vmcs_eapis->pass_through_on_cr3_load();
+            ecr_dbg << "passing through on MOV to CR3" << bfendl;
             break;
 
         default:

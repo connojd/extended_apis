@@ -418,3 +418,14 @@ vmcs_intel_x64_eapis::trap_on_cr3_store()
 void
 vmcs_intel_x64_eapis::pass_through_on_cr3_store()
 { exec_ctls1::cr3_store_exiting::disable_if_allowed(verbose); }
+
+void
+vmcs_intel_x64_eapis::trap_on_cr3_load()
+{
+    exec_ctls1::cr3_load_exiting::enable();
+    vmcs::cr3_target_count::set(0U);
+}
+
+void
+vmcs_intel_x64_eapis::pass_through_on_cr3_load()
+{ exec_ctls1::cr3_load_exiting::disable_if_allowed(verbose); }

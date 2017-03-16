@@ -94,6 +94,10 @@ cat_cr3_store="0xD000"
     trap_cr3_store="0x1"
     pass_through_cr3_store="0x2"
 
+cat_cr3_load="0xE000"
+    trap_cr3_load="0x1"
+    pass_through_cr3_load="0x2"
+
 # eapis_cat
 r2=""
 

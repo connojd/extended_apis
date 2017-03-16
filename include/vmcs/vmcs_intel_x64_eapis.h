@@ -442,7 +442,9 @@ public:
     void pass_through_on_desc_table();
 
     void trap_on_cr3_store();
+    void trap_on_cr3_load();
     void pass_through_on_cr3_store();
+    void pass_through_on_cr3_load();
 
 protected:
 
