@@ -402,3 +402,11 @@ vmcs_intel_x64_eapis::trap_on_invlpg()
 void
 vmcs_intel_x64_eapis::pass_through_on_invlpg()
 { exec_ctls1::invlpg_exiting::disable(); }
+
+void
+vmcs_intel_x64_eapis::trap_on_desc_table()
+{ exec_ctls2::descriptor_table_exiting::enable_if_allowed(verbose); }
+
+void
+vmcs_intel_x64_eapis::pass_through_on_desc_table()
+{ exec_ctls2::descriptor_table_exiting::disable(); }

@@ -86,6 +86,10 @@ cat_invlpg="0xB000"
     trap_invlpg="0x1"
     pass_through_invlpg="0x2"
 
+cat_desc_table="0xC000"
+    trap_desc_table="0x1"
+    pass_through_desc_table="0x2"
+
 # eapis_cat
 r2=""
 

@@ -37,6 +37,7 @@ using namespace vmcs;
 
 namespace exit_instr_info = vm_exit_instruction_information;
 namespace exec_ctls1 = primary_processor_based_vm_execution_controls;
+namespace exec_ctls2 = secondary_processor_based_vm_execution_controls;
 
 exit_handler_intel_x64_eapis::exit_handler_intel_x64_eapis() :
     m_monitor_trap_callback(&exit_handler_intel_x64_eapis::unhandled_monitor_trap_callback),
@@ -104,6 +105,11 @@ exit_handler_intel_x64_eapis::handle_exit(vmcs::value_type reason)
             handle_exit__invlpg();
             break;
 
+        case vmcs::exit_reason::basic_exit_reason::access_to_gdtr_or_idtr:
+        case vmcs::exit_reason::basic_exit_reason::access_to_ldtr_or_tr:
+            handle_exit__desc_table();
+            break;
+
         default:
             exit_handler_intel_x64::handle_exit(reason);
             break;
@@ -153,6 +159,10 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
 
         case eapis_cat__invlpg:
             handle_vmcall_registers__invlpg(regs);
+            break;
+
+        case eapis_cat__desc_table:
+            handle_vmcall_registers__desc_table(regs);
             break;
 
         default:
@@ -670,9 +680,9 @@ exit_handler_intel_x64_eapis::handle_exit__rdtsc()
         auto reason = exit_reason::basic_exit_reason::get();
 
         if (reason == exit_reason::basic_exit_reason::rdtsc) {
-            ecr_dbg << "handling rdtsc" << bfendl;
+            ecr_dbg << "handling RDTSC" << bfendl;
         } else {
-            ecr_dbg << "handling rdtscp" << bfendl;
+            ecr_dbg << "handling RDTSCP" << bfendl;
         }
 
         rdtsc_print = false;
@@ -688,12 +698,12 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__rdtsc(
     switch (regs.r03) {
         case eapis_fun__trap_on_rdtsc:
             m_vmcs_eapis->trap_on_rdtsc();
-            ecr_dbg << "trapping on rdtsc & rdtscp" << bfendl;
+            ecr_dbg << "trapping on RDTSC & RDTSCP" << bfendl;
             break;
 
         case eapis_fun__pass_through_on_rdtsc:
             m_vmcs_eapis->pass_through_on_rdtsc();
-            ecr_dbg << "passing through on rdtsc & rdtscp" << bfendl;
+            ecr_dbg << "passing through on RDTSC & RDTSCP" << bfendl;
             break;
 
         default:
@@ -717,12 +727,12 @@ exit_handler_intel_x64_eapis::handle_exit__invlpg()
     exec_ctls1::invlpg_exiting::disable();
 
     if (invlpg_print) {
-        auto reason = exit_reason::basic_exit_reason::get();
 
+        auto reason = exit_reason::basic_exit_reason::get();
         if (reason == exit_reason::basic_exit_reason::invlpg) {
-            ecr_dbg << "handling invlpg" << bfendl;
+            ecr_dbg << "handling INVLPG" << bfendl;
         } else {
-            ecr_dbg << "handling invpcid" << bfendl;
+            ecr_dbg << "handling INVPCID" << bfendl;
         }
 
         invlpg_print = false;
@@ -738,15 +748,67 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__invlpg(
     switch (regs.r03) {
         case eapis_fun__trap_on_invlpg:
             m_vmcs_eapis->trap_on_invlpg();
-            ecr_dbg << "trapping on invlpg & invpcid" << bfendl;
+            ecr_dbg << "trapping on INVLPG & INVPCID" << bfendl;
             break;
 
         case eapis_fun__pass_through_on_invlpg:
             m_vmcs_eapis->pass_through_on_invlpg();
-            ecr_dbg << "passing through on invlpg & invpcid" << bfendl;
+            ecr_dbg << "passing through on INVLPG & INVPCID" << bfendl;
             break;
 
         default:
             throw std::runtime_error("unknown vmcall function");
     }
 }
+
+void
+exit_handler_intel_x64_eapis::trap_on_desc_table_callback()
+{
+    exec_ctls2::descriptor_table_exiting::enable();
+    this->resume();
+}
+
+void
+exit_handler_intel_x64_eapis::handle_exit__desc_table()
+{
+    static bool desc_table_print = true;
+
+    register_monitor_trap(&exit_handler_intel_x64_eapis::trap_on_desc_table_callback);
+    exec_ctls2::descriptor_table_exiting::disable();
+
+    if (desc_table_print) {
+
+        auto reason = exit_reason::basic_exit_reason::get();
+        if (reason == exit_reason::basic_exit_reason::access_to_gdtr_or_idtr) {
+            ecr_dbg << "handling access to GDTR or IDTR" << bfendl;
+        } else {
+            ecr_dbg << "handling access to LDTR or TR"  << bfendl;
+        }
+
+        desc_table_print = false;
+    }
+
+    this->resume();
+}
+
+void
+exit_handler_intel_x64_eapis::handle_vmcall_registers__desc_table(
+    vmcall_registers_t &regs)
+{
+    switch (regs.r03) {
+        case eapis_fun__trap_on_desc_table:
+            m_vmcs_eapis->trap_on_desc_table();
+            ecr_dbg << "trapping on descriptor-table register access" << bfendl;
+            break;
+
+        case eapis_fun__pass_through_on_desc_table:
+            m_vmcs_eapis->pass_through_on_desc_table();
+            ecr_dbg << "passing through descriptor-table register access" << bfendl;
+            break;
+
+        default:
+            throw std::runtime_error("unknown vmcall function");
+    }
+}
+
+

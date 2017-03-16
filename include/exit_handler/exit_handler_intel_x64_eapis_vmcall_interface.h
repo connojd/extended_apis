@@ -45,7 +45,8 @@ enum eapis_vmcall_categories
     eapis_cat__wbinvd = 0x8000,
     eapis_cat__rdpmc = 0x9000,
     eapis_cat__rdtsc = 0xA000,
-    eapis_cat__invlpg = 0xB000
+    eapis_cat__invlpg = 0xB000,
+    eapis_cat__desc_table = 0xC000
 };
 
 /*
@@ -94,7 +95,10 @@ enum eapis_vmcall_functions
     eapis_fun__pass_through_on_rdtsc = 0x2,
 
     eapis_fun__trap_on_invlpg = 0x1,
-    eapis_fun__pass_through_on_invlpg = 0x2
+    eapis_fun__pass_through_on_invlpg = 0x2,
+
+    eapis_fun__trap_on_desc_table = 0x1,
+    eapis_fun__pass_through_on_desc_table = 0x2
 };
 
 /**

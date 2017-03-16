@@ -438,6 +438,9 @@ public:
     void trap_on_invlpg();
     void pass_through_on_invlpg();
 
+    void trap_on_desc_table();
+    void pass_through_on_desc_table();
+
 protected:
 
     void write_fields(gsl::not_null<vmcs_intel_x64_state *> host_state,
