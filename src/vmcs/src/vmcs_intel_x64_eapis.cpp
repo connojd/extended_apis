@@ -20,15 +20,17 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 #include <gsl/gsl>
-
 #include <bitmanip_ext.h>
+
 #include <memory_manager/memory_manager_x64.h>
+#include <memory_manager/map_ptr_x64.h>
 
 #include <vmcs/vmcs_intel_x64_eapis.h>
 #include <vmcs/vmcs_intel_x64_16bit_control_fields.h>
 #include <vmcs/vmcs_intel_x64_32bit_control_fields.h>
 #include <vmcs/vmcs_intel_x64_64bit_control_fields.h>
 #include <vmcs/ept_entry_intel_x64.h>
+#include <vmcs/root_ept_intel_x64.h>
 
 using namespace intel_x64;
 using namespace vmcs;
@@ -37,10 +39,17 @@ namespace exec_ctls1 = primary_processor_based_vm_execution_controls;
 namespace exec_ctls2 = secondary_processor_based_vm_execution_controls;
 
 #ifdef ECR_DEBUG
-    #define verbose true
+#define verbose true
 #else
-    #define verbose false
+#define verbose false
 #endif
+
+#ifndef MAX_PHYS_ADDR
+#define MAX_PHYS_ADDR 0x1000000000
+#endif
+
+std::unique_ptr<root_ept_intel_x64> g_ept_pass;
+std::unique_ptr<root_ept_intel_x64> g_ept_trap;
 
 vmcs_intel_x64_eapis::vmcs_intel_x64_eapis()
 {
@@ -52,6 +61,8 @@ void
 vmcs_intel_x64_eapis::write_fields(gsl::not_null<vmcs_intel_x64_state *> host_state,
                                    gsl::not_null<vmcs_intel_x64_state *> guest_state)
 {
+    static bool init_ept = true;
+
     vmcs_intel_x64::write_fields(host_state, guest_state);
 
     this->disable_ept();
@@ -59,7 +70,17 @@ vmcs_intel_x64_eapis::write_fields(gsl::not_null<vmcs_intel_x64_state *> host_st
     this->enable_io_bitmaps();
     this->enable_msr_bitmap();
 
-    exec_ctls2::enable_rdtscp::enable_if_allowed(verbose);
+    if (init_ept) {
+        g_ept_pass = std::make_unique<root_ept_intel_x64>();
+        g_ept_trap = std::make_unique<root_ept_intel_x64>();
+
+        g_ept_pass->setup_identity_map_2m(0, MAX_PHYS_ADDR);
+        g_ept_trap->setup_identity_map_2m(0, MAX_PHYS_ADDR);
+
+        init_ept = false;
+    }
+
+    set_eptp(g_ept_pass->eptp());
 }
 
 void
@@ -445,3 +466,36 @@ vmcs_intel_x64_eapis::trap_on_cr8_load()
 void
 vmcs_intel_x64_eapis::pass_through_on_cr8_load()
 { exec_ctls1::cr8_load_exiting::disable(); }
+
+/*
+ * Adapted from extended_apis_example_hook/exit_handler/exit_handler_hook.h
+ */
+void
+vmcs_intel_x64_eapis::trap_gva(uint64_t gva)
+{
+    auto cr3 = guest_cr3::get();
+    m_trap_gva = gva;
+    m_trap_gpa = bfn::virt_to_phys_with_cr3(gva, cr3);
+
+    auto gpa_2m = m_trap_gpa & ~(ept::pd::size_bytes - 1);
+
+    auto start = gpa_2m;
+    auto end = gpa_2m + ept::pd::size_bytes;
+
+    g_ept_trap->unmap(gpa_2m);
+    g_ept_trap->setup_identity_map_4k(start, end);
+
+    auto &&entry = g_ept_trap->gpa_to_epte(m_trap_gpa);
+    entry.trap_on_access();
+
+    set_eptp(g_ept_trap->eptp());
+}
+
+void
+vmcs_intel_x64_eapis::pass_through_gva(uint64_t gva)
+{
+    auto gpa = bfn::virt_to_phys_with_cr3(gva, guest_cr3::get());
+    auto &&entry = g_ept_trap->gpa_to_epte(gpa);
+
+    entry.pass_through_access();
+}

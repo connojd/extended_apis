@@ -27,6 +27,9 @@
 #include <vmcs/vmcs_intel_x64_32bit_guest_state_fields.h>
 #include <vmcs/vmcs_intel_x64_natural_width_read_only_data_fields.h>
 #include <vmcs/vmcs_intel_x64_natural_width_guest_state_fields.h>
+#include <vmcs/vmcs_intel_x64_64bit_read_only_data_fields.h>
+#include <vmcs/ept_entry_intel_x64.h>
+#include <vmcs/root_ept_intel_x64.h>
 
 #include <intrinsics/rdrand_x64.h>
 #include <intrinsics/cache_x64.h>
@@ -44,6 +47,9 @@ namespace exec_ctls2 = secondary_processor_based_vm_execution_controls;
 #else
     #define verbose false
 #endif
+
+extern std::unique_ptr<root_ept_intel_x64> g_ept_pass;
+extern std::unique_ptr<root_ept_intel_x64> g_ept_trap;
 
 exit_handler_intel_x64_eapis::exit_handler_intel_x64_eapis() :
     m_monitor_trap_callback(&exit_handler_intel_x64_eapis::unhandled_monitor_trap_callback),
@@ -120,6 +126,10 @@ exit_handler_intel_x64_eapis::handle_exit(vmcs::value_type reason)
             handle_exit__ctl_reg_access();
             break;
 
+        case vmcs::exit_reason::basic_exit_reason::ept_violation:
+            handle_exit__ept_violation();
+            break;
+
         default:
             exit_handler_intel_x64::handle_exit(reason);
             break;
@@ -191,6 +201,9 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
             handle_vmcall_registers__cr8_load(regs);
             break;
 
+        case eapis_cat__ept:
+            handle_vmcall_registers__ept(regs);
+            break;
 
         default:
             throw std::runtime_error("unknown vmcall category");
@@ -1021,4 +1034,54 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__cr8_load(
         default:
             throw std::runtime_error("unknown vmcall function");
     }
+}
+
+void
+exit_handler_intel_x64_eapis::handle_exit__ept_violation()
+{
+    auto mask = ~(ept::pt::size_bytes - 1);
+    auto gva = guest_linear_address::get();
+    auto gpa = guest_physical_address::get();
+
+    if ((gpa & mask) != (m_vmcs_eapis->m_trap_gpa & mask)) {
+        bfwarning << "EPT: trapping has not been setup for" << bfendl;
+        bfwarning << "EPT: gva = 0x" << view_as_pointer(gva)
+        << " , gpa = 0x" << view_as_pointer(gpa) << bfendl;
+    }
+
+    m_vmcs_eapis->set_eptp(g_ept_pass->eptp());
+    m_vmcs_eapis->resume();
+}
+
+void
+exit_handler_intel_x64_eapis::handle_vmcall_registers__ept(
+    vmcall_registers_t &regs)
+{
+    switch (regs.r03) {
+        case eapis_fun__ept_on:
+            m_vmcs_eapis->enable_ept();
+            ecr_dbg << "EPT: enabled" << bfendl;
+            break;
+
+        case eapis_fun__ept_off:
+            m_vmcs_eapis->disable_ept();
+            ecr_dbg << "EPT: disabled" << bfendl;
+            break;
+
+        case eapis_fun__trap_on_gva:
+            m_vmcs_eapis->trap_gva(regs.r04);
+            ecr_dbg << "EPT: trapping on gva 0x"
+                << view_as_pointer(regs.r04) << bfendl;
+            break;
+
+        case eapis_fun__pass_through_on_gva:
+            m_vmcs_eapis->pass_through_gva(regs.r04);
+            ecr_dbg << "EPT: pass-through on gva 0x"
+                << view_as_pointer(regs.r04) << bfendl;
+            break;
+
+        default:
+            throw std::runtime_error("unknown vmcall function");
+    }
+
 }

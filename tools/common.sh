@@ -106,6 +106,14 @@ cat_cr8_load="0x10000"
     trap_cr8_load="0x1"
     pass_through_cr8_load="0x2"
 
+cat_ept="0x20000"
+    ept_on="0x1"
+    ept_off="0x2"
+    ept_trap_gva="0x3"
+    ept_trap_gpa="0x4"
+    ept_pass_through_gva="0x5"
+    ept_pass_through_gpa="0x6"
+
 # eapis_cat
 r2=""
 

@@ -1,0 +1,86 @@
+#!/bin/bash
+
+ept_usage() {
+    printf ""$CY"syntax"$CE": ./vmconfig ept -f <fun> [-v <gva> | -p <gpa>] -c <cores>\n"
+    echo -e ""$CY"syntax"$CE": <fun> = on | off | t | trap | p | pass"
+    echo -e ""$CY"syntax"$CE": <gva> = 0x<guest virt addr to configure>"
+    echo -e ""$CY"syntax"$CE": <gpa> = 0x<guest phys addr to configure>"
+    echo -e ""$CY"syntax"$CE": <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
+}
+
+set_ept_func() {
+
+    r2=$cat_ept
+    fun=$1
+
+    case "$fun" in
+    "on")
+        r3=$ept_on
+        ;;
+    "off")
+        r3=$ept_off
+        ;;
+    "t"|"trap")
+        if [[ "$4" = "-v" ]]; then
+            r3=$ept_trap_gva
+            r4=$3
+        elif [[ "$4" = "-p" ]]; then
+            r3=$ept_trap_gpa
+            r4=$3
+        else
+            echo -e ""$CR"error"$CE": invalid ept syntax"
+            ept_usage
+            exit 22
+        fi
+        ;;
+    "p"|"pass")
+        if [[ "$4" = "-v" ]]; then
+            r3=$ept_pass_through_gva
+            r4=$3
+        elif [[ "$4" = "-p" ]]; then
+            r3=$ept_pass_through_gpa
+            r4=$3
+        else
+            echo -e ""$CR"error"$CE": invalid ept syntax"
+            ept_usage
+            exit 22
+        fi
+        ;;
+    *)
+        echo -e ""$CR"error"$CE": invalid ept syntax"
+        ept_usage
+        exit 22
+    esac
+}
+
+config_ept() {
+
+    if [[ "$2" = "-f" ]]; then
+        set_ept_func $3 $4 $5
+    else
+        echo -e ""$CR"error"$CE": invalid ept syntax"
+        ept_usage
+        exit 22
+    fi
+
+    while [[ "$1" != "-c" ]]; do
+        shift 1
+    done
+
+    if [[ $# -eq 0 ]]; then
+        echo -e ""$CR"error"$CE": invalid ept syntax"
+        ept_usage
+        exit 22
+    fi
+
+    if [[ "$2" = "all" ]]; then
+            config_all_cores "$r2 $r3 $r4"
+            exit 0
+    fi
+
+    shift 1
+    ncores=$#
+    cores="$@"
+
+    config_select_cores "$r2 $r3 $r4" $ncores $cores
+}

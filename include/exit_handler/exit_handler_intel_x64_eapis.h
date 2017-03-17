@@ -170,6 +170,7 @@ private:
     void handle_exit__invlpg();
     void handle_exit__desc_table();
     void handle_exit__ctl_reg_access();
+    void handle_exit__ept_violation();
 
 protected:
 
@@ -189,11 +190,14 @@ private:
     void handle_vmcall_registers__invlpg(vmcall_registers_t &regs);
     void handle_vmcall_registers__desc_table(vmcall_registers_t &regs);
 
+    //TODO: condense these to one cr3 handler
     void handle_vmcall_registers__cr3_store(vmcall_registers_t &regs);
     void handle_vmcall_registers__cr3_load(vmcall_registers_t &regs);
 
     void handle_vmcall_registers__cr8_store(vmcall_registers_t &regs);
     void handle_vmcall_registers__cr8_load(vmcall_registers_t &regs);
+
+    void handle_vmcall_registers__ept(vmcall_registers_t &regs);
 
 private:
 
@@ -237,7 +241,6 @@ private:
     void trap_on_cr3_load_callback();
     void trap_on_cr8_store_callback();
     void trap_on_cr8_load_callback();
-
 
     void handle_exit__cr3_access(uint64_t type);
     void handle_exit__cr8_access(uint64_t type);

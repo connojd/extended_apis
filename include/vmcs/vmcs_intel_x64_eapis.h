@@ -28,6 +28,7 @@
 #include <memory>
 
 #include <vmcs/vmcs_intel_x64.h>
+#include <vmcs/vmcs_intel_x64_natural_width_guest_state_fields.h>
 
 #include <intrinsics/x64.h>
 #include <intrinsics/msrs_x64.h>
@@ -451,6 +452,9 @@ public:
     void pass_through_on_cr8_store();
     void pass_through_on_cr8_load();
 
+    void trap_gva(uint64_t gva);
+    void pass_through_gva(uint64_t gva);
+
 protected:
 
     void write_fields(gsl::not_null<vmcs_intel_x64_state *> host_state,
@@ -471,6 +475,9 @@ protected:
 public:
 
     friend class eapis_ut;
+
+    uint64_t m_trap_gva;
+    uint64_t m_trap_gpa;
 
     vmcs_intel_x64_eapis(vmcs_intel_x64_eapis &&) = default;
     vmcs_intel_x64_eapis &operator=(vmcs_intel_x64_eapis &&) = default;
