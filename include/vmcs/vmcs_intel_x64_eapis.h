@@ -446,6 +446,11 @@ public:
     void pass_through_on_cr3_store();
     void pass_through_on_cr3_load();
 
+    void trap_on_cr8_store();
+    void trap_on_cr8_load();
+    void pass_through_on_cr8_store();
+    void pass_through_on_cr8_load();
+
 protected:
 
     void write_fields(gsl::not_null<vmcs_intel_x64_state *> host_state,

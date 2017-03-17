@@ -183,6 +183,15 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
             handle_vmcall_registers__cr3_load(regs);
             break;
 
+        case eapis_cat__cr8_store:
+            handle_vmcall_registers__cr8_store(regs);
+            break;
+
+        case eapis_cat__cr8_load:
+            handle_vmcall_registers__cr8_load(regs);
+            break;
+
+
         default:
             throw std::runtime_error("unknown vmcall category");
     }
@@ -844,7 +853,22 @@ exit_handler_intel_x64_eapis::trap_on_cr3_load_callback()
     this->resume();
 }
 
-void exit_handler_intel_x64_eapis::handle_exit__cr3_access(uint64_t type)
+void
+exit_handler_intel_x64_eapis::trap_on_cr8_store_callback()
+{
+    exec_ctls1::cr8_store_exiting::enable();
+    this->resume();
+}
+
+void
+exit_handler_intel_x64_eapis::trap_on_cr8_load_callback()
+{
+    exec_ctls1::cr8_load_exiting::enable();
+    this->resume();
+}
+
+void
+exit_handler_intel_x64_eapis::handle_exit__cr3_access(uint64_t type)
 {
     using namespace exit_qualification::control_register_access;
 
@@ -872,6 +896,34 @@ void exit_handler_intel_x64_eapis::handle_exit__cr3_access(uint64_t type)
 }
 
 void
+exit_handler_intel_x64_eapis::handle_exit__cr8_access(uint64_t type)
+{
+    using namespace exit_qualification::control_register_access;
+
+    if (type == access_type::mov_from_cr) {
+        register_monitor_trap(&exit_handler_intel_x64_eapis::trap_on_cr8_store_callback);
+        exec_ctls1::cr8_store_exiting::disable();
+
+        static bool cr8_st_print = true;
+        if (cr8_st_print) {
+            ecr_dbg << "handling MOV from CR8" << bfendl;
+            cr8_st_print = false;
+        }
+    } else if (type == access_type::mov_to_cr) {
+        register_monitor_trap(&exit_handler_intel_x64_eapis::trap_on_cr8_load_callback);
+        exec_ctls1::cr8_load_exiting::disable();
+
+        static bool cr8_ld_print = true;
+        if (cr8_ld_print) {
+            ecr_dbg << "handling MOV to CR8" << bfendl;
+            cr8_ld_print = false;
+        }
+    } else {
+        bferror << "invalid MOV control register type" << bfendl;
+    }
+}
+
+void
 exit_handler_intel_x64_eapis::handle_exit__ctl_reg_access()
 {
     using namespace exit_qualification::control_register_access;
@@ -880,9 +932,8 @@ exit_handler_intel_x64_eapis::handle_exit__ctl_reg_access()
     auto type = access_type::get();
 
     switch (cr) {
-        case 3:
-            handle_exit__cr3_access(type);
-            break;
+        case 3: handle_exit__cr3_access(type); break;
+	case 8: handle_exit__cr8_access(type); break;
 
         default:
             bferror << "unimplemented control register access" << bfendl;
@@ -925,6 +976,46 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__cr3_load(
         case eapis_fun__pass_through_on_cr3_load:
             m_vmcs_eapis->pass_through_on_cr3_load();
             ecr_dbg << "passing through on MOV to CR3" << bfendl;
+            break;
+
+        default:
+            throw std::runtime_error("unknown vmcall function");
+    }
+}
+
+void
+exit_handler_intel_x64_eapis::handle_vmcall_registers__cr8_store(
+    vmcall_registers_t &regs)
+{
+    switch (regs.r03) {
+        case eapis_fun__trap_on_cr8_store:
+            m_vmcs_eapis->trap_on_cr8_store();
+            ecr_dbg << "trapping on MOV from CR8" << bfendl;
+            break;
+
+        case eapis_fun__pass_through_on_cr8_store:
+            m_vmcs_eapis->pass_through_on_cr8_store();
+            ecr_dbg << "passing through on MOV from CR8" << bfendl;
+            break;
+
+        default:
+            throw std::runtime_error("unknown vmcall function");
+    }
+}
+
+void
+exit_handler_intel_x64_eapis::handle_vmcall_registers__cr8_load(
+    vmcall_registers_t &regs)
+{
+    switch (regs.r03) {
+        case eapis_fun__trap_on_cr8_load:
+            m_vmcs_eapis->trap_on_cr8_load();
+            ecr_dbg << "trapping on MOV to CR8" << bfendl;
+            break;
+
+        case eapis_fun__pass_through_on_cr8_load:
+            m_vmcs_eapis->pass_through_on_cr8_load();
+            ecr_dbg << "passing through on MOV to CR8" << bfendl;
             break;
 
         default:

@@ -19,7 +19,7 @@ set_cr3_load_regs() {
         r3=$pass_through_cr3_load
         return
     else
-        echo -e ""$CR"error"$CE": invalid cr3_load function"
+        echo -e ""$CR"error"$CE": invalid cr3-load function"
         cr3_load_usage
         exit 22
     fi

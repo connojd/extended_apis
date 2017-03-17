@@ -98,6 +98,14 @@ cat_cr3_load="0xE000"
     trap_cr3_load="0x1"
     pass_through_cr3_load="0x2"
 
+cat_cr8_store="0xF000"
+    trap_cr8_store="0x1"
+    pass_through_cr8_store="0x2"
+
+cat_cr8_load="0x10000"
+    trap_cr8_load="0x1"
+    pass_through_cr8_load="0x2"
+
 # eapis_cat
 r2=""
 

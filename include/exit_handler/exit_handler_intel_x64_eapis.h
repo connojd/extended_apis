@@ -192,6 +192,9 @@ private:
     void handle_vmcall_registers__cr3_store(vmcall_registers_t &regs);
     void handle_vmcall_registers__cr3_load(vmcall_registers_t &regs);
 
+    void handle_vmcall_registers__cr8_store(vmcall_registers_t &regs);
+    void handle_vmcall_registers__cr8_load(vmcall_registers_t &regs);
+
 private:
 
     void handle_vmcall__trap_on_io_access(port_type port);
@@ -232,8 +235,12 @@ private:
     void trap_on_desc_table_callback();
     void trap_on_cr3_store_callback();
     void trap_on_cr3_load_callback();
+    void trap_on_cr8_store_callback();
+    void trap_on_cr8_load_callback();
+
 
     void handle_exit__cr3_access(uint64_t type);
+    void handle_exit__cr8_access(uint64_t type);
 
     ret_code write_gpr(instr_gpr gpr, uint64_t val, uint64_t nbytes);
 
