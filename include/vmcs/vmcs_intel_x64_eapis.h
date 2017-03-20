@@ -35,9 +35,21 @@
 #include <intrinsics/portio_x64.h>
 
 #ifdef ECR_DEBUG
-    #define ecr_dbg bfdebug
+#define ecr_dbg bfdebug
 #else
-    #define ecr_dbg if (0) bfdebug
+#define ecr_dbg if (0) bfdebug
+#endif
+
+#ifndef PHYS_MEM_SZ
+#define PHYS_MEM_SZ 0x1000000000U
+#endif
+
+#ifndef TRAP_LIST_SZ
+#define TRAP_LIST_SZ 256U
+#endif
+
+#ifndef SPLIT_LIST_SZ
+#define SPLIT_LIST_SZ 256U
 #endif
 
 /// WARNING:
@@ -452,8 +464,11 @@ public:
     void pass_through_on_cr8_store();
     void pass_through_on_cr8_load();
 
-    void trap_gva(uint64_t gva);
-    void pass_through_gva(uint64_t gva);
+    void trap_gpa(uint64_t gva);
+    void pass_through_gpa(uint64_t gva);
+
+    std::vector<uint64_t>::iterator trap_list_it(uint64_t gfn);
+    std::vector<uint64_t>::iterator split_list_it(uint64_t gfn);
 
 protected:
 
@@ -475,9 +490,6 @@ protected:
 public:
 
     friend class eapis_ut;
-
-    uint64_t m_trap_gva;
-    uint64_t m_trap_gpa;
 
     vmcs_intel_x64_eapis(vmcs_intel_x64_eapis &&) = default;
     vmcs_intel_x64_eapis &operator=(vmcs_intel_x64_eapis &&) = default;

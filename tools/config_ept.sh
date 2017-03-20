@@ -8,6 +8,8 @@ ept_usage() {
     echo -e ""$CY"syntax"$CE": <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
 }
 
+all_cores=0
+
 set_ept_func() {
 
     r2=$cat_ept
@@ -16,15 +18,17 @@ set_ept_func() {
     case "$fun" in
     "on")
         r3=$ept_on
+        all_cores=1
         ;;
     "off")
         r3=$ept_off
+        all_cores=1
         ;;
     "t"|"trap")
-        if [[ "$4" = "-v" ]]; then
+        if [[ "$2" = "-v" ]]; then
             r3=$ept_trap_gva
             r4=$3
-        elif [[ "$4" = "-p" ]]; then
+        elif [[ "$2" = "-p" ]]; then
             r3=$ept_trap_gpa
             r4=$3
         else
@@ -34,10 +38,10 @@ set_ept_func() {
         fi
         ;;
     "p"|"pass")
-        if [[ "$4" = "-v" ]]; then
+        if [[ "$2" = "-v" ]]; then
             r3=$ept_pass_through_gva
             r4=$3
-        elif [[ "$4" = "-p" ]]; then
+        elif [[ "$2" = "-p" ]]; then
             r3=$ept_pass_through_gpa
             r4=$3
         else
@@ -63,12 +67,17 @@ config_ept() {
         exit 22
     fi
 
+    if [[ $all_cores -eq 1 ]]; then
+        config_all_cores "$r2 $r3"
+        exit 0
+    fi
+
     while [[ "$1" != "-c" ]]; do
         shift 1
     done
 
     if [[ $# -eq 0 ]]; then
-        echo -e ""$CR"error"$CE": invalid ept syntax"
+        echo -e ""$CR"error"$CE": invalid ept syntax: no cores listed"
         ept_usage
         exit 22
     fi

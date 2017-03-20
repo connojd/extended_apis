@@ -32,24 +32,22 @@
 #include <vmcs/ept_entry_intel_x64.h>
 #include <vmcs/root_ept_intel_x64.h>
 
-using namespace intel_x64;
-using namespace vmcs;
-
-namespace exec_ctls1 = primary_processor_based_vm_execution_controls;
-namespace exec_ctls2 = secondary_processor_based_vm_execution_controls;
-
 #ifdef ECR_DEBUG
 #define verbose true
 #else
 #define verbose false
 #endif
 
-#ifndef MAX_PHYS_ADDR
-#define MAX_PHYS_ADDR 0x1000000000
-#endif
+using namespace intel_x64;
+using namespace vmcs;
 
-std::unique_ptr<root_ept_intel_x64> g_ept_pass;
-std::unique_ptr<root_ept_intel_x64> g_ept_trap;
+namespace exec_ctls1 = primary_processor_based_vm_execution_controls;
+namespace exec_ctls2 = secondary_processor_based_vm_execution_controls;
+
+std::unique_ptr<root_ept_intel_x64> g_ept;
+std::unique_ptr<std::vector<uint64_t>> g_trap_list;
+std::unique_ptr<std::vector<uint64_t>> g_split_list;
+std::mutex g_ept_mtx;
 
 vmcs_intel_x64_eapis::vmcs_intel_x64_eapis()
 {
@@ -71,16 +69,19 @@ vmcs_intel_x64_eapis::write_fields(gsl::not_null<vmcs_intel_x64_state *> host_st
     this->enable_msr_bitmap();
 
     if (init_ept) {
-        g_ept_pass = std::make_unique<root_ept_intel_x64>();
-        g_ept_trap = std::make_unique<root_ept_intel_x64>();
+        g_trap_list = std::make_unique<std::vector<uint64_t>>();
+        g_trap_list->reserve(TRAP_LIST_SZ);
 
-        g_ept_pass->setup_identity_map_2m(0, MAX_PHYS_ADDR);
-        g_ept_trap->setup_identity_map_2m(0, MAX_PHYS_ADDR);
+        g_split_list = std::make_unique<std::vector<uint64_t>>();
+        g_split_list->reserve(SPLIT_LIST_SZ);
+
+        g_ept = std::make_unique<root_ept_intel_x64>();
+        g_ept->setup_identity_map_2m(0, PHYS_MEM_SZ);
 
         init_ept = false;
     }
 
-    set_eptp(g_ept_pass->eptp());
+    set_eptp(g_ept->eptp());
 }
 
 void
@@ -467,35 +468,76 @@ void
 vmcs_intel_x64_eapis::pass_through_on_cr8_load()
 { exec_ctls1::cr8_load_exiting::disable(); }
 
+std::vector<uint64_t>::iterator
+vmcs_intel_x64_eapis::trap_list_it(uint64_t gfn_4k)
+{
+    expects((gfn_4k & (ept::pt::size_bytes - 1)) == 0);
+    return std::find(g_trap_list->begin(), g_trap_list->end(), gfn_4k);
+}
+
+std::vector<uint64_t>::iterator
+vmcs_intel_x64_eapis::split_list_it(uint64_t gfn_2m)
+{
+    expects((gfn_2m & (ept::pd::size_bytes - 1)) == 0);
+    return std::find(g_split_list->begin(), g_split_list->end(), gfn_2m);
+}
+
 /*
  * Adapted from extended_apis_example_hook/exit_handler/exit_handler_hook.h
  */
 void
-vmcs_intel_x64_eapis::trap_gva(uint64_t gva)
+vmcs_intel_x64_eapis::trap_gpa(uint64_t gpa)
 {
-    auto cr3 = guest_cr3::get();
-    m_trap_gva = gva;
-    m_trap_gpa = bfn::virt_to_phys_with_cr3(gva, cr3);
+    auto gfn_2m = (gpa & ~(ept::pd::size_bytes - 1));
+    auto gfn_4k = (gpa & ~(ept::pt::size_bytes - 1));
 
-    auto gpa_2m = m_trap_gpa & ~(ept::pd::size_bytes - 1);
+    if (trap_list_it(gfn_4k) != g_trap_list->end()) {
+        ecr_dbg << "EPT: gpa " << view_as_pointer(gpa)
+            << " already configured to trap" << bfendl;
+        return;
+    }
 
-    auto start = gpa_2m;
-    auto end = gpa_2m + ept::pd::size_bytes;
+    if (g_trap_list->size() >= g_trap_list->capacity()) {
+        ecr_dbg << "EPT: cannot trap gpa "
+            << view_as_pointer(gpa) << bfendl;
+        ecr_dbg << ": trap list capacity reached" << bfendl;
+        return;
+    }
 
-    g_ept_trap->unmap(gpa_2m);
-    g_ept_trap->setup_identity_map_4k(start, end);
+    if (split_list_it(gfn_2m) != g_split_list->end()) {
+        auto &&entry = g_ept->gpa_to_epte(gpa);
+        entry.trap_on_access();
+        g_trap_list->push_back(gfn_4k);
+        return;
+    }
 
-    auto &&entry = g_ept_trap->gpa_to_epte(m_trap_gpa);
+    if (g_split_list->size() == g_split_list->capacity()) {
+        ecr_dbg << "EPT: cannot split 2M -> 4k: capacity reached" << bfendl;
+        return;
+    }
+
+    g_ept->unmap(gfn_2m);
+    g_ept->setup_identity_map_4k(gfn_2m, gfn_2m + ept::pd::size_bytes);
+    g_split_list->push_back(gfn_2m);
+
+    auto &&entry = g_ept->gpa_to_epte(gpa);
     entry.trap_on_access();
-
-    set_eptp(g_ept_trap->eptp());
+    g_trap_list->push_back(gfn_4k);
 }
 
 void
-vmcs_intel_x64_eapis::pass_through_gva(uint64_t gva)
+vmcs_intel_x64_eapis::pass_through_gpa(uint64_t gpa)
 {
-    auto gpa = bfn::virt_to_phys_with_cr3(gva, guest_cr3::get());
-    auto &&entry = g_ept_trap->gpa_to_epte(gpa);
+    auto gfn_4k = (gpa & ~(ept::pt::size_bytes - 1));
+    auto &&it = trap_list_it(gfn_4k);
 
+    if ((it = trap_list_it(gfn_4k)) == g_trap_list->end()) {
+        ecr_dbg << "EPT: gpa " << view_as_pointer(gpa)
+            << " already configured to pass-through" << bfendl;
+        return;
+    }
+
+    auto &&entry = g_ept->gpa_to_epte(gpa);
     entry.pass_through_access();
+    g_trap_list->erase(it);
 }
