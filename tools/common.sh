@@ -114,6 +114,10 @@ cat_ept="0x20000"
     ept_pass_through_gva="0x5"
     ept_pass_through_gpa="0x6"
 
+cat_mov_dr="0x30000"
+    trap_mov_dr="0x1"
+    pass_through_mov_dr="0x2"
+
 # eapis_cat
 r2=""
 

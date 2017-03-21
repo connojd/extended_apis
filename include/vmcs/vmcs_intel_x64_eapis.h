@@ -467,6 +467,9 @@ public:
     void trap_gpa(uint64_t gva);
     void pass_through_gpa(uint64_t gva);
 
+    void trap_on_mov_dr();
+    void pass_through_on_mov_dr();
+
     std::vector<uint64_t>::iterator trap_list_it(uint64_t gfn);
     std::vector<uint64_t>::iterator split_list_it(uint64_t gfn);
 

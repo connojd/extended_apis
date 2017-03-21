@@ -1,9 +1,8 @@
 #!/bin/bash
 
 ept_usage() {
-    printf ""$CY"syntax"$CE": ./vmconfig ept -f <fun> [-v <gva> | -p <gpa>] -c <cores>\n"
+    printf ""$CY"syntax"$CE": ./vmconfig ept -f <fun> [[-a <gpa>] -c <cores>]\n"
     echo -e ""$CY"syntax"$CE": <fun> = on | off | t | trap | p | pass"
-    echo -e ""$CY"syntax"$CE": <gva> = 0x<guest virt addr to configure>"
     echo -e ""$CY"syntax"$CE": <gpa> = 0x<guest phys addr to configure>"
     echo -e ""$CY"syntax"$CE": <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
 }
@@ -25,10 +24,7 @@ set_ept_func() {
         all_cores=1
         ;;
     "t"|"trap")
-        if [[ "$2" = "-v" ]]; then
-            r3=$ept_trap_gva
-            r4=$3
-        elif [[ "$2" = "-p" ]]; then
+        if [[ "$2" = "-a" ]]; then
             r3=$ept_trap_gpa
             r4=$3
         else
@@ -38,10 +34,7 @@ set_ept_func() {
         fi
         ;;
     "p"|"pass")
-        if [[ "$2" = "-v" ]]; then
-            r3=$ept_pass_through_gva
-            r4=$3
-        elif [[ "$2" = "-p" ]]; then
+        if [[ "$2" = "-a" ]]; then
             r3=$ept_pass_through_gpa
             r4=$3
         else

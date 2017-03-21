@@ -51,7 +51,8 @@ enum eapis_vmcall_categories
     eapis_cat__cr3_load = 0xE000,
     eapis_cat__cr8_store = 0xF000,
     eapis_cat__cr8_load = 0x10000,
-    eapis_cat__ept = 0x20000
+    eapis_cat__ept = 0x20000,
+    eapis_cat__mov_dr = 0x30000
 };
 
 /*
@@ -122,7 +123,10 @@ enum eapis_vmcall_functions
     eapis_fun__trap_on_gva = 0x3,
     eapis_fun__trap_on_gpa = 0x4,
     eapis_fun__pass_through_on_gva = 0x5,
-    eapis_fun__pass_through_on_gpa = 0x6
+    eapis_fun__pass_through_on_gpa = 0x6,
+
+    eapis_fun__trap_on_mov_dr = 0x1,
+    eapis_fun__pass_through_on_mov_dr = 0x2
 };
 
 /**

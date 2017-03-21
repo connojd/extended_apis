@@ -541,3 +541,11 @@ vmcs_intel_x64_eapis::pass_through_gpa(uint64_t gpa)
     entry.pass_through_access();
     g_trap_list->erase(it);
 }
+
+void
+vmcs_intel_x64_eapis::trap_on_mov_dr()
+{ exec_ctls1::mov_dr_exiting::enable(); }
+
+void
+vmcs_intel_x64_eapis::pass_through_on_mov_dr()
+{ exec_ctls1::mov_dr_exiting::disable(); }

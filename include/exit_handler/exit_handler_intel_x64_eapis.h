@@ -171,6 +171,7 @@ private:
     void handle_exit__desc_table();
     void handle_exit__ctl_reg_access();
     void handle_exit__ept_violation();
+    void handle_exit__mov_dr();
 
 protected:
 
@@ -198,6 +199,7 @@ private:
     void handle_vmcall_registers__cr8_load(vmcall_registers_t &regs);
 
     void handle_vmcall_registers__ept(vmcall_registers_t &regs);
+    void handle_vmcall_registers__mov_dr(vmcall_registers_t &regs);
 
 private:
 
@@ -241,6 +243,7 @@ private:
     void trap_on_cr3_load_callback();
     void trap_on_cr8_store_callback();
     void trap_on_cr8_load_callback();
+    void trap_on_mov_dr_callback();
 
     void handle_exit__cr3_access(uint64_t type);
     void handle_exit__cr8_access(uint64_t type);

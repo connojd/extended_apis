@@ -133,6 +133,10 @@ exit_handler_intel_x64_eapis::handle_exit(vmcs::value_type reason)
             handle_exit__ept_violation();
             break;
 
+        case vmcs::exit_reason::basic_exit_reason::mov_dr:
+            handle_exit__mov_dr();
+            break;
+
         default:
             exit_handler_intel_x64::handle_exit(reason);
             break;
@@ -206,6 +210,10 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
 
         case eapis_cat__ept:
             handle_vmcall_registers__ept(regs);
+            break;
+
+        case eapis_cat__mov_dr:
+            handle_vmcall_registers__mov_dr(regs);
             break;
 
         default:
@@ -1096,3 +1104,56 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__ept(
             throw std::runtime_error("unknown vmcall function");
     }
 }
+
+void
+exit_handler_intel_x64_eapis::trap_on_mov_dr_callback()
+{
+    exec_ctls1::mov_dr_exiting::enable();
+    m_vmcs_eapis->resume();
+}
+
+void
+exit_handler_intel_x64_eapis::handle_exit__mov_dr()
+{
+    static bool dr_print = true;
+
+    if (dr_print) {
+        ecr_dbg << "handling MOV DR" << bfendl;
+        dr_print = false;
+    }
+
+    register_monitor_trap(&exit_handler_intel_x64_eapis::trap_on_mov_dr_callback);
+    exec_ctls1::mov_dr_exiting::disable();
+    m_vmcs_eapis->resume();
+}
+
+void
+exit_handler_intel_x64_eapis::handle_vmcall_registers__mov_dr(
+    vmcall_registers_t &regs)
+{
+    switch (regs.r03) {
+        case eapis_fun__trap_on_mov_dr:
+            m_vmcs_eapis->trap_on_mov_dr();
+            ecr_dbg << "Configured trap on MOV DR" << bfendl;
+            break;
+
+        case eapis_fun__pass_through_on_mov_dr:
+            m_vmcs_eapis->pass_through_on_mov_dr();
+            ecr_dbg << "Configured pass-through on MOV DR" << bfendl;
+            break;
+
+        default:
+            throw std::runtime_error("unknown vmcall mov dr function");
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
