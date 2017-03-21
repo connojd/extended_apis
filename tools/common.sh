@@ -118,6 +118,33 @@ cat_mov_dr="0x30000"
     trap_mov_dr="0x1"
     pass_through_mov_dr="0x2"
 
+cat_cr4="0x40000"
+    dump_cr4="0x1"
+    trap_cr4="0x2"
+    pass_through_cr4="0x3"
+
+        # CR4 bit masks
+        cr4_vme="0x1"
+        cr4_pvi="0x2"
+        cr4_tsd="0x4"
+        cr4_de="0x8"
+        cr4_pse="0x10"
+        cr4_pae="0x20"
+        cr4_mce="0x40"
+        cr4_pge="0x80"
+        cr4_pce="0x100"
+        cr4_osfxsr="0x200"
+        cr4_osxmmexcpt="0x400"
+        cr4_umip="0x800"
+        cr4_vmxe="0x2000"
+        cr4_smxe="0x4000"
+        cr4_fsgsbase="0x10000"
+        cr4_pcide="0x20000"
+        cr4_osxsave="0x40000"
+        cr4_smep="0x100000"
+        cr4_smap="0x200000"
+        cr4_pke="0x400000"
+
 # eapis_cat
 r2=""
 

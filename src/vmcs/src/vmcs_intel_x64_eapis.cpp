@@ -29,6 +29,7 @@
 #include <vmcs/vmcs_intel_x64_16bit_control_fields.h>
 #include <vmcs/vmcs_intel_x64_32bit_control_fields.h>
 #include <vmcs/vmcs_intel_x64_64bit_control_fields.h>
+#include <vmcs/vmcs_intel_x64_natural_width_control_fields.h>
 #include <vmcs/ept_entry_intel_x64.h>
 #include <vmcs/root_ept_intel_x64.h>
 
@@ -549,3 +550,89 @@ vmcs_intel_x64_eapis::trap_on_mov_dr()
 void
 vmcs_intel_x64_eapis::pass_through_on_mov_dr()
 { exec_ctls1::mov_dr_exiting::disable(); }
+
+void
+vmcs_intel_x64_eapis::dump_cr4()
+{
+    bfdebug << "--- CR4 configuration for vcpuid "
+        << m_state_save->vcpuid << " ---" << bfendl;
+
+    vmcs::guest_cr4::dump();
+    vmcs::cr4_read_shadow::dump();
+    vmcs::cr4_guest_host_mask::dump();
+}
+
+/**
+ * Enables a VM-exit when the value of the
+ * bit (specified by the flag bitmask) in CR4
+ * is changed by code running on this core from the
+ * value it has upon entry of this funtion.
+ *
+ * Note that trapping on say, PCE, will give "ownership"
+ * (as used in the Intel SDM) of PCE to Bareflank, which
+ * means that any time the guest reads CR4.PCE, the value
+ * read is bit 8 in the vmcs::cr4_read_shadow.  An exit
+ * will occur whenever the guest tries to write a value
+ * to CR4.PCE that is different from bit 8 in the
+ * vmcs::cr4_read_shadow. No exit ever occurs on CR4 reads.
+ *
+ * See exit_handler_intel_x64_eapis::handle_exit__cr4_access
+ * for details on how the exit is handled.
+ *
+ * @flag - the mask for the bit in CR4 to trap on.
+ */
+void
+vmcs_intel_x64_eapis::trap_cr4(uint64_t flag)
+{
+    auto cr4 = vmcs::guest_cr4::get();
+    auto fix0 = msrs::ia32_vmx_cr4_fixed0::get();
+    auto fix1 = msrs::ia32_vmx_cr4_fixed1::get();
+
+    auto allowed0 = (fix0 & flag) == 0;
+    auto allowed1 = (fix1 & flag) != 0;
+    auto is_set = cr4 & flag;
+
+    if (is_set && !allowed0) {
+        bfwarning << "Cannot trap on CR4 with flag = "
+            << view_as_pointer(flag) << bfendl;
+        bfwarning << "Bit is fixed to 1 in VMX operation" << bfendl;
+        return;
+    }
+
+    if (!is_set && !allowed1) {
+        bfwarning << "Cannot trap on CR4 with flag = "
+            << view_as_pointer(flag) << bfendl;
+        bfwarning << "Bit is fixed to 0 in VMX operation" << bfendl;
+        return;
+    }
+
+    auto shdw = vmcs::cr4_read_shadow::get();
+    auto mask = vmcs::cr4_guest_host_mask::get();
+
+    mask |= flag;
+    vmcs::cr4_guest_host_mask::set(mask);
+
+    if ((guest_cr4::get() & flag) != 0) {
+        shdw |= flag;
+    } else {
+        shdw &= ~flag;
+    }
+
+    vmcs::cr4_read_shadow::set(shdw);
+}
+
+/**
+ * Pass-through changes to the bit specified by the
+ * argument. This will relinquish ownership of the
+ * specified bit, meaning reads and writes of this
+ * bit are passed-through.
+ *
+ * @flag - the mask of the bit in CR4 to pass-through.
+ */
+void
+vmcs_intel_x64_eapis::pass_through_cr4(uint64_t flag)
+{
+    auto mask = vmcs::cr4_guest_host_mask::get();
+    mask &= ~flag;
+    vmcs::cr4_guest_host_mask::set(mask);
+}

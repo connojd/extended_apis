@@ -26,6 +26,7 @@
 #include <vmcs/vmcs_intel_x64_32bit_control_fields.h>
 #include <vmcs/vmcs_intel_x64_32bit_guest_state_fields.h>
 #include <vmcs/vmcs_intel_x64_natural_width_read_only_data_fields.h>
+#include <vmcs/vmcs_intel_x64_natural_width_control_fields.h>
 #include <vmcs/vmcs_intel_x64_natural_width_guest_state_fields.h>
 #include <vmcs/vmcs_intel_x64_64bit_read_only_data_fields.h>
 #include <vmcs/ept_entry_intel_x64.h>
@@ -206,6 +207,10 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
 
         case eapis_cat__cr8_load:
             handle_vmcall_registers__cr8_load(regs);
+            break;
+
+        case eapis_cat__cr4:
+            handle_vmcall_registers__cr4(regs);
             break;
 
         case eapis_cat__ept:
@@ -492,7 +497,7 @@ exit_handler_intel_x64_eapis::handle_vmcall__enable_vpid(bool enabled)
     }
 }
 
-ret_code
+void
 exit_handler_intel_x64_eapis::write_gpr(instr_gpr id, uint64_t val,
     uint64_t nbytes)
 {
@@ -502,7 +507,8 @@ exit_handler_intel_x64_eapis::write_gpr(instr_gpr id, uint64_t val,
         case 2: break;
         case 1: mask = 0xffffffff; break;
         case 0: mask = 0xffff; break;
-        default: bfdebug << "op size = " << nbytes << bfendl; return invl_sz;
+        default:
+            bferror << "Invalid op size: " << nbytes << bfendl;
     }
 
     val &= mask;
@@ -524,10 +530,37 @@ exit_handler_intel_x64_eapis::write_gpr(instr_gpr id, uint64_t val,
         case r13: m_state_save->r13 |= val; break;
         case r14: m_state_save->r14 |= val; break;
         case r15: m_state_save->r15 |= val; break;
-        default: return invl_gpr;
+        default: bferror << "Writing invalid gpr id: " << id << bfendl; break;
+    }
+}
+
+uint64_t
+exit_handler_intel_x64_eapis::read_gpr(instr_gpr id)
+{
+    switch (id) {
+        case rax: return m_state_save->rax;
+        case rcx: return m_state_save->rcx;
+        case rdx: return m_state_save->rdx;
+        case rbx: return m_state_save->rbx;
+        case rsp: return m_state_save->rsp;
+        case rbp: return m_state_save->rbp;
+        case rsi: return m_state_save->rsi;
+        case rdi: return m_state_save->rdi;
+//        case r8:return  m_state_save->r8; <- not in m_state_save rn
+//        case r9:return  m_state_save->r9;
+        case r10: return m_state_save->r10;
+        case r11: return m_state_save->r11;
+        case r12: return m_state_save->r12;
+        case r13: return m_state_save->r13;
+        case r14: return m_state_save->r14;
+        case r15: return m_state_save->r15;
+
+        default:
+            bferror << "Reading invalid gpr id: " << id << bfendl;
+            break;
     }
 
-    return success;
+    return 0;
 }
 
 void
@@ -537,17 +570,10 @@ exit_handler_intel_x64_eapis::handle_exit__rdrand()
         (exit_instr_info::rdrand::destination_register::get());
     uint64_t size = exit_instr_info::rdrand::operand_size::get();
 
-    int64_t ret = 0;
-
-    ret = (guest_ss_access_rights::dpl::get() > 0) ?
-        write_gpr(dest, 0xffffffffffffffff, size) :
+    if (guest_ss_access_rights::dpl::get() > 0)
+        write_gpr(dest, 0xffffffffffffffff, size);
+    else
         write_gpr(dest, x64::rdrand::get(), size);
-
-    if (invl_sz == ret)
-        bferror << "invalid rdrand operand size" << bfendl;
-
-    if (invl_gpr == ret)
-        bferror << "invalid rdrand destination register" << bfendl;
 
     vmcs::guest_rflags::carry_flag::enable();
     vmcs::guest_rflags::overflow_flag::disable();
@@ -599,17 +625,10 @@ exit_handler_intel_x64_eapis::handle_exit__rdseed()
         (exit_instr_info::rdseed::destination_register::get());
     uint64_t size = exit_instr_info::rdseed::operand_size::get();
 
-    int64_t ret = 0;
-
-    ret = (guest_ss_access_rights::dpl::get() > 0) ?
-        write_gpr(dest, 0xbeefcafebeefcafe, size) :
+    if (guest_ss_access_rights::dpl::get() > 0)
+        write_gpr(dest, 0xbeefcafebeefcafe, size);
+    else
         write_gpr(dest, x64::rdseed::get(), size);
-
-    if (invl_sz == ret)
-        bferror << "invalid rdseed operand size" << bfendl;
-
-    if (invl_gpr == ret)
-        bferror << "invalid rdseed destination register" << bfendl;
 
     vmcs::guest_rflags::carry_flag::enable();
     vmcs::guest_rflags::overflow_flag::disable();
@@ -947,6 +966,56 @@ exit_handler_intel_x64_eapis::handle_exit__cr8_access(uint64_t type)
     }
 }
 
+/**
+ * The "write to CR4" exit is handled by performing the write
+ * for each bit position that have differing values in
+ * the cr4_read_shadow and source operand of mov cr4.
+ *
+ * Ownership is then relinquished by Bareflank, meaning
+ * all writes to that bit will be passed through until
+ * a trap is configured again with vmcs_intel_x64_eapis::trap_cr4.
+ */
+void
+exit_handler_intel_x64_eapis::handle_exit__cr4_access(uint64_t type)
+{
+    using namespace exit_qualification::control_register_access;
+
+    if (type != access_type::mov_to_cr)
+        bfwarning << "Invalid cr4 access type: " << type << bfendl;
+
+    auto src_id = static_cast<instr_gpr>(general_purpose_register::get());
+    uint64_t src = read_gpr(src_id);
+    uint64_t shdw = cr4_read_shadow::get();
+    uint64_t diff = src ^ shdw;
+
+    uint64_t pos = 0;
+    uint64_t i = 0;
+    uint64_t mask = cr4_guest_host_mask::get();
+
+    guest_cr4::set(src);
+
+    for (; i < 64; i++) {
+
+        pos = 1U << i;
+
+        /* if bit at pos isn't owned, continue */
+        if ((mask & pos) == 0)
+            continue;
+
+        if ((diff & pos) != 0) {
+            if ((shdw & pos) != 0) {
+                guest_cr4::set(guest_cr4::get() & ~pos);
+            } else {
+                guest_cr4::set(guest_cr4::get() | pos);
+            }
+
+            cr4_guest_host_mask::set(cr4_guest_host_mask::get() & ~pos);
+        }
+    }
+
+    this->advance_and_resume();
+}
+
 void
 exit_handler_intel_x64_eapis::handle_exit__ctl_reg_access()
 {
@@ -958,6 +1027,7 @@ exit_handler_intel_x64_eapis::handle_exit__ctl_reg_access()
     switch (cr) {
         case 3: handle_exit__cr3_access(type); break;
 	case 8: handle_exit__cr8_access(type); break;
+        case 4: handle_exit__cr4_access(type); break;
 
         default:
             bferror << "unimplemented control register access" << bfendl;
@@ -1147,13 +1217,24 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__mov_dr(
     }
 }
 
+void
+exit_handler_intel_x64_eapis::handle_vmcall_registers__cr4(
+    vmcall_registers_t &regs)
+{
+    switch (regs.r03) {
+        case eapis_fun__dump_cr4:
+            m_vmcs_eapis->dump_cr4();
+            break;
 
+        case eapis_fun__trap_cr4:
+            m_vmcs_eapis->trap_cr4(regs.r04);
+            break;
 
+        case eapis_fun__pass_through_cr4:
+            m_vmcs_eapis->pass_through_cr4(regs.r04);
+            break;
 
-
-
-
-
-
-
-
+        default:
+            throw std::runtime_error("unknown vmcall cr4 function");
+    }
+}

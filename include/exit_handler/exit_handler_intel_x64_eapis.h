@@ -198,6 +198,8 @@ private:
     void handle_vmcall_registers__cr8_store(vmcall_registers_t &regs);
     void handle_vmcall_registers__cr8_load(vmcall_registers_t &regs);
 
+    void handle_vmcall_registers__cr4(vmcall_registers_t &regs);
+
     void handle_vmcall_registers__ept(vmcall_registers_t &regs);
     void handle_vmcall_registers__mov_dr(vmcall_registers_t &regs);
 
@@ -247,8 +249,10 @@ private:
 
     void handle_exit__cr3_access(uint64_t type);
     void handle_exit__cr8_access(uint64_t type);
+    void handle_exit__cr4_access(uint64_t type);
 
-    ret_code write_gpr(instr_gpr gpr, uint64_t val, uint64_t nbytes);
+    void write_gpr(instr_gpr gpr, uint64_t val, uint64_t nbytes);
+    uint64_t read_gpr(instr_gpr id);
 
 public:
 
