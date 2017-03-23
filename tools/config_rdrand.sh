@@ -1,7 +1,7 @@
 #!/bin/bash
 
 rdrand_usage() {
-    printf ""$CY"syntax"$CE": ./vmconfig rdrand -f <fun>"
+    printf ""$CC"usage"$CE": ./vmconfig rdrand -f <fun>"
     printf " -c <cores>\n"
     echo -e ""$CY"syntax"$CE": <fun> = t | trap | p | pass"
     echo -e ""$CY"syntax"$CE": <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
@@ -27,17 +27,16 @@ set_rdrand_regs() {
 
 config_rdrand() {
 
-    # set eapi_cat (r2) and eapi_fun (r3)
-    if [[ "$2" = "-f" && "$4" = "-c" ]]; then
-        set_rdrand_regs $3
-    else
-        echo -e ""$CR"error"$CE": unknown rdrand option(s): $2 $4"
+    if [[ "$2" = "-f" ]]; then
+        echo -e ""$CR"error"$CE": first option must be -f"
         rdrand_usage
         exit 22
     fi
 
+    set_rdrand_regs $3
+
     if [[ "$4" != "-c" ]]; then
-        echo -e ""$CR"error"$CE": unknown rdrand option: $4"
+        echo -e ""$CR"error"$CE": second option must be -c"
         rdrand_usage
         exit 22
     fi

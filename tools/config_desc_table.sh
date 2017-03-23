@@ -1,15 +1,15 @@
 #!/bin/bash
 
 desc_table_usage() {
-    printf ""$CY"syntax"$CE": ./vmconfig desc-table -f <fun>"
+    printf ""$CC"usage"$CE": ./vmconfig desc-table -f <fun>"
     printf " -c <cores>\n"
     echo -e ""$CY"syntax"$CE": <fun> = t | trap | p | pass"
     echo -e ""$CY"syntax"$CE": <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
 
-    printf ""$CC"note"$CE": Configuring desc-table to trap will enable trapping\n"
-    printf ""$CC"note"$CE": on LGDT, LIDT, LLDT, LTR, SGDT, SIDT, SLDT, and STR.\n"
-    printf ""$CC"note"$CE": Configuring desc-table to pass through will cause\n"
-    printf ""$CC"note"$CE": all the instructions above to pass through.\n"
+    printf ""$CG"note"$CE": Configuring desc-table to trap will enable trapping\n"
+    printf ""$CG"note"$CE": on LGDT, LIDT, LLDT, LTR, SGDT, SIDT, SLDT, and STR.\n"
+    printf ""$CG"note"$CE": Configuring desc-table to pass through will cause\n"
+    printf ""$CG"note"$CE": all the instructions above to pass through.\n"
 }
 
 set_desc_table_regs() {

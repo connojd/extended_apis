@@ -3,7 +3,7 @@
 source extended_apis/tools/common.sh
 
 vpid_usage() {
-    printf ""$CY"syntax"$CE": ./vmconfig vpid -f <fun> -c <cores>\n"
+    printf ""$CC"usage"$CE": ./vmconfig vpid -f <fun> -c <cores>\n"
     echo -e ""$CY"syntax"$CE": <fun> = on | off"
     echo -e ""$CY"syntax"$CE": <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
 }
@@ -23,24 +23,23 @@ set_vpid_func() {
         return
     fi
 
-    echo -e ""$CR"error"$CE": invalid vpid syntax"
+    echo -e ""$CR"error"$CE": invalid vpid function"
     vpid_usage
     exit 22
 }
 
 config_vpid() {
 
-    # set eapi_fun (r3) (and maybe vpid #, r4)
-    if [[ "$2" = "-f" ]]; then
-        set_vpid_func $3
-    else
-        echo -e ""$CR"error"$CE": invalid vpid syntax"
+    if [[ "$2" != "-f" ]]; then
+        echo -e ""$CR"error"$CE": first option must be -f"
         vpid_usage
         exit 22
     fi
 
+    set_vpid_func $3
+
     if [[ "$4" != "-c" ]]; then
-        echo -e ""$CR"error"$CE": invalid vpid syntax"
+        echo -e ""$CR"error"$CE": second option must be -c"
         vpid_usage
         exit 22
     fi

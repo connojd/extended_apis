@@ -26,7 +26,7 @@ config_cores() {
         config_io $@
         ;;
     "rdmsr"|"wrmsr")
-        if [[ $# -lt 2 ]]; then msr_usage; exit 0; fi
+        if [[ $# -lt 2 ]]; then msr_usage $1; exit 0; fi
         config_msr $@
         ;;
     "vpid")
@@ -50,11 +50,11 @@ config_cores() {
         config_rdpmc $@
         ;;
     "rdtsc"|"rdtscp")
-        if [[ $# -lt 2 ]]; then rdtsc_usage; exit 0; fi
+        if [[ $# -lt 2 ]]; then rdtsc_usage $1; exit 0; fi
         config_rdtsc $@
         ;;
     "invlpg"|"invpcid")
-        if [[ $# -lt 2 ]]; then invlpg_usage; exit 0; fi
+        if [[ $# -lt 2 ]]; then invlpg_usage $1; exit 0; fi
         config_invlpg $@
         ;;
     "desc-table")
@@ -92,7 +92,7 @@ if [[ $# -eq 0 ]]; then
     echo -e ""$CY"syntax"$CE": <category> = io | rdmsr | wrmsr | vpid | rdrand |"
     echo -e ""$CY"syntax"$CE":              rdseed | wbinvd | rdpmc | rdtsc |"
     echo -e ""$CY"syntax"$CE":              rdtscp | invlpg | invpcid | desc-table |"
-    echo -e ""$CY"syntax"$CE":              cr3 | cr8 | ept | mov-dr | cr4"
+    echo -e ""$CY"syntax"$CE":              cr3 | cr4 | cr8 | ept | mov-dr"
     exit 0
 fi
 

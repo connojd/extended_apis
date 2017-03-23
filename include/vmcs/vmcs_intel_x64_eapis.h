@@ -40,14 +40,19 @@
 #define ecr_dbg if (0) bfdebug
 #endif
 
+// The default amount of physical memory mapped by EPT is 64GB.
 #ifndef PHYS_MEM_SZ
 #define PHYS_MEM_SZ 0x1000000000U
 #endif
 
+// Defines the maximum number of pages which may be trapped on
+// at once.
 #ifndef TRAP_LIST_SZ
 #define TRAP_LIST_SZ 256U
 #endif
 
+// Defines the maximum number of 2MB pages that can be split
+// into 4k identity maps.
 #ifndef SPLIT_LIST_SZ
 #define SPLIT_LIST_SZ 256U
 #endif

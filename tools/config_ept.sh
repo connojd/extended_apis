@@ -1,10 +1,17 @@
 #!/bin/bash
 
 ept_usage() {
-    printf ""$CY"syntax"$CE": ./vmconfig ept -f <fun> [[-a <gpa>] -c <cores>]\n"
-    echo -e ""$CY"syntax"$CE": <fun> = on | off | t | trap | p | pass"
+    printf ""$CC"usage 1"$CE": ./vmconfig ept -f on | off (turn EPT on/off for all cores)\n"
+    printf ""$CC"usage 2"$CE": ./vmconfig ept -f <fun> -a <gpa> -c <cores>\n"
+    echo -e ""$CY"syntax"$CE": <fun> = t | trap | p | pass"
     echo -e ""$CY"syntax"$CE": <gpa> = 0x<guest phys addr to configure>"
     echo -e ""$CY"syntax"$CE": <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
+    echo -e ""$CG"note"$CE": EPT is enabled globally so each core shares the same"
+    echo -e ""$CG"note"$CE": EPT paging structure.  The default amount of physical"
+    echo -e ""$CG"note"$CE": memory mapped is 64GB.  You may trap on up to 256"
+    echo -e ""$CG"note"$CE": different 4k pages at a time. These parameters are found"
+    echo -e ""$CG"note"$CE": in extended_apis/include/vmcs/vmcs_intel_x64_eapis.h and"
+    echo -e ""$CG"note"$CE": can, in theory, be tweaked."
 }
 
 all_cores=0

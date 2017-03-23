@@ -3,7 +3,7 @@
 port=""
 
 io_usage() {
-    printf ""$CY"syntax"$CE": ./vmconfig io -f <fun> -p <port>"
+    printf ""$CC"usage"$CE": ./vmconfig io -f <fun> -p <port>"
     printf " -c <cores>\n"
     echo -e ""$CY"syntax"$CE": <fun> = t | trap | p | pass"
     echo -e ""$CY"syntax"$CE": <port> = all | 0x<hex>"
@@ -35,7 +35,6 @@ set_io_regs() {
 
     # assume port conforms to syntax
     r4="$port"
-    echo "r4: $r4"
 
     if [[ "$fun" = "trap" || "$fun" = "t" ]]; then
         r3=$trap_io_access

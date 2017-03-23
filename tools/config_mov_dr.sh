@@ -1,7 +1,7 @@
 #!/bin/bash
 
 mov_dr_usage() {
-    printf ""$CY"syntax"$CE": ./vmconfig mov-dr -f <fun>"
+    printf ""$CC"usage"$CE": ./vmconfig mov-dr -f <fun>"
     printf " -c <cores>\n"
     echo -e ""$CY"syntax"$CE": <fun> = t | trap | p | pass"
     echo -e ""$CY"syntax"$CE": <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
@@ -28,16 +28,16 @@ set_mov_dr_regs() {
 config_mov_dr() {
 
     # set eapi_cat (r2) and eapi_fun (r3)
-    if [[ "$2" = "-f" && "$4" = "-c" ]]; then
-        set_mov_dr_regs $3
-    else
-        echo -e ""$CR"error"$CE": unknown mov-dr option(s): $2 $4"
+    if [[ "$2" != "-f" ]]; then
+        echo -e ""$CR"error"$CE": first option must be -f"
         mov_dr_usage
         exit 22
     fi
 
+    set_mov_dr_regs $3
+
     if [[ "$4" != "-c" ]]; then
-        echo -e ""$CR"error"$CE": unknown mov-dr option: $4"
+        echo -e ""$CR"error"$CE": second option must be -c"
         mov_dr_usage
         exit 22
     fi

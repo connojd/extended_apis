@@ -1,9 +1,9 @@
 #!/bin/bash
 
 cr4_usage() {
-    printf ""$CY"syntax"$CE": ./vmconfig cr4 -f <fun> -b <bit>"
-    printf " -c <cores>\n"
-    echo -e ""$CY"syntax"$CE": <fun> = dump | t | trap | p | pass"
+    printf ""$CC"usage 1"$CE": ./vmconfig cr4 -f dump -c <cores>\n"
+    printf ""$CC"usage 2"$CE": ./vmconfig cr4 -f <fun> -b <bit> -c <cores>\n"
+    echo -e ""$CY"syntax"$CE": <fun> = t | trap | p | pass"
     echo -e ""$CY"syntax"$CE": <bit> = vme | pvi | tsd | de | pse |"
     echo -e ""$CY"syntax"$CE":         pae | mce | pge | pce | osfxsr |"
     echo -e ""$CY"syntax"$CE":         osxmmexcpt | umip | vmxe | smxe |"
