@@ -37,12 +37,6 @@ enum instr_gpr {
     r8, r9, r10, r11, r12, r13, r14, r15
 };
 
-enum ret_code {
-    success = 0,
-    invl_sz = -1,
-    invl_gpr = -2
-};
-
 class exit_handler_intel_x64_eapis : public exit_handler_intel_x64
 {
 public:
@@ -190,12 +184,9 @@ private:
     void handle_vmcall_registers__rdtsc(vmcall_registers_t &regs);
     void handle_vmcall_registers__invlpg(vmcall_registers_t &regs);
     void handle_vmcall_registers__desc_table(vmcall_registers_t &regs);
-
-    //TODO: condense these to one cr3 handler
     void handle_vmcall_registers__cr3(vmcall_registers_t &regs);
 
-    void handle_vmcall_registers__cr8_store(vmcall_registers_t &regs);
-    void handle_vmcall_registers__cr8_load(vmcall_registers_t &regs);
+    void handle_vmcall_registers__cr8(vmcall_registers_t &regs);
 
     void handle_vmcall_registers__cr4(vmcall_registers_t &regs);
 

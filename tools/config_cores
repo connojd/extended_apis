@@ -14,8 +14,7 @@ source extended_apis/tools/config_invlpg.sh
 source extended_apis/tools/config_desc_table.sh
 source extended_apis/tools/config_cr3.sh
 source extended_apis/tools/config_cr4.sh
-source extended_apis/tools/config_cr8_store.sh
-source extended_apis/tools/config_cr8_load.sh
+source extended_apis/tools/config_cr8.sh
 source extended_apis/tools/config_ept.sh
 source extended_apis/tools/config_mov_dr.sh
 
@@ -70,13 +69,9 @@ config_cores() {
         if [[ $# -lt 2 ]]; then cr4_usage; exit 0; fi
         config_cr4 $@
         ;;
-    "cr8-store")
-        if [[ $# -lt 2 ]]; then cr8_store_usage; exit 0; fi
-        config_cr8_store $@
-        ;;
-    "cr8-load")
-        if [[ $# -lt 2 ]]; then cr8_load_usage; exit 0; fi
-        config_cr8_load $@
+    "cr8")
+        if [[ $# -lt 2 ]]; then cr8_usage; exit 0; fi
+        config_cr8 $@
         ;;
     "ept")
         if [[ $# -lt 2 ]]; then ept_usage; exit 0; fi
@@ -97,8 +92,7 @@ if [[ $# -eq 0 ]]; then
     echo -e ""$CY"syntax"$CE": <category> = io | rdmsr | wrmsr | vpid | rdrand |"
     echo -e ""$CY"syntax"$CE":              rdseed | wbinvd | rdpmc | rdtsc |"
     echo -e ""$CY"syntax"$CE":              rdtscp | invlpg | invpcid | desc-table |"
-    echo -e ""$CY"syntax"$CE":              cr3 | cr8-store | cr8-load |"
-    echo -e ""$CY"syntax"$CE":              ept | mov-dr | cr4"
+    echo -e ""$CY"syntax"$CE":              cr3 | cr8 | ept | mov-dr | cr4"
     exit 0
 fi
 

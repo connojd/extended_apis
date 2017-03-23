@@ -1,53 +1,53 @@
 #!/bin/bash
 
-cr3_usage() {
-    printf ""$CC"usage"$CE": ./vmconfig cr3 -f <fun>"
+cr8_usage() {
+    printf ""$CC"usage"$CE": ./vmconfig cr8 -f <fun>"
     printf " -c <cores>\n"
-    echo -e ""$CY"syntax"$CE": <fun> = tol (trap on load to CR3) |"
-    echo -e ""$CY"syntax"$CE":         tos (trap on store from CR3) |"
-    echo -e ""$CY"syntax"$CE":         pol (pass through on load to CR3) |"
-    echo -e ""$CY"syntax"$CE":         pos (pass through on store from CR3)"
+    echo -e ""$CY"syntax"$CE": <fun> = tol (trap on load to CR8) |"
+    echo -e ""$CY"syntax"$CE":         tos (trap on store from CR8) |"
+    echo -e ""$CY"syntax"$CE":         pol (pass through on load to CR8) |"
+    echo -e ""$CY"syntax"$CE":         pos (pass through on store from CR8)"
     echo -e ""$CY"syntax"$CE": <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
 }
 
-set_cr3_regs() {
+set_cr8_regs() {
 
-    r2="$cat_cr3"
+    r2="$cat_cr8"
 
     case "$1" in
     "tol")
-        r3=$trap_cr3_load
+        r3=$trap_cr8_load
         ;;
     "tos")
-        r3=$trap_cr3_store
+        r3=$trap_cr8_store
         ;;
     "pol")
-        r3=$pass_through_cr3_load
+        r3=$pass_through_cr8_load
         ;;
     "pos")
-        r3=$pass_through_cr3_store
+        r3=$pass_through_cr8_store
         ;;
     *)
-        echo -e ""$CR"error"$CE": invalid cr3 function"
-        cr3_usage
+        echo -e ""$CR"error"$CE": invalid cr8 function"
+        cr8_usage
         exit 22
         ;;
     esac
 }
 
-config_cr3() {
+config_cr8() {
 
     if [[ "$2" != "-f" ]]; then
         echo -e ""$CR"error"$CE": first option must be -f"
-        cr3_usage
+        cr8_usage
         exit 22
     fi
 
-    set_cr3_regs $3
+    set_cr8_regs $3
 
     if [[ "$4" != "-c" ]]; then
         echo -e ""$CR"error"$CE": second option must be -c"
-        cr3_usage
+        cr8_usage
         exit 22
     fi
 

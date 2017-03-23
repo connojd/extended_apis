@@ -96,13 +96,11 @@ cat_cr3="0xD000"
     trap_cr3_load="0x3"
     pass_through_cr3_load="0x4"
 
-cat_cr8_store="0xF000"
+cat_cr8="0xE000"
     trap_cr8_store="0x1"
     pass_through_cr8_store="0x2"
-
-cat_cr8_load="0x10000"
-    trap_cr8_load="0x1"
-    pass_through_cr8_load="0x2"
+    trap_cr8_load="0x3"
+    pass_through_cr8_load="0x4"
 
 cat_ept="0x20000"
     ept_on="0x1"

@@ -48,8 +48,7 @@ enum eapis_vmcall_categories
     eapis_cat__invlpg = 0xB000,
     eapis_cat__desc_table = 0xC000,
     eapis_cat__cr3 = 0xD000,
-    eapis_cat__cr8_store = 0xF000,
-    eapis_cat__cr8_load = 0x10000,
+    eapis_cat__cr8 = 0xE000,
     eapis_cat__ept = 0x20000,
     eapis_cat__mov_dr = 0x30000,
     eapis_cat__cr4 = 0x40000
@@ -111,11 +110,10 @@ enum eapis_vmcall_functions
     eapis_fun__trap_on_cr3_load = 0x3,
     eapis_fun__pass_through_on_cr3_load = 0x4,
 
-    eapis_fun__trap_on_cr8_store = 0x1,
-    eapis_fun__pass_through_on_cr8_store = 0x2,
-
-    eapis_fun__trap_on_cr8_load = 0x1,
-    eapis_fun__pass_through_on_cr8_load = 0x2,
+    eapis_fun__trap_cr8_store = 0x1,
+    eapis_fun__pass_through_cr8_store = 0x2,
+    eapis_fun__trap_cr8_load = 0x3,
+    eapis_fun__pass_through_cr8_load = 0x4,
 
     eapis_fun__ept_on = 0x1,
     eapis_fun__ept_off = 0x2,

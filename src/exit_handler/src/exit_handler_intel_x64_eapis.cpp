@@ -197,12 +197,8 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
             handle_vmcall_registers__cr3(regs);
             break;
 
-        case eapis_cat__cr8_store:
-            handle_vmcall_registers__cr8_store(regs);
-            break;
-
-        case eapis_cat__cr8_load:
-            handle_vmcall_registers__cr8_load(regs);
+        case eapis_cat__cr8:
+            handle_vmcall_registers__cr8(regs);
             break;
 
         case eapis_cat__cr4:
@@ -1064,37 +1060,27 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__cr3(
 }
 
 void
-exit_handler_intel_x64_eapis::handle_vmcall_registers__cr8_store(
+exit_handler_intel_x64_eapis::handle_vmcall_registers__cr8(
     vmcall_registers_t &regs)
 {
     switch (regs.r03) {
-        case eapis_fun__trap_on_cr8_store:
-            m_vmcs_eapis->trap_on_cr8_store();
+        case eapis_fun__trap_cr8_store:
+            m_vmcs_eapis->trap_cr8_store();
             ecr_dbg << "trapping on MOV from CR8" << bfendl;
             break;
 
-        case eapis_fun__pass_through_on_cr8_store:
-            m_vmcs_eapis->pass_through_on_cr8_store();
+        case eapis_fun__pass_through_cr8_store:
+            m_vmcs_eapis->pass_through_cr8_store();
             ecr_dbg << "passing through on MOV from CR8" << bfendl;
             break;
 
-        default:
-            throw std::runtime_error("unknown vmcall function");
-    }
-}
-
-void
-exit_handler_intel_x64_eapis::handle_vmcall_registers__cr8_load(
-    vmcall_registers_t &regs)
-{
-    switch (regs.r03) {
-        case eapis_fun__trap_on_cr8_load:
-            m_vmcs_eapis->trap_on_cr8_load();
+        case eapis_fun__trap_cr8_load:
+            m_vmcs_eapis->trap_cr8_load();
             ecr_dbg << "trapping on MOV to CR8" << bfendl;
             break;
 
-        case eapis_fun__pass_through_on_cr8_load:
-            m_vmcs_eapis->pass_through_on_cr8_load();
+        case eapis_fun__pass_through_cr8_load:
+            m_vmcs_eapis->pass_through_cr8_load();
             ecr_dbg << "passing through on MOV to CR8" << bfendl;
             break;
 

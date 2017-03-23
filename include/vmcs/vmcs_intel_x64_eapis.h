@@ -459,10 +459,10 @@ public:
     void pass_through_on_cr3_store();
     void pass_through_on_cr3_load();
 
-    void trap_on_cr8_store();
-    void trap_on_cr8_load();
-    void pass_through_on_cr8_store();
-    void pass_through_on_cr8_load();
+    void trap_cr8_store();
+    void trap_cr8_load();
+    void pass_through_cr8_store();
+    void pass_through_cr8_load();
 
     void trap_gpa(uint64_t gpa);
     void pass_through_gpa(uint64_t gpa);
@@ -473,7 +473,6 @@ public:
     void dump_cr4();
     void trap_cr4(uint64_t mask);
     void pass_through_cr4(uint64_t mask);
-
 
     std::vector<uint64_t>::iterator trap_list_it(uint64_t gfn);
     std::vector<uint64_t>::iterator split_list_it(uint64_t gfn);
