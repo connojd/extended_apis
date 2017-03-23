@@ -105,10 +105,10 @@ enum eapis_vmcall_functions
     eapis_fun__trap_on_desc_table = 0x1,
     eapis_fun__pass_through_on_desc_table = 0x2,
 
-    eapis_fun__trap_on_cr3_store = 0x1,
-    eapis_fun__pass_through_on_cr3_store = 0x2,
-    eapis_fun__trap_on_cr3_load = 0x3,
-    eapis_fun__pass_through_on_cr3_load = 0x4,
+    eapis_fun__trap_cr3_store = 0x1,
+    eapis_fun__pass_through_cr3_store = 0x2,
+    eapis_fun__trap_cr3_load = 0x3,
+    eapis_fun__pass_through_cr3_load = 0x4,
 
     eapis_fun__trap_cr8_store = 0x1,
     eapis_fun__pass_through_cr8_store = 0x2,

@@ -1034,23 +1034,23 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__cr3(
     vmcall_registers_t &regs)
 {
     switch (regs.r03) {
-        case eapis_fun__trap_on_cr3_store:
-            m_vmcs_eapis->trap_on_cr3_store();
+        case eapis_fun__trap_cr3_store:
+            m_vmcs_eapis->trap_cr3_store();
             ecr_dbg << "trapping on MOV from CR3" << bfendl;
             break;
 
-        case eapis_fun__pass_through_on_cr3_store:
-            m_vmcs_eapis->pass_through_on_cr3_store();
+        case eapis_fun__pass_through_cr3_store:
+            m_vmcs_eapis->pass_through_cr3_store();
             ecr_dbg << "passing through on MOV from CR3" << bfendl;
             break;
 
-        case eapis_fun__trap_on_cr3_load:
-            m_vmcs_eapis->trap_on_cr3_load();
+        case eapis_fun__trap_cr3_load:
+            m_vmcs_eapis->trap_cr3_load();
             ecr_dbg << "trapping on MOV to CR3" << bfendl;
             break;
 
-        case eapis_fun__pass_through_on_cr3_load:
-            m_vmcs_eapis->pass_through_on_cr3_load();
+        case eapis_fun__pass_through_cr3_load:
+            m_vmcs_eapis->pass_through_cr3_load();
             ecr_dbg << "passing through on MOV to CR3" << bfendl;
             break;
 

@@ -454,10 +454,10 @@ public:
     void trap_on_desc_table();
     void pass_through_on_desc_table();
 
-    void trap_on_cr3_store();
-    void trap_on_cr3_load();
-    void pass_through_on_cr3_store();
-    void pass_through_on_cr3_load();
+    void trap_cr3_store();
+    void trap_cr3_load();
+    void pass_through_cr3_store();
+    void pass_through_cr3_load();
 
     void trap_cr8_store();
     void trap_cr8_load();
