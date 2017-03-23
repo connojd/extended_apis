@@ -581,9 +581,23 @@ vmcs_intel_x64_eapis::dump_cr4()
  *
  * @flag - the mask for the bit in CR4 to trap on.
  */
+
+bool
+vmcs_intel_x64_eapis::valid_cr4_flag(uint64_t flag)
+{
+    return (valid_cr4_flags & flag) != 0 &&
+           (flag & (flag - 1)) == 0 &&
+           flag != 0;
+}
+
 void
 vmcs_intel_x64_eapis::trap_cr4(uint64_t flag)
 {
+    if (!valid_cr4_flag(flag)) {
+        bfwarning << "Cannot trap on CR4: flag = "
+            << view_as_pointer(flag) << " is not valid" << bfendl;
+    }
+
     auto cr4 = vmcs::guest_cr4::get();
     auto fix0 = msrs::ia32_vmx_cr4_fixed0::get();
     auto fix1 = msrs::ia32_vmx_cr4_fixed1::get();
@@ -632,6 +646,11 @@ vmcs_intel_x64_eapis::trap_cr4(uint64_t flag)
 void
 vmcs_intel_x64_eapis::pass_through_cr4(uint64_t flag)
 {
+    if (!valid_cr4_flag(flag)) {
+        bfwarning << "Cannot pass through on CR4: flag = "
+            << view_as_pointer(flag) << " is not valid" << bfendl;
+    }
+
     auto mask = vmcs::cr4_guest_host_mask::get();
     mask &= ~flag;
     vmcs::cr4_guest_host_mask::set(mask);

@@ -128,7 +128,6 @@ enum eapis_vmcall_functions
     eapis_fun__dump_cr4 = 0x1,
     eapis_fun__trap_cr4 = 0x2,
     eapis_fun__pass_through_cr4 = 0x3,
-        eapis_arg__cr4_pce = 0x100
 };
 
 /**

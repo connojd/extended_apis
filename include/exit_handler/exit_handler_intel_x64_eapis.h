@@ -185,11 +185,8 @@ private:
     void handle_vmcall_registers__invlpg(vmcall_registers_t &regs);
     void handle_vmcall_registers__desc_table(vmcall_registers_t &regs);
     void handle_vmcall_registers__cr3(vmcall_registers_t &regs);
-
-    void handle_vmcall_registers__cr8(vmcall_registers_t &regs);
-
     void handle_vmcall_registers__cr4(vmcall_registers_t &regs);
-
+    void handle_vmcall_registers__cr8(vmcall_registers_t &regs);
     void handle_vmcall_registers__ept(vmcall_registers_t &regs);
     void handle_vmcall_registers__mov_dr(vmcall_registers_t &regs);
 

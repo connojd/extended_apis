@@ -474,8 +474,12 @@ public:
     void trap_cr4(uint64_t mask);
     void pass_through_cr4(uint64_t mask);
 
+    bool valid_cr4_flag(uint64_t flag);
+
     std::vector<uint64_t>::iterator trap_list_it(uint64_t gfn);
     std::vector<uint64_t>::iterator split_list_it(uint64_t gfn);
+
+    const uint64_t valid_cr4_flags = 0x776fffU;
 
 protected:
 
