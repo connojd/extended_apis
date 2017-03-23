@@ -12,13 +12,12 @@ source extended_apis/tools/config_rdpmc.sh
 source extended_apis/tools/config_rdtsc.sh
 source extended_apis/tools/config_invlpg.sh
 source extended_apis/tools/config_desc_table.sh
-source extended_apis/tools/config_cr3_store.sh
-source extended_apis/tools/config_cr3_load.sh
+source extended_apis/tools/config_cr3.sh
+source extended_apis/tools/config_cr4.sh
 source extended_apis/tools/config_cr8_store.sh
 source extended_apis/tools/config_cr8_load.sh
 source extended_apis/tools/config_ept.sh
 source extended_apis/tools/config_mov_dr.sh
-source extended_apis/tools/config_cr4.sh
 
 config_cores() {
 
@@ -63,13 +62,13 @@ config_cores() {
         if [[ $# -lt 2 ]]; then desc_table_usage; exit 0; fi
         config_desc_table $@
         ;;
-    "cr3-store")
-        if [[ $# -lt 2 ]]; then cr3_store_usage; exit 0; fi
-        config_cr3_store $@
+    "cr3")
+        if [[ $# -lt 2 ]]; then cr3_usage; exit 0; fi
+        config_cr3 $@
         ;;
-    "cr3-load")
-        if [[ $# -lt 2 ]]; then cr3_load_usage; exit 0; fi
-        config_cr3_load $@
+    "cr4")
+        if [[ $# -lt 2 ]]; then cr4_usage; exit 0; fi
+        config_cr4 $@
         ;;
     "cr8-store")
         if [[ $# -lt 2 ]]; then cr8_store_usage; exit 0; fi
@@ -78,10 +77,6 @@ config_cores() {
     "cr8-load")
         if [[ $# -lt 2 ]]; then cr8_load_usage; exit 0; fi
         config_cr8_load $@
-        ;;
-    "cr4")
-        if [[ $# -lt 2 ]]; then cr4_usage; exit 0; fi
-        config_cr4 $@
         ;;
     "ept")
         if [[ $# -lt 2 ]]; then ept_usage; exit 0; fi
@@ -98,12 +93,12 @@ config_cores() {
 }
 
 if [[ $# -eq 0 ]]; then
-    echo -e ""$CY"syntax"$CE": ./vmconfig <cat> for category-specific syntax"
-    echo -e ""$CY"syntax"$CE": <cat> = io | rdmsr | wrmsr | vpid | rdrand"
-    echo -e ""$CY"syntax"$CE": | rdseed | wbinvd | rdpmc | rdtsc"
-    echo -e ""$CY"syntax"$CE": | rdtscp | invlpg | invpcid | desc-table"
-    echo -e ""$CY"syntax"$CE": | cr3-store | cr3-load | cr8-store | cr8-load"
-    echo -e ""$CY"syntax"$CE": | ept | mov-dr | cr4"
+    echo -e ""$CC"usage"$CE": ./vmconfig <category> (lists options & syntax specific to <category>)"
+    echo -e ""$CY"syntax"$CE": <category> = io | rdmsr | wrmsr | vpid | rdrand |"
+    echo -e ""$CY"syntax"$CE":              rdseed | wbinvd | rdpmc | rdtsc |"
+    echo -e ""$CY"syntax"$CE":              rdtscp | invlpg | invpcid | desc-table |"
+    echo -e ""$CY"syntax"$CE":              cr3 | cr8-store | cr8-load |"
+    echo -e ""$CY"syntax"$CE":              ept | mov-dr | cr4"
     exit 0
 fi
 

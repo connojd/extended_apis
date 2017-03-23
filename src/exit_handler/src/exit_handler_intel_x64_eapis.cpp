@@ -193,12 +193,8 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
             handle_vmcall_registers__desc_table(regs);
             break;
 
-        case eapis_cat__cr3_store:
-            handle_vmcall_registers__cr3_store(regs);
-            break;
-
-        case eapis_cat__cr3_load:
-            handle_vmcall_registers__cr3_load(regs);
+        case eapis_cat__cr3:
+            handle_vmcall_registers__cr3(regs);
             break;
 
         case eapis_cat__cr8_store:
@@ -1038,7 +1034,7 @@ exit_handler_intel_x64_eapis::handle_exit__ctl_reg_access()
 }
 
 void
-exit_handler_intel_x64_eapis::handle_vmcall_registers__cr3_store(
+exit_handler_intel_x64_eapis::handle_vmcall_registers__cr3(
     vmcall_registers_t &regs)
 {
     switch (regs.r03) {
@@ -1052,16 +1048,6 @@ exit_handler_intel_x64_eapis::handle_vmcall_registers__cr3_store(
             ecr_dbg << "passing through on MOV from CR3" << bfendl;
             break;
 
-        default:
-            throw std::runtime_error("unknown vmcall function");
-    }
-}
-
-void
-exit_handler_intel_x64_eapis::handle_vmcall_registers__cr3_load(
-    vmcall_registers_t &regs)
-{
-    switch (regs.r03) {
         case eapis_fun__trap_on_cr3_load:
             m_vmcs_eapis->trap_on_cr3_load();
             ecr_dbg << "trapping on MOV to CR3" << bfendl;

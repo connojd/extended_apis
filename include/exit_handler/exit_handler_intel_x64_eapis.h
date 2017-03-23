@@ -192,8 +192,7 @@ private:
     void handle_vmcall_registers__desc_table(vmcall_registers_t &regs);
 
     //TODO: condense these to one cr3 handler
-    void handle_vmcall_registers__cr3_store(vmcall_registers_t &regs);
-    void handle_vmcall_registers__cr3_load(vmcall_registers_t &regs);
+    void handle_vmcall_registers__cr3(vmcall_registers_t &regs);
 
     void handle_vmcall_registers__cr8_store(vmcall_registers_t &regs);
     void handle_vmcall_registers__cr8_load(vmcall_registers_t &regs);

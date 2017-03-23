@@ -47,7 +47,7 @@ make start
 ```
 
 After the start step succeeds, refer to the live configuration section
-below to further configure the hypervisor.  Further parameters can
+below to further configure the hypervisor.  Parameters can
 be tweaked in hypervisor/include/constants.h.  That file contains
 the default serial parameters.  The default port is 0x3f8 with
 9600 baud.

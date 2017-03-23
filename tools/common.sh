@@ -90,13 +90,11 @@ cat_desc_table="0xC000"
     trap_desc_table="0x1"
     pass_through_desc_table="0x2"
 
-cat_cr3_store="0xD000"
+cat_cr3="0xD000"
     trap_cr3_store="0x1"
     pass_through_cr3_store="0x2"
-
-cat_cr3_load="0xE000"
-    trap_cr3_load="0x1"
-    pass_through_cr3_load="0x2"
+    trap_cr3_load="0x3"
+    pass_through_cr3_load="0x4"
 
 cat_cr8_store="0xF000"
     trap_cr8_store="0x1"
