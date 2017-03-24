@@ -27,7 +27,7 @@ set_wbinvd_regs() {
 
 config_wbinvd() {
 
-    if [[ "$2" = "-f" ]]; then
+    if [[ "$2" != "-f" ]]; then
         echo -e ""$CR"error"$CE": first option must be -f"
         wbinvd_usage
         exit 22

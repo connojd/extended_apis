@@ -34,7 +34,7 @@ set_rdtsc_regs() {
 
 config_rdtsc() {
 
-    if [[ "$2" = "-f" ]]; then
+    if [[ "$2" != "-f" ]]; then
         echo -e ""$CR"error"$CE": first option must be -f"
         rdtsc_usage $1
         exit 22

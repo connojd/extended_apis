@@ -27,7 +27,7 @@ set_rdseed_regs() {
 
 config_rdseed() {
 
-    if [[ "$2" = "-f" ]]; then
+    if [[ "$2" != "-f" ]]; then
         echo -e ""$CR"error"$CE": first option must be -f"
         rdseed_usage
         exit 22

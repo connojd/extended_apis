@@ -27,7 +27,7 @@ set_rdrand_regs() {
 
 config_rdrand() {
 
-    if [[ "$2" = "-f" ]]; then
+    if [[ "$2" != "-f" ]]; then
         echo -e ""$CR"error"$CE": first option must be -f"
         rdrand_usage
         exit 22

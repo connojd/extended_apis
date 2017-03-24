@@ -28,12 +28,12 @@ source extended_apis/tools/common.sh
 
 header "rdrand: pass-through"
 config_all_cores "$cat_rdrand $pass_through_rdrand"
-extended_apis/tests/bin/rdrand
+time extended_apis/tests/bin/rdrand
 footer
 
 header "rdrand: trap"
 config_all_cores "$cat_rdrand $trap_rdrand"
-extended_apis/tests/bin/rdrand
+time extended_apis/tests/bin/rdrand
 footer
 
 config_all_cores "$cat_rdrand $pass_through_rdrand"
