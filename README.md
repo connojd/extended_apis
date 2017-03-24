@@ -11,12 +11,12 @@ fine-grained side-channels available to guest VMs.
 
 To setup the extension, clone the ecr branch from connojd/hypervisor.git
 and connojd/extended_apis.git. Find the approprate setup script for your OS
-from hypervisor/tools/scripts. For example, on Ubuntu 16.10, we enter
+from hypervisor/tools/scripts. For example, on Ubuntu 16.10, enter
 
 ```
 cd ~/
 git clone -b ecr https://github.com/connojd/hypervisor.git
-cd ~/hypervisor
+cd hypervisor
 git clone -b ecr https://github.com/connojd/extended_apis.git
 
 ./tools/scripts/setup_ubuntu.sh --no-configure
@@ -25,7 +25,7 @@ git clone -b ecr https://github.com/connojd/extended_apis.git
 make
 ```
 
-Note that not all versions of each OS is supported.
+Note that not every version of each OS is supported.
 
 ## Startup / Teardown
 
@@ -40,7 +40,7 @@ make load
 The kernel driver is named bareflank.ko.  You may run 'dmesg' to see
 the output from the make commands to ensure the load step succeeded.
 
-Next we start the hypervisor:
+To start the hypervisor:
 
 ```
 make start
@@ -61,8 +61,16 @@ make unload
 
 ## Live Configuration
 
-Live configuration is done with the ~/hypervisor/vmconfig script.
+Live configuration is done with the vmconfig script.
 Executing ./vmconfig with no args will list help for the different
-options. Note that the configuration code provides only a *mechanism* for
+options. There are example scripts in hypervisor/extended_apis/examples
+that show different ways you can use vmconfig.
+
+Note that the configuration code provides only a *mechanism* for
 configuring the VMCS at runtime, so it won't stop you from committing
 configurations that crash your box.
+
+## Tests
+
+An incomplete set of tests is located in hypervisor/extended_apis/tests.
+Check the README in that directory for more info.

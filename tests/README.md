@@ -3,7 +3,7 @@
 ## Description
 Most of the testing is done from observing the debug output
 on the serial console.  The tests that run in ring-3 are located
-in tests and the ring-0 tests are kernel modules located in tests/modules.
+in tests/ and the ring-0 tests are kernel modules located in tests/modules/.
 
 ## Compilation
 To build the userspace and kernel module tests, run
