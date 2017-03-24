@@ -17,4 +17,10 @@ load:
 unload:
 	rmmod ./test_$(TEST).ko
 
+help:
+	@echo "make                            - build kernel modules"
+	@echo "make clean                      - remove build files"
+	@echo "sudo make load TEST=<test>.ko   - load kernel module test_<test>.ko"
+	@echo "sudo make unload TEST=<test>.ko - unload kernel module test_<test>.ko"
+	@echo "make help                       - print this help"
 endif

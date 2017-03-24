@@ -1,11 +1,9 @@
+BINS := rdrand rdseed
 
-all: rdrand rdseed
+all: $(BINS)
 
 clean:
-	rm bin/*
+	-rm $(BINS)
 
-rdrand: rdrand.c
-	$(CC) $< -o $@ && mv $@ bin/
-
-rdseed: rdseed.c
-	$(CC) $< -o $@ && mv $@ bin/
+%: %.c
+	$(CC) $< -o $@
