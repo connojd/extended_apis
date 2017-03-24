@@ -28,12 +28,12 @@ source extended_apis/tools/common.sh
 
 header "rdseed: pass-through"
 config_all_cores "$cat_rdseed $pass_through_rdseed"
-extended_apis/tests/bin/rdseed
+extended_apis/tests/rdseed
 footer
 
 header "rdseed: trap"
 config_all_cores "$cat_rdseed $trap_rdseed"
-extended_apis/tests/bin/rdseed
+extended_apis/tests/rdseed
 footer
 
 config_all_cores "$cat_rdseed $pass_through_rdseed"
