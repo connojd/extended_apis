@@ -1,11 +1,10 @@
 #!/bin/bash
 
 ept_usage() {
-    printf ""$CC"usage 1"$CE": ./vmconfig ept -f on | off (turn EPT on/off for all cores)\n"
-    printf ""$CC"usage 2"$CE": ./vmconfig ept -f <fun> -a <gpa> -c <cores>\n"
+    printf ""$CC"usage 1"$CE": ./vmconfig ept -f on | off\n"
+    printf ""$CC"usage 2"$CE": ./vmconfig ept -f <fun> -a <gpa>\n"
     echo -e ""$CY"syntax"$CE": <fun> = t | trap | p | pass"
     echo -e ""$CY"syntax"$CE": <gpa> = 0x<guest phys addr to configure>"
-    echo -e ""$CY"syntax"$CE": <cores> = all | [0-$(( $NUM_CORES - 1 ))]+"
     echo -e ""$CG"note"$CE": EPT is enabled globally so each core shares the same"
     echo -e ""$CG"note"$CE": EPT paging structure.  The default amount of physical"
     echo -e ""$CG"note"$CE": memory mapped is 64GB.  You may trap on up to 256"
@@ -59,37 +58,21 @@ set_ept_func() {
 
 config_ept() {
 
-    if [[ "$2" = "-f" ]]; then
-        set_ept_func $3 $4 $5
-    else
-        echo -e ""$CR"error"$CE": invalid ept syntax"
+    if [[ "$2" != "-f" ]]; then
+        echo -e ""$CR"error"$CE": must supply -f"
         ept_usage
         exit 22
     fi
+
+    set_ept_func $3 $4 $5
 
     if [[ $all_cores -eq 1 ]]; then
         config_all_cores "$r2 $r3"
         exit 0
     fi
 
-    while [[ "$1" != "-c" ]]; do
-        shift 1
-    done
-
-    if [[ $# -eq 0 ]]; then
-        echo -e ""$CR"error"$CE": invalid ept syntax: no cores listed"
-        ept_usage
-        exit 22
-    fi
-
-    if [[ "$2" = "all" ]]; then
-            config_all_cores "$r2 $r3 $r4"
-            exit 0
-    fi
-
-    shift 1
-    ncores=$#
-    cores="$@"
+    ncores=1
+    cores=0
 
     config_select_cores "$r2 $r3 $r4" $ncores $cores
 }

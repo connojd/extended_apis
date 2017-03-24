@@ -69,6 +69,11 @@ vmcs_intel_x64_eapis::write_fields(gsl::not_null<vmcs_intel_x64_state *> host_st
     this->enable_io_bitmaps();
     this->enable_msr_bitmap();
 
+    if (!ept_pointer::exists()) {
+        bfwarning << "EPT not supported on this processor" << bfendl;
+        return;
+    }
+
     if (init_ept) {
         g_trap_list = std::make_unique<std::vector<uint64_t>>();
         g_trap_list->reserve(TRAP_LIST_SZ);
@@ -88,6 +93,7 @@ vmcs_intel_x64_eapis::write_fields(gsl::not_null<vmcs_intel_x64_state *> host_st
 void
 vmcs_intel_x64_eapis::enable_ept()
 {
+    set_eptp(g_ept->eptp());
     exec_ctls2::enable_ept::enable();
     intel_x64::vmx::invept_global();
 }
