@@ -72,7 +72,7 @@ config_msr() {
         set_msr_func $1 $3 $5
     else
         echo -e ""$CR"error"$CE": invalid $1 syntax"
-        msr_usage
+        msr_usage $1
         exit 22
     fi
 

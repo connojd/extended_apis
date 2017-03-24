@@ -61,14 +61,7 @@ make unload
 
 ## Live Configuration
 
-Live configuration is done with the config_cores script under
-hypervisor/extended_apis/tools.  To use it, create a symlink
-to vmconfig:
-```
-cd ~/hypervisor
-ln -s extended_apis/tools/config_cores vmconfig
-```
-
+Live configuration is done with the ~/hypervisor/vmconfig script.
 Executing ./vmconfig with no args will list help for the different
 options. Note that the configuration code provides only a *mechanism* for
 configuring the VMCS at runtime, so it won't stop you from committing

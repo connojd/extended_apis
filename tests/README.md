@@ -3,8 +3,7 @@
 ## Description
 Most of the testing is done from observing the debug output
 on the serial console.  The tests that run in ring-3 are located
-in tests and are prefixed by "test_".  The ring-0 tests are
-kernel modules located in tests/modules.
+in tests and the ring-0 tests are kernel modules located in tests/modules.
 
 ## Compilation
 To build the userspace and kernel module tests, run
@@ -17,7 +16,7 @@ make
 ```
 
 ## Running the tests
-For the test_* tests, run them with ./<test>.  The kernel modules
+For the tests/*.sh tests, run them with ./<test>.sh.  The kernel modules
 are used in conjunction with the vmconfig script and serial output.
 
 The test for wbinvd (test_wbinvd.c) simply executes the instruction
@@ -71,6 +70,3 @@ sudo make load TEST=cr4
 ```
 If PCE was disabled originally on the core that loaded the module, then
 it should be set in the guest CR4 with the CR4 guest/host mask cleared to 0.
-
-
-
