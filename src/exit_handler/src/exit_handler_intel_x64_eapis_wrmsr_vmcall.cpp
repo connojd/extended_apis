@@ -204,8 +204,10 @@ exit_handler_intel_x64_eapis::handle_vmcall__wrmsr_access_log(
         policy(wrmsr_access_log)->deny_vmcall();
     }
 
+    bfdebug_info(0, "wrmsr accesses:");
     for (auto pair : m_wrmsr_access_log) {
-        ojson[bfn::to_string(pair.first, 16)] = pair.second;
+        //ojson[bfn::to_string(pair.first, 16)] = pair.second;
+        bfdebug_ndec(0, bfn::to_string(pair.first, 16).data(), pair.second);
     }
 
     bfdebug_text(1, "dump wrmsr_access_log", "success");

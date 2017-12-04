@@ -204,8 +204,10 @@ exit_handler_intel_x64_eapis::handle_vmcall__rdmsr_access_log(
         policy(rdmsr_access_log)->deny_vmcall();
     }
 
+    bfdebug_info(0, "rdmsr accesses:");
     for (auto pair : m_rdmsr_access_log) {
-        ojson[bfn::to_string(pair.first, 16)] = pair.second;
+        //ojson[bfn::to_string(pair.first, 16)] = pair.second;
+        bfdebug_ndec(0, bfn::to_string(pair.first, 16).data(), pair.second);
     }
 
     bfdebug_text(1, "dump rdmsr_access_log", "success");

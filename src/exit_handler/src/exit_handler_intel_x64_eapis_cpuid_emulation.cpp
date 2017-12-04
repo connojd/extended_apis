@@ -20,6 +20,7 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 #include <exit_handler/exit_handler_intel_x64_eapis.h>
+#include <intrinsics/x86/intel_x64.h>
 
 void
 exit_handler_intel_x64_eapis::log_cpuid_access(bool enable)
@@ -27,7 +28,10 @@ exit_handler_intel_x64_eapis::log_cpuid_access(bool enable)
 
 void
 exit_handler_intel_x64_eapis::clear_cpuid_access_log()
-{ m_cpuid_access_log.clear(); }
+{
+    m_cpuid_access_log.clear();
+    m_cpuid_access_log_ring3.clear();
+}
 
 void
 exit_handler_intel_x64_eapis::handle_exit__cpuid()
@@ -37,7 +41,11 @@ exit_handler_intel_x64_eapis::handle_exit__cpuid()
     cpuid_key_type key = create_key(leaf, subleaf);
 
     if (m_cpuid_access_log_enabled) {
-        m_cpuid_access_log[key]++;
+        if (intel_x64::vmcs::guest_ss_access_rights::dpl::get() == 3) {
+            m_cpuid_access_log_ring3[key]++;
+        } else {
+            m_cpuid_access_log[key]++;
+        }
     }
 
     auto i = m_cpuid_emu_map.find(key);

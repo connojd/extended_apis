@@ -19,7 +19,17 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+#include <vmcs/root_ept_intel_x64.h>
 #include <vmcs/vmcs_intel_x64_eapis.h>
+
+using namespace intel_x64;
+using namespace vmcs;
+
+#ifndef MAX_PHYS_ADDR
+#define MAX_PHYS_ADDR 0x20000000000
+#endif
+
+std::unique_ptr<root_ept_intel_x64> g_root_ept;
 
 vmcs_intel_x64_eapis::vmcs_intel_x64_eapis()
 {
@@ -33,11 +43,36 @@ vmcs_intel_x64_eapis::write_fields(gsl::not_null<vmcs_intel_x64_state *> host_st
 {
     vmcs_intel_x64::write_fields(host_state, guest_state);
 
-    this->disable_ept();
-    this->disable_vpid();
-    this->disable_io_bitmaps();
-    this->disable_msr_bitmap();
-    this->disable_msr_bitmap();
+    // EPT passthrough
+    static auto ept_enabled = false;
+    if (!ept_enabled) {
+        g_root_ept = std::make_unique<root_ept_intel_x64>();
+        g_root_ept->setup_identity_map_1g(0, MAX_PHYS_ADDR);
+        ept_enabled = true;
+    }
+    this->enable_ept(g_root_ept->eptp());
+    this->enable_vpid();
+
+    // IO passthrough
+    this->enable_io_bitmaps();
+    this->pass_through_all_io_accesses();
+
+    // MSR passthrough
+    this->enable_msr_bitmap();
+    msr_list_type list = {
+    //    intel_x64::msrs::ia32_debugctl::addr,
+    //    x64::msrs::ia32_pat::addr,
+    //    intel_x64::msrs::ia32_efer::addr,
+    //    intel_x64::msrs::ia32_perf_global_ctrl::addr,
+    //    intel_x64::msrs::ia32_sysenter_cs::addr,
+    //    intel_x64::msrs::ia32_sysenter_esp::addr,
+    //    intel_x64::msrs::ia32_sysenter_eip::addr,
+    //    intel_x64::msrs::ia32_fs_base::addr,
+    //    intel_x64::msrs::ia32_gs_base::addr
+    };
+    this->blacklist_rdmsr_access(list);
+    this->blacklist_wrmsr_access(list);
+
     this->disable_cr0_load_hook();
     this->disable_cr3_load_hook();
     this->disable_cr3_store_hook();

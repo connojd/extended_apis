@@ -197,8 +197,17 @@ exit_handler_intel_x64_eapis::handle_vmcall__cpuid_access_log(
         policy(cpuid_access_log)->deny_vmcall();
     }
 
+
+    bfdebug_info(0, "ring 0 cpuid access log");
     for (auto pair : m_cpuid_access_log) {
-        ojson[bfn::to_string(pair.first, 16)] = pair.second;
+//        ojson[bfn::to_string(pair.first, 16)] = pair.second;
+        bfdebug_ndec(0, bfn::to_string(pair.first, 16).data(), pair.second);
+    }
+
+    bfdebug_info(0, "ring 3 cpuid access log");
+    for (auto pair : m_cpuid_access_log_ring3) {
+//        ojson[bfn::to_string(pair.first, 16)] = pair.second;
+        bfdebug_ndec(0, bfn::to_string(pair.first, 16).data(), pair.second);
     }
 
     bfdebug_text(1, "dump cpuid_access_log", "success");

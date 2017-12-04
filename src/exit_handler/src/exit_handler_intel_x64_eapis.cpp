@@ -44,21 +44,25 @@ exit_handler_intel_x64_eapis::exit_handler_intel_x64_eapis()
 void
 exit_handler_intel_x64_eapis::resume()
 {
-    disable_vmm_exceptions();
+//    disable_vmm_exceptions();
     exit_handler_intel_x64::resume();
 }
 
 void
 exit_handler_intel_x64_eapis::promote(gsl::not_null<const void *> guest_gdt)
 {
-    disable_vmm_exceptions();
+//    disable_vmm_exceptions();
     exit_handler_intel_x64::promote(guest_gdt);
 }
 
 void
 exit_handler_intel_x64_eapis::handle_exit(vmcs::value_type reason)
 {
-    enable_vmm_exceptions();
+//    enable_vmm_exceptions();
+
+    if (count_exits) {
+        exit_count[reason]++;
+    }
 
     switch (reason) {
         case exit_reason::basic_exit_reason::monitor_trap_flag:
@@ -102,7 +106,38 @@ exit_handler_intel_x64_eapis::handle_exit(vmcs::value_type reason)
 void
 exit_handler_intel_x64_eapis::handle_vmcall_registers(vmcall_registers_t &regs)
 {
+    //json j;
+
     switch (regs.r02) {
+     //   case 0x6000:
+     //       count_exits = true;
+     //       log_wrmsr_access(true);
+     //       log_rdmsr_access(true);
+     //       log_cpuid_access(true);
+     //       break;
+
+     //   case 0x7000:
+     //       count_exits = false;
+     //       log_wrmsr_access(false);
+     //       log_rdmsr_access(false);
+     //       log_cpuid_access(false);
+
+     //       bfdebug_info(0, "exit counts:");
+     //       for (int i = 0; i < 64; ++i) {
+     //           if (exit_count[i]) {
+     //               bfdebug_subndec(0, exit_reason::basic_exit_reason::to_string(i), exit_count[i]);
+     //               exit_count[i] = 0;
+     //           }
+     //       }
+
+     //       handle_vmcall__wrmsr_access_log(j);
+     //       handle_vmcall__rdmsr_access_log(j);
+     //       handle_vmcall__cpuid_access_log(j);
+
+     //       clear_cpuid_access_log();
+
+     //       break;
+
         case eapis_cat__io_instruction:
             handle_vmcall__io_instruction(regs);
             break;

@@ -588,6 +588,7 @@ private:
     cpuid_emu_map_type m_cpuid_emu_map;
     bool m_cpuid_access_log_enabled{false};
     cpuid_log_type m_cpuid_access_log;
+    cpuid_log_type m_cpuid_access_log_ring3;
 
     /// @endcond
 
