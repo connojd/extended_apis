@@ -1,4 +1,3 @@
-#
 # Bareflank Hypervisor
 # Copyright (C) 2018 Assured Information Security, Inc.
 #
@@ -16,16 +15,10 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-cmake_minimum_required(VERSION 3.6)
-project(eapis_test C CXX)
-
-include(${SOURCE_CMAKE_DIR}/project.cmake)
-init_project(
-    INCLUDES ${CMAKE_CURRENT_LIST_DIR}/../include
+list(APPEND ARGN
 )
 
-add_subdirectory(../src/hve ${CMAKE_CURRENT_BINARY_DIR}/src/hve)
-
-add_subdirectory(acpi)
-add_subdirectory(hve)
-add_subdirectory(util)
+do_test(test_acpi
+    SOURCES test_acpi.cpp
+    ${ARGN}
+)
