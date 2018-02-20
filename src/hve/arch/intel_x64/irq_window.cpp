@@ -17,70 +17,54 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-#include <hve/arch/intel_x64/exit_handler/cr_access.h>
+#include <utility>
+#include <hve/arch/intel_x64/irq_window.h>
 
 namespace eapis
 {
 namespace intel_x64
 {
 
-void
-cr_access::enable(gsl::not_null<exit_hdlr_t *> exit_hdlr)
+namespace reason = ::intel_x64::vmcs::exit_reason::basic_exit_reason;
+namespace pri_ctl = ::intel_x64::vmcs::primary_processor_based_vm_execution_controls;
+
+irq_window::irq_window(gsl::not_null<exit_handler_t *> exit_handler)
+    : m_exit_handler{exit_handler}
 {
-    exit_hdlr->add_dispatch_delegate(
-        s_reason,
-        hdlr_t::create<cr_access_t, &cr_access_t::handle>(this)
+    m_exit_handler->add_handler(
+        reason::interrupt_window,
+        handler_t::create<irq_window, &irq_window::handle>(this)
     );
 }
 
 void
-cr_access::set_default(hdlr_t &&hdlr)
+irq_window::add_handler(handler_t &&d)
 {
-    m_def_hdlr = hdlr;
+    m_handlers.push_front(std::move(d));
 }
 
 void
-cr_access::set(const key_t key, hdlr_t &&hdlr)
+irq_window::enable()
 {
-    if (m_handlers.count(key) > 0) {
-        return;
-    }
-
-    m_handlers[key] = hdlr;
+    pri_ctl::interrupt_window_exiting::enable();
 }
 
 void
-cr_access::clear_default()
+irq_window::disable()
 {
-    set_default(hdlr_t::create<nullptr>());
-    return;
-}
-
-void
-cr_access::clear(const key_t key)
-{
-    if (m_handlers.count(key) == 0) {
-        return;
-    }
-
-    m_handlers.erase(key);
-    return;
+    pri_ctl::interrupt_window_exiting::disable();
 }
 
 bool
-cr_access::handle(gsl::not_null<vmcs_t *> vmcs)
+irq_window::handle(gsl::not_null<vmcs_t *> vmcs)
 {
-    const auto key = cra::access_type::get();
-
-    if (m_handlers.count(key) == 0) {
-        if (m_def_hdlr.is_valid()) {
-             return m_def_hdlr(vmcs);
+    for (const auto &d : m_handlers) {
+        if (d(vmcs)) {
+            return true;
         }
-
-        return false;
     }
 
-    return m_handlers[key](vmcs);
+    return false;
 }
 
 } // namespace intel_x64
