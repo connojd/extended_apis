@@ -21,7 +21,8 @@
 
 #include <set>
 #include <intrinsics.h>
-#include <vic/arch/intel_x64/lapic_ctl.h>
+
+#include "lapic_ctl.h"
 
 // -----------------------------------------------------------------------------
 // Exports
@@ -49,7 +50,7 @@ namespace eapis
 namespace intel_x64
 {
 
-namespace x2apic = ::intel_x64::x2apic;
+namespace intel_x2apic = ::intel_x64::x2apic;
 
 /// x2APIC subclass of the lapic abstract base class
 ///

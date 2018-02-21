@@ -19,9 +19,7 @@
 #ifndef XAPIC_CTL_INTEL_X64_EAPIS_H
 #define XAPIC_CTL_INTEL_X64_EAPIS_H
 
-#include <set>
-#include <atomic>
-#include <vic/arch/intel_x64/lapic_ctl.h>
+#include "lapic_ctl.h"
 
 // -----------------------------------------------------------------------------
 // Exports
@@ -44,20 +42,19 @@
 #pragma warning(disable : 4251)
 #endif
 
-extern "C" void _sfence(void) noexcept;
-
 namespace eapis
 {
 namespace intel_x64
 {
 
-namespace xapic = ::intel_x64::xapic;
+namespace intel_xapic = ::intel_x64::xapic;
 
 /// xAPIC subclass of the lapic abstract base class
 ///
 /// This class implements the abstract lapic interface for xapic
 /// mode. It is marked final because it is intended to interact
-/// directly with xapic hardware.
+/// directly with xapic hardware and thus attempts to avoid the
+/// overhead of virtualized calls as much as possible.
 ///
 struct EXPORT_VIC xapic_ctl final : public lapic_ctl
 {
@@ -71,9 +68,9 @@ struct EXPORT_VIC xapic_ctl final : public lapic_ctl
     /// read / write operation is allowed.
     ///
     /// @return offset if supplied address maps to a valid register and the
-    ///    operation is allowed.
-    /// @return -1 if the supplied address doesn't map to a valid register or the
-    ///    operation is not allowed.
+    ///         operation is allowed.
+    /// @return -1 if the supplied address doesn't map to a valid register
+    //          or the operation is not allowed.
     ///
     /// @param addr - MSR address of desired register
     /// @param op - the desired operation (read / write)

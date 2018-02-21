@@ -47,8 +47,8 @@ namespace eapis
 namespace intel_x64
 {
 
-namespace msrs = ::intel_x64::msrs;
-namespace lapic = ::intel_x64::lapic;
+namespace intel_msrs = ::intel_x64::msrs;
+namespace intel_lapic = ::intel_x64::lapic;
 
 /// Local APIC base class
 ///
