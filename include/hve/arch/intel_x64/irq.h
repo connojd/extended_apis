@@ -17,11 +17,12 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-#ifndef EXTIRQ_HDLR_INTEL_X64_EAPIS_H
-#define EXTIRQ_HDLR_INTEL_X64_EAPIS_H
+#ifndef IRQ_HDLR_INTEL_X64_EAPIS_H
+#define IRQ_HDLR_INTEL_X64_EAPIS_H
 
+#include <list>
+#include <array>
 #include <utility>
-#include <unordered_map>
 
 #include <bfgsl.h>
 #include <bfdebug.h>
@@ -67,11 +68,15 @@ class EXPORT_EAPIS_HVE irq
 {
 public:
 
-    using exit_handler_t = bfvmm::intel_x64::exit_handler;
-    using vmcs_t = bfvmm::intel_x64::vmcs;
-    using handler_t = delegate<bool(gsl::not_null<vmcs_t *>)>;
+    struct info_t {
+        ::intel_x64::vmcs::value_type vec;
+    };
+
+    using vector_t = decltype(info_t::vec);
     using irq_t = eapis::intel_x64::irq;
-    using vector_t = uint64_t;
+    using vmcs_t = bfvmm::intel_x64::vmcs;
+    using exit_handler_t = bfvmm::intel_x64::exit_handler;
+    using handler_t = delegate<bool(gsl::not_null<vmcs_t *>, info_t &)>;
 
     /// Constructor
     ///
@@ -97,25 +102,25 @@ public:
     ///
     void add_handler(vector_t vector, handler_t &&d);
 
-    /// Enabl3
+    /// Trap
     ///
     /// @expects
     /// @ensures
     ///
     /// Enable external-interrupt exiting. This vcpu will exit each time
-    /// any interrupt fires during VMX-nonroot operation.
+    /// an interrupt arrives during VMX-nonroot operation.
     ///
-    void enable();
+    void trap();
 
-    /// Disable
+    /// Pass Through
     ///
     /// @expects
     /// @ensures
     ///
-    /// Disable external-interrupt exiting. This vcpu will not exit if the
-    /// vcpu is interrupted during VMX-nonroot.
+    /// Disable external-interrupt exiting. This vcpu will not exit if
+    /// the vcpu is interrupted during VMX-nonroot operation.
     ///
-    void disable();
+    void pass_through();
 
     /// Handle
     ///
@@ -141,7 +146,7 @@ public:
 
 private:
     exit_handler_t *m_exit_handler;
-    std::unordered_map<vector_t, std::list<handler_t>> m_handlers{};
+    std::array<std::list<handler_t>, 256> m_handlers{};
 };
 
 } // namespace intel_x64

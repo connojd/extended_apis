@@ -87,23 +87,23 @@ public:
     ///
     void add_handler(handler_t &&d);
 
-    /// Enable
+    /// Trap
     ///
     /// @expects
     /// @ensures
     ///
-    /// Enable interrupt-window exiting.
+    /// @param enable enable if true, disable (i.e. passthrough) if false
     ///
-    void enable();
+    void trap(bool enable = true);
 
-    /// Disable
+    /// Pass-through
     ///
     /// @expects
     /// @ensures
     ///
     /// Disable interrupt-window exiting.
     ///
-    void disable();
+    void pass_through();
 
     /// Handle
     ///

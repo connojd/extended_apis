@@ -30,18 +30,18 @@ using value_t = xapic_ctl::value_t;
 int
 xapic_ctl::check_gpa_op(const gpa_t addr, const reg_op op) noexcept
 {
-    auto reg_set_iter = xapic::reg_set.find((addr & 0xFF0U) >> 4);
+    auto reg = intel_xapic::reg_set.find((addr & 0xFF0U) >> 4);
 
-    if (reg_set_iter != xapic::reg_set.end()) {
+    if (reg != intel_xapic::reg_set.end()) {
         switch (op) {
             case read:
-                if (reg_set_iter->readable) {
+                if (reg->readable) {
                     return (addr & 0xFF0U) >> 4;
                 }
                 break;
 
             case write:
-                if (reg_set_iter->writeable) {
+                if (reg->writeable) {
                     return (addr & 0xFF0U) >> 4;
                 }
                 break;
@@ -58,21 +58,21 @@ xapic_ctl::check_gpa_op(const gpa_t addr, const reg_op op) noexcept
 int
 xapic_ctl::check_msr_op(const field_t msr, const reg_op op) noexcept
 {
-    if (msr < lapic::msr_start_reg || msr > lapic::msr_end_reg) {
+    if (msr < intel_lapic::msr_start_reg || msr > intel_lapic::msr_end_reg) {
         return -1;
     }
-    auto reg_set_iter = xapic::reg_set.find(msr & 0xFFU);
+    auto reg = intel_xapic::reg_set.find(msr & 0xFFU);
 
-    if (reg_set_iter != xapic::reg_set.end()) {
+    if (reg != intel_xapic::reg_set.end()) {
         switch (op) {
             case read:
-                if (reg_set_iter->readable) {
+                if (reg->readable) {
                     return msr & 0xFFU;
                 }
                 break;
 
             case write:
-                if (reg_set_iter->writeable) {
+                if (reg->writeable) {
                     return msr & 0xFFU;
                 }
                 break;
@@ -96,50 +96,50 @@ xapic_ctl:: write_register(const uint32_t offset, const value_t val) noexcept
 
 value_t
 xapic_ctl::read_id() noexcept
-{ return read_register(xapic::regs::id.offset); }
+{ return read_register(intel_xapic::regs::id.offset); }
 
 value_t
 xapic_ctl::read_version() noexcept
-{ return read_register(xapic::regs::version.offset); }
+{ return read_register(intel_xapic::regs::version.offset); }
 
 value_t
 xapic_ctl::read_tpr() noexcept
-{ return read_register(xapic::regs::tpr.offset); }
+{ return read_register(intel_xapic::regs::tpr.offset); }
 
 value_t
 xapic_ctl::read_ldr() noexcept
-{ return read_register(xapic::regs::ldr.offset); }
+{ return read_register(intel_xapic::regs::ldr.offset); }
 
 value_t
 xapic_ctl::read_svr() noexcept
-{ return read_register(xapic::regs::sivr.offset); }
+{ return read_register(intel_xapic::regs::sivr.offset); }
 
 value_t
 xapic_ctl::read_icr() noexcept
 {
-    value_t low = read_register(xapic::regs::icr_low.offset);
-    value_t high = read_register(xapic::regs::icr_high.offset);
+    value_t low = read_register(intel_xapic::regs::icr_low.offset);
+    value_t high = read_register(intel_xapic::regs::icr_high.offset);
     return (high << 32) | low;
 }
 
 value_t
 xapic_ctl::read_isr(const index idx) noexcept
 {
-    auto offset = xapic::regs::isr0.offset | idx;
+    auto offset = intel_xapic::regs::isr0.offset | idx;
     return read_register(offset);
 }
 
 value_t
 xapic_ctl::read_tmr(const index idx) noexcept
 {
-    auto offset = xapic::regs::tmr0.offset | idx;
+    auto offset = intel_xapic::regs::tmr0.offset | idx;
     return read_register(offset);
 }
 
 value_t
 xapic_ctl::read_irr(const index idx) noexcept
 {
-    auto offset = xapic::regs::irr0.offset | idx;
+    auto offset = intel_xapic::regs::irr0.offset | idx;
     return read_register(offset);
 }
 
@@ -148,19 +148,19 @@ xapic_ctl::read_lvt(const lvt_reg reg) noexcept
 {
     switch (reg) {
         case cmci:
-            return read_register(xapic::regs::lvt_cmci.offset);
+            return read_register(intel_xapic::regs::lvt_cmci.offset);
         case timer:
-            return read_register(xapic::regs::lvt_timer.offset);
+            return read_register(intel_xapic::regs::lvt_timer.offset);
         case thermal:
-            return read_register(xapic::regs::lvt_thermal.offset);
+            return read_register(intel_xapic::regs::lvt_thermal.offset);
         case perf:
-            return read_register(xapic::regs::lvt_perf.offset);
+            return read_register(intel_xapic::regs::lvt_perf.offset);
         case lint0:
-            return read_register(xapic::regs::lvt_lint0.offset);
+            return read_register(intel_xapic::regs::lvt_lint0.offset);
         case lint1:
-            return read_register(xapic::regs::lvt_lint1.offset);
+            return read_register(intel_xapic::regs::lvt_lint1.offset);
         case error:
-            return read_register(xapic::regs::lvt_error.offset);
+            return read_register(intel_xapic::regs::lvt_error.offset);
 
         default:
             bferror_info(0, "invalid lvt_reg");
@@ -173,9 +173,9 @@ xapic_ctl::read_count(const count_reg reg) noexcept
 {
     switch (reg) {
         case initial:
-            return read_register(xapic::regs::init_count.offset);
+            return read_register(intel_xapic::regs::init_count.offset);
         case current:
-            return read_register(xapic::regs::cur_count.offset);
+            return read_register(intel_xapic::regs::cur_count.offset);
 
         default:
             bferror_info(0, "invalid count_reg");
@@ -185,28 +185,28 @@ xapic_ctl::read_count(const count_reg reg) noexcept
 
 value_t
 xapic_ctl::read_div_config() noexcept
-{ return read_register(xapic::regs::div_conf.offset); }
+{ return read_register(intel_xapic::regs::div_conf.offset); }
 
 void
 xapic_ctl:: write_eoi() noexcept
-{ write_register(xapic::regs::eoi.offset, 0x0ULL); }
+{ write_register(intel_xapic::regs::eoi.offset, 0x0ULL); }
 
 void
 xapic_ctl:: write_tpr(const value_t tpr) noexcept
-{ write_register(xapic::regs::tpr.offset, tpr); }
+{ write_register(intel_xapic::regs::tpr.offset, tpr); }
 
 void
 xapic_ctl:: write_svr(const value_t svr) noexcept
-{ write_register(xapic::regs::sivr.offset, svr); }
+{ write_register(intel_xapic::regs::sivr.offset, svr); }
 
 void
 xapic_ctl:: write_icr(const value_t icr) noexcept
 {
     value_t low = icr & 0x00000000FFFFFFFFULL;
     value_t high = (icr & 0xFFFFFFFF00000000ULL) >> 32;
-    write_register(xapic::regs::icr_high.offset, high);
-    _sfence();
-    write_register(xapic::regs::icr_low.offset, low);
+    write_register(intel_xapic::regs::icr_high.offset, high);
+    ::intel_x64::fence::sfence();
+    write_register(intel_xapic::regs::icr_low.offset, low);
 }
 
 void
@@ -214,25 +214,25 @@ xapic_ctl:: write_lvt(const lvt_reg reg, const value_t val) noexcept
 {
     switch (reg) {
         case cmci:
-            write_register(xapic::regs::lvt_cmci.offset, val);
+            write_register(intel_xapic::regs::lvt_cmci.offset, val);
             return;
         case timer:
-            write_register(xapic::regs::lvt_timer.offset, val);
+            write_register(intel_xapic::regs::lvt_timer.offset, val);
             return;
         case thermal:
-            write_register(xapic::regs::lvt_thermal.offset, val);
+            write_register(intel_xapic::regs::lvt_thermal.offset, val);
             return;
         case perf:
-            write_register(xapic::regs::lvt_perf.offset, val);
+            write_register(intel_xapic::regs::lvt_perf.offset, val);
             return;
         case lint0:
-            write_register(xapic::regs::lvt_lint0.offset, val);
+            write_register(intel_xapic::regs::lvt_lint0.offset, val);
             return;
         case lint1:
-            write_register(xapic::regs::lvt_lint1.offset, val);
+            write_register(intel_xapic::regs::lvt_lint1.offset, val);
             return;
         case error:
-            write_register(xapic::regs::lvt_error.offset, val);
+            write_register(intel_xapic::regs::lvt_error.offset, val);
             return;
 
         default:
@@ -243,11 +243,11 @@ xapic_ctl:: write_lvt(const lvt_reg reg, const value_t val) noexcept
 
 void
 xapic_ctl:: write_init_count(const value_t count) noexcept
-{ write_register(xapic::regs::init_count.offset, count); }
+{ write_register(intel_xapic::regs::init_count.offset, count); }
 
 void
 xapic_ctl:: write_div_config(const value_t config) noexcept
-{ write_register(xapic::regs::div_conf.offset, config); }
+{ write_register(intel_xapic::regs::div_conf.offset, config); }
 
 void
 xapic_ctl:: write_self_ipi(const vector_t vec) noexcept
@@ -261,23 +261,16 @@ xapic_ctl::level_triggered(const vector_t vec) noexcept
 {
     auto reg = (vec & 0xE0) >> 5;
     auto bit = 1ULL << (vec & 0x1F);
+
     switch (reg) {
-        case 0:
-            return read_register(xapic::regs::tmr0.offset) & bit;
-        case 1:
-            return read_register(xapic::regs::tmr1.offset) & bit;
-        case 2:
-            return read_register(xapic::regs::tmr2.offset) & bit;
-        case 3:
-            return read_register(xapic::regs::tmr3.offset) & bit;
-        case 4:
-            return read_register(xapic::regs::tmr4.offset) & bit;
-        case 5:
-            return read_register(xapic::regs::tmr5.offset) & bit;
-        case 6:
-            return read_register(xapic::regs::tmr6.offset) & bit;
-        case 7:
-            return read_register(xapic::regs::tmr7.offset) & bit;
+        case 0: return read_register(intel_xapic::regs::tmr0.offset) & bit;
+        case 1: return read_register(intel_xapic::regs::tmr1.offset) & bit;
+        case 2: return read_register(intel_xapic::regs::tmr2.offset) & bit;
+        case 3: return read_register(intel_xapic::regs::tmr3.offset) & bit;
+        case 4: return read_register(intel_xapic::regs::tmr4.offset) & bit;
+        case 5: return read_register(intel_xapic::regs::tmr5.offset) & bit;
+        case 6: return read_register(intel_xapic::regs::tmr6.offset) & bit;
+        case 7: return read_register(intel_xapic::regs::tmr7.offset) & bit;
 
         default:
             bferror_info(0, "invalid vector_t");
@@ -290,23 +283,16 @@ xapic_ctl::in_service(const vector_t vec) noexcept
 {
     auto reg = (vec & 0xE0) >> 5;
     auto bit = 1ULL << (vec & 0x1F);
+
     switch (reg) {
-        case 0:
-            return read_register(xapic::regs::isr0.offset) & bit;
-        case 1:
-            return read_register(xapic::regs::isr1.offset) & bit;
-        case 2:
-            return read_register(xapic::regs::isr2.offset) & bit;
-        case 3:
-            return read_register(xapic::regs::isr3.offset) & bit;
-        case 4:
-            return read_register(xapic::regs::isr4.offset) & bit;
-        case 5:
-            return read_register(xapic::regs::isr5.offset) & bit;
-        case 6:
-            return read_register(xapic::regs::isr6.offset) & bit;
-        case 7:
-            return read_register(xapic::regs::isr7.offset) & bit;
+        case 0: return read_register(intel_xapic::regs::isr0.offset) & bit;
+        case 1: return read_register(intel_xapic::regs::isr1.offset) & bit;
+        case 2: return read_register(intel_xapic::regs::isr2.offset) & bit;
+        case 3: return read_register(intel_xapic::regs::isr3.offset) & bit;
+        case 4: return read_register(intel_xapic::regs::isr4.offset) & bit;
+        case 5: return read_register(intel_xapic::regs::isr5.offset) & bit;
+        case 6: return read_register(intel_xapic::regs::isr6.offset) & bit;
+        case 7: return read_register(intel_xapic::regs::isr7.offset) & bit;
 
         default:
             bferror_info(0, "invalid vector_t");

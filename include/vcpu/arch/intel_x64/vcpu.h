@@ -21,6 +21,7 @@
 #include "../../../hve/arch/intel_x64/crs.h"
 #include "../../../hve/arch/intel_x64/msrs.h"
 #include "../../../hve/arch/intel_x64/cpuid.h"
+#include "../../../vic/arch/intel_x64/irq_manager.h"
 
 namespace eapis
 {
@@ -31,23 +32,12 @@ class vcpu : public bfvmm::intel_x64::vcpu
 {
 public:
 
-    /// Default Constructor
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    vcpu(vcpuid::type id) :
-        bfvmm::intel_x64::vcpu{id}
-    { }
-
     /// Destructor
     ///
     /// @expects
     /// @ensures
     ///
     ~vcpu() = default;
-
-public:
 
     //--------------------------------------------------------------------------
     // CRs
@@ -118,11 +108,29 @@ public:
     auto *cpuid()
     { return m_cpuid.get(); }
 
+    /// Default Constructor
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    vcpu(vcpuid::type id) :
+        bfvmm::intel_x64::vcpu{id}
+    {
+        enable_msr_trapping();
+
+        m_irqmgr = std::make_unique<eapis::intel_x64::irq_manager>(
+            this->exit_handler(),
+            this->vmcs(),
+            this->msrs()
+        );
+    }
+
 private:
 
     std::unique_ptr<eapis::intel_x64::crs> m_crs;
     std::unique_ptr<eapis::intel_x64::msrs> m_msrs;
     std::unique_ptr<eapis::intel_x64::cpuid> m_cpuid;
+    std::unique_ptr<eapis::intel_x64::irq_manager> m_irqmgr;
 };
 
 }
