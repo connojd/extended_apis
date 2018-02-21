@@ -129,7 +129,7 @@ namespace eapis
 {
 namespace intel_x64
 {
-namespace isr
+namespace idt
 {
 
 // -----------------------------------------------------------------------------
@@ -397,7 +397,7 @@ static void set_default_isrs(
     idt->set(255, _isr255, selector);
 }
 
-void init_vmm_idt(gsl::not_null<exit_hdlr_t *> hdlr)
+void init(gsl::not_null<exit_handler_t *> hdlr)
 {
     const auto selector = 0x8;
     set_default_isrs(hdlr->host_idt(), selector);
@@ -408,6 +408,6 @@ void init_vmm_idt(gsl::not_null<exit_hdlr_t *> hdlr)
     tss->ist1 = setup_stack(ist1.get());
 }
 
-} // namespace isr
+} // namespace idt
 } // namespace intel_x64
 } // namespace eapis

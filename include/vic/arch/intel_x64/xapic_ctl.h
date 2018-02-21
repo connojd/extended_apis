@@ -19,9 +19,7 @@
 #ifndef XAPIC_CTL_INTEL_X64_EAPIS_H
 #define XAPIC_CTL_INTEL_X64_EAPIS_H
 
-#include <set>
-#include <atomic>
-#include <vic/arch/intel_x64/lapic_ctl.h>
+#include "lapic_ctl.h"
 
 // -----------------------------------------------------------------------------
 // Exports
