@@ -144,12 +144,12 @@ TEST_CASE("msrs_ia32_x2apic_sivr_apic_enable_bit")
 {
     using namespace msrs::ia32_x2apic_sivr;
 
-    apic_enable_bit::enable();
+    apic_enable_bit::trap();
     CHECK(apic_enable_bit::is_enabled());
     apic_enable_bit::disable();
     CHECK(apic_enable_bit::is_disabled());
 
-    apic_enable_bit::enable(apic_enable_bit::mask);
+    apic_enable_bit::trap(apic_enable_bit::mask);
     CHECK(apic_enable_bit::is_enabled(apic_enable_bit::mask));
     apic_enable_bit::disable(0x0);
     CHECK(apic_enable_bit::is_disabled(0x0));
@@ -159,12 +159,12 @@ TEST_CASE("msrs_ia32_x2apic_sivr_focus_checking")
 {
     using namespace msrs::ia32_x2apic_sivr;
 
-    focus_checking::enable();
+    focus_checking::trap();
     CHECK(focus_checking::is_enabled());
     focus_checking::disable();
     CHECK(focus_checking::is_disabled());
 
-    focus_checking::enable(0x0);
+    focus_checking::trap(0x0);
     CHECK(focus_checking::is_enabled(0x0));
     focus_checking::disable(focus_checking::mask);
     CHECK(focus_checking::is_disabled(focus_checking::mask));
@@ -174,12 +174,12 @@ TEST_CASE("msrs_ia32_x2apic_sivr_suppress_eoi_broadcast")
 {
     using namespace msrs::ia32_x2apic_sivr;
 
-    suppress_eoi_broadcast::enable();
+    suppress_eoi_broadcast::trap();
     CHECK(suppress_eoi_broadcast::is_enabled());
     suppress_eoi_broadcast::disable();
     CHECK(suppress_eoi_broadcast::is_disabled());
 
-    suppress_eoi_broadcast::enable(suppress_eoi_broadcast::mask);
+    suppress_eoi_broadcast::trap(suppress_eoi_broadcast::mask);
     CHECK(suppress_eoi_broadcast::is_enabled(suppress_eoi_broadcast::mask));
     suppress_eoi_broadcast::disable(0x0);
     CHECK(suppress_eoi_broadcast::is_disabled(0x0));
@@ -474,12 +474,12 @@ TEST_CASE("msrs_ia32_x2apic_lvt_cmci_mask_bit")
 {
     using namespace msrs::ia32_x2apic_lvt_cmci;
 
-    mask_bit::enable();
+    mask_bit::trap();
     CHECK(mask_bit::is_enabled());
     mask_bit::disable();
     CHECK(mask_bit::is_disabled());
 
-    mask_bit::enable(mask_bit::mask);
+    mask_bit::trap(mask_bit::mask);
     CHECK(mask_bit::is_enabled(mask_bit::mask));
     mask_bit::disable(0x0);
     CHECK(mask_bit::is_disabled(0x0));
@@ -565,12 +565,12 @@ TEST_CASE("msrs_ia32_x2apic_icr_level")
 {
     using namespace msrs::ia32_x2apic_icr;
 
-    level::enable();
+    level::trap();
     CHECK(level::is_enabled());
     level::disable();
     CHECK(level::is_disabled());
 
-    level::enable(level::mask);
+    level::trap(level::mask);
     CHECK(level::is_enabled(level::mask));
     level::disable(0x0);
     CHECK(level::is_disabled(0x0));
@@ -663,12 +663,12 @@ TEST_CASE("msrs_ia32_x2apic_lvt_timer_mask_bit")
 {
     using namespace msrs::ia32_x2apic_lvt_timer;
 
-    mask_bit::enable();
+    mask_bit::trap();
     CHECK(mask_bit::is_enabled());
     mask_bit::disable();
     CHECK(mask_bit::is_disabled());
 
-    mask_bit::enable(mask_bit::mask);
+    mask_bit::trap(mask_bit::mask);
     CHECK(mask_bit::is_enabled(mask_bit::mask));
     mask_bit::disable(0x0);
     CHECK(mask_bit::is_disabled(0x0));
@@ -758,12 +758,12 @@ TEST_CASE("msrs_ia32_x2apic_lvt_thermal_mask_bit")
 {
     using namespace msrs::ia32_x2apic_lvt_thermal;
 
-    mask_bit::enable();
+    mask_bit::trap();
     CHECK(mask_bit::is_enabled());
     mask_bit::disable();
     CHECK(mask_bit::is_disabled());
 
-    mask_bit::enable(mask_bit::mask);
+    mask_bit::trap(mask_bit::mask);
     CHECK(mask_bit::is_enabled(mask_bit::mask));
     mask_bit::disable(0x0);
     CHECK(mask_bit::is_disabled(0x0));
@@ -831,12 +831,12 @@ TEST_CASE("msrs_ia32_x2apic_lvt_pmi_mask_bit")
 {
     using namespace msrs::ia32_x2apic_lvt_pmi;
 
-    mask_bit::enable();
+    mask_bit::trap();
     CHECK(mask_bit::is_enabled());
     mask_bit::disable();
     CHECK(mask_bit::is_disabled());
 
-    mask_bit::enable(mask_bit::mask);
+    mask_bit::trap(mask_bit::mask);
     CHECK(mask_bit::is_enabled(mask_bit::mask));
     mask_bit::disable(0x0);
     CHECK(mask_bit::is_disabled(0x0));
@@ -949,12 +949,12 @@ TEST_CASE("msrs_ia32_x2apic_lvt_lint0_mask_bit")
 {
     using namespace msrs::ia32_x2apic_lvt_lint0;
 
-    mask_bit::enable();
+    mask_bit::trap();
     CHECK(mask_bit::is_enabled());
     mask_bit::disable();
     CHECK(mask_bit::is_disabled());
 
-    mask_bit::enable(mask_bit::mask);
+    mask_bit::trap(mask_bit::mask);
     CHECK(mask_bit::is_enabled(mask_bit::mask));
     mask_bit::disable(0x0);
     CHECK(mask_bit::is_disabled(0x0));
@@ -1067,12 +1067,12 @@ TEST_CASE("msrs_ia32_x2apic_lvt_lint1_mask_bit")
 {
     using namespace msrs::ia32_x2apic_lvt_lint1;
 
-    mask_bit::enable();
+    mask_bit::trap();
     CHECK(mask_bit::is_enabled());
     mask_bit::disable();
     CHECK(mask_bit::is_disabled());
 
-    mask_bit::enable(mask_bit::mask);
+    mask_bit::trap(mask_bit::mask);
     CHECK(mask_bit::is_enabled(mask_bit::mask));
     mask_bit::disable(0x0);
     CHECK(mask_bit::is_disabled(0x0));

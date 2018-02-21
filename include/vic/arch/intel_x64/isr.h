@@ -66,12 +66,11 @@ namespace eapis
 {
 namespace intel_x64
 {
-namespace isr
+namespace idt
 {
 
-using exit_hdlr_t = bfvmm::intel_x64::exit_handler;
-void init_vmm_idt(gsl::not_null<exit_hdlr_t *> hdlr);
-
+using exit_handler_t = bfvmm::intel_x64::exit_handler;
+void init(gsl::not_null<exit_handler_t *> hdlr);
 
 // -----------------------------------------------------------------------------
 // Interrupt Service Routines

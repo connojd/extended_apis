@@ -30,18 +30,18 @@ using value_t = xapic_ctl::value_t;
 int
 xapic_ctl::check_gpa_op(const gpa_t addr, const reg_op op) noexcept
 {
-    auto reg_set_iter = xapic::reg_set.find((addr & 0xFF0U) >> 4);
+    auto reg = xapic::reg_set.find((addr & 0xFF0U) >> 4);
 
-    if (reg_set_iter != xapic::reg_set.end()) {
+    if (reg != xapic::reg_set.end()) {
         switch (op) {
             case read:
-                if (reg_set_iter->readable) {
+                if (reg->readable) {
                     return (addr & 0xFF0U) >> 4;
                 }
                 break;
 
             case write:
-                if (reg_set_iter->writeable) {
+                if (reg->writeable) {
                     return (addr & 0xFF0U) >> 4;
                 }
                 break;
@@ -58,21 +58,21 @@ xapic_ctl::check_gpa_op(const gpa_t addr, const reg_op op) noexcept
 int
 xapic_ctl::check_msr_op(const field_t msr, const reg_op op) noexcept
 {
-    if (msr < lapic::msr_start_reg || msr > lapic::msr_end_reg) {
+    if (msr < intel_lapic::msr_start_reg || msr > intel_lapic::msr_end_reg) {
         return -1;
     }
-    auto reg_set_iter = xapic::reg_set.find(msr & 0xFFU);
+    auto reg = xapic::reg_set.find(msr & 0xFFU);
 
-    if (reg_set_iter != xapic::reg_set.end()) {
+    if (reg != xapic::reg_set.end()) {
         switch (op) {
             case read:
-                if (reg_set_iter->readable) {
+                if (reg->readable) {
                     return msr & 0xFFU;
                 }
                 break;
 
             case write:
-                if (reg_set_iter->writeable) {
+                if (reg->writeable) {
                     return msr & 0xFFU;
                 }
                 break;
@@ -205,7 +205,7 @@ xapic_ctl:: write_icr(const value_t icr) noexcept
     value_t low = icr & 0x00000000FFFFFFFFULL;
     value_t high = (icr & 0xFFFFFFFF00000000ULL) >> 32;
     write_register(xapic::regs::icr_high.offset, high);
-    _sfence();
+    ::intel_x64::fence::sfence();
     write_register(xapic::regs::icr_low.offset, low);
 }
 
@@ -261,23 +261,16 @@ xapic_ctl::level_triggered(const vector_t vec) noexcept
 {
     auto reg = (vec & 0xE0) >> 5;
     auto bit = 1ULL << (vec & 0x1F);
+
     switch (reg) {
-        case 0:
-            return read_register(xapic::regs::tmr0.offset) & bit;
-        case 1:
-            return read_register(xapic::regs::tmr1.offset) & bit;
-        case 2:
-            return read_register(xapic::regs::tmr2.offset) & bit;
-        case 3:
-            return read_register(xapic::regs::tmr3.offset) & bit;
-        case 4:
-            return read_register(xapic::regs::tmr4.offset) & bit;
-        case 5:
-            return read_register(xapic::regs::tmr5.offset) & bit;
-        case 6:
-            return read_register(xapic::regs::tmr6.offset) & bit;
-        case 7:
-            return read_register(xapic::regs::tmr7.offset) & bit;
+        case 0: return read_register(xapic::regs::tmr0.offset) & bit;
+        case 1: return read_register(xapic::regs::tmr1.offset) & bit;
+        case 2: return read_register(xapic::regs::tmr2.offset) & bit;
+        case 3: return read_register(xapic::regs::tmr3.offset) & bit;
+        case 4: return read_register(xapic::regs::tmr4.offset) & bit;
+        case 5: return read_register(xapic::regs::tmr5.offset) & bit;
+        case 6: return read_register(xapic::regs::tmr6.offset) & bit;
+        case 7: return read_register(xapic::regs::tmr7.offset) & bit;
 
         default:
             bferror_info(0, "invalid vector_t");
@@ -290,23 +283,16 @@ xapic_ctl::in_service(const vector_t vec) noexcept
 {
     auto reg = (vec & 0xE0) >> 5;
     auto bit = 1ULL << (vec & 0x1F);
+
     switch (reg) {
-        case 0:
-            return read_register(xapic::regs::isr0.offset) & bit;
-        case 1:
-            return read_register(xapic::regs::isr1.offset) & bit;
-        case 2:
-            return read_register(xapic::regs::isr2.offset) & bit;
-        case 3:
-            return read_register(xapic::regs::isr3.offset) & bit;
-        case 4:
-            return read_register(xapic::regs::isr4.offset) & bit;
-        case 5:
-            return read_register(xapic::regs::isr5.offset) & bit;
-        case 6:
-            return read_register(xapic::regs::isr6.offset) & bit;
-        case 7:
-            return read_register(xapic::regs::isr7.offset) & bit;
+        case 0: return read_register(xapic::regs::isr0.offset) & bit;
+        case 1: return read_register(xapic::regs::isr1.offset) & bit;
+        case 2: return read_register(xapic::regs::isr2.offset) & bit;
+        case 3: return read_register(xapic::regs::isr3.offset) & bit;
+        case 4: return read_register(xapic::regs::isr4.offset) & bit;
+        case 5: return read_register(xapic::regs::isr5.offset) & bit;
+        case 6: return read_register(xapic::regs::isr6.offset) & bit;
+        case 7: return read_register(xapic::regs::isr7.offset) & bit;
 
         default:
             bferror_info(0, "invalid vector_t");

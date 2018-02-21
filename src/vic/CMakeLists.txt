@@ -18,14 +18,15 @@
 
 if(${BUILD_TARGET_ARCH} STREQUAL "x86_64")
     list(APPEND SOURCES
-        #        arch/intel_x64/isr.cpp
+        arch/intel_x64/isr.cpp
+        arch/intel_x64/irq_manager.cpp
         arch/intel_x64/xapic_ctl.cpp
         arch/intel_x64/x2apic_ctl.cpp
     )
 
     if (NOT WIN32 AND NOT ENABLE_MOCKING)
         list(APPEND SOURCES
-                arch/intel_x64/isr.asm
+            arch/intel_x64/isr.asm
         )
     endif()
 

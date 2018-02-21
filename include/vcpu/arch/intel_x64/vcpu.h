@@ -21,14 +21,7 @@
 #include "../../../hve/arch/intel_x64/crs.h"
 #include "../../../hve/arch/intel_x64/msrs.h"
 
-bool
-test_handler(
-    gsl::not_null<bfvmm::intel_x64::vmcs *>,
-    eapis::intel_x64::msrs::info_t &info)
-{
-    bfdebug_subnhex(0, bfn::to_string(info.msr, 16).c_str(), info.val);
-    return true;
-}
+#include "../../../vic/arch/intel_x64/irq_manager.h"
 
 namespace eapis
 {
@@ -47,22 +40,25 @@ public:
     vcpu(vcpuid::type id) :
         bfvmm::intel_x64::vcpu{id}
     {
-        /// --------------------------------------------------------------------
-        /// REMOVE ME ****
-        /// --------------------------------------------------------------------
+        if (vcpuid::is_bootstrap_vcpu(id)) {
+            auto handler = this->exit_handler();
+            auto vmcs = this->vmcs();
+            m_irqmgr = std::make_unique<eapis::intel_x64::irq_manager>(handler, vmcs);
 
-        enable_msr_trapping();
-        msrs()->trap_on_all_rdmsr_accesses();
-        msrs()->trap_on_all_wrmsr_accesses();
-        msrs()->enable_rdmsr_log();
-        msrs()->add_rdmsr_handler(
-            0x000000000000003B,
-            eapis::intel_x64::msrs::rdmsr_handler_delegate_t::create<test_handler>()
-        );
+            ::x64::rflags::dump(0);
+            ::intel_x64::vmcs::guest_rflags::dump(0);
 
-        /// --------------------------------------------------------------------
-        /// REMOVE ME ****
-        /// --------------------------------------------------------------------
+            ::intel_x64::cr8::dump(0);
+            ::intel_x64::cr4::dump(0);
+
+            ::intel_x64::vmcs::primary_processor_based_vm_execution_controls::dump(0);
+            ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls::dump(0);
+            ::intel_x64::vmcs::pin_based_vm_execution_controls::dump(0);
+
+            bfdebug_nhex(0, "guest.idt.base:    ", ::intel_x64::vmcs::guest_idtr_base::get());
+            bfdebug_nhex(0, "host.idt.base:     ", ::intel_x64::vmcs::host_idtr_base::get());
+            bfdebug_nhex(0, "hardware.idt.base: ", ::x64::idt_reg::base::get());
+        }
     }
 
     /// Destructor
@@ -100,6 +96,7 @@ public:
 private:
 
     std::unique_ptr<eapis::intel_x64::msrs> m_msrs;
+    std::unique_ptr<eapis::intel_x64::irq_manager> m_irqmgr;
 };
 
 }

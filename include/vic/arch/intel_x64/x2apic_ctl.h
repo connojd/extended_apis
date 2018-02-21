@@ -21,7 +21,8 @@
 
 #include <set>
 #include <intrinsics.h>
-#include <vic/arch/intel_x64/lapic_ctl.h>
+
+#include "lapic_ctl.h"
 
 // -----------------------------------------------------------------------------
 // Exports

@@ -1,6 +1,6 @@
 #
 # Bareflank Hypervisor
-# Copyright (C) 2015 Assured Information Security, Inc.
+# Copyright (C) 2018 Assured Information Security, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -37,6 +37,6 @@ endif()
 add_vmm_executable(
     eapis_vmm
     SOURCES ${SOURCES}
+    LIBRARIES eapis_vic
     LIBRARIES eapis_hve
-    # LIBRARIES eapis_vic
 )
