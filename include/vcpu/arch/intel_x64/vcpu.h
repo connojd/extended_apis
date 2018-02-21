@@ -21,6 +21,8 @@
 #include "../../../hve/arch/intel_x64/crs.h"
 #include "../../../hve/arch/intel_x64/msrs.h"
 
+#include "../../../vic/arch/intel_x64/irq_manager.h"
+
 namespace eapis
 {
 namespace intel_x64
@@ -37,7 +39,30 @@ public:
     ///
     vcpu(vcpuid::type id) :
         bfvmm::intel_x64::vcpu{id}
-    { }
+    {
+        if (id == 1) {
+            enable_msr_trapping();
+
+            auto handler = this->exit_handler();
+            auto vmcs = this->vmcs();
+
+            m_irqmgr = std::make_unique<eapis::intel_x64::irq_manager>(handler, vmcs, m_msrs.get());
+        }
+
+   //     ::x64::rflags::dump(0);
+   //     ::intel_x64::vmcs::guest_rflags::dump(0);
+
+   //     ::intel_x64::cr8::dump(0);
+   //     ::intel_x64::cr4::dump(0);
+
+   //     ::intel_x64::vmcs::primary_processor_based_vm_execution_controls::dump(0);
+   //     ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls::dump(0);
+   //     ::intel_x64::vmcs::pin_based_vm_execution_controls::dump(0);
+
+   //     bfdebug_nhex(0, "guest.idt.base:    ", ::intel_x64::vmcs::guest_idtr_base::get());
+   //     bfdebug_nhex(0, "host.idt.base:     ", ::intel_x64::vmcs::host_idtr_base::get());
+   //     bfdebug_nhex(0, "phys.idt.base: ", ::x64::idt_reg::base::get());
+    }
 
     /// Destructor
     ///
@@ -98,6 +123,7 @@ private:
 
     std::unique_ptr<eapis::intel_x64::crs> m_crs;
     std::unique_ptr<eapis::intel_x64::msrs> m_msrs;
+    std::unique_ptr<eapis::intel_x64::irq_manager> m_irqmgr;
 };
 
 }

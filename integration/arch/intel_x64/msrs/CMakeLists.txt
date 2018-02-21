@@ -1,6 +1,6 @@
 #
 # Bareflank Hypervisor
-# Copyright (C) 2018 Assured Information Security, Inc.
+# Copyright (C) 2015 Assured Information Security, Inc.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -22,19 +22,30 @@ project(eapis_main C CXX)
 include(${SOURCE_CMAKE_DIR}/project.cmake)
 init_project()
 
-if(${BUILD_TARGET_ARCH} STREQUAL "x86_64")
-    list(APPEND SOURCES
-        arch/intel_x64/vcpu_factory.cpp
-    )
-elseif(${BUILD_TARGET_ARCH} STREQUAL "aarch64")
-    message(WARNING "Unimplemented")
-else()
-    message(FATAL_ERROR "Unsupported archiecture")
-endif()
+add_vmm_executable(
+    eapis_integration_intel_x64_msrs_pass_through_all_vmm
+    SOURCES pass_through_all.cpp
+    LIBRARIES eapis_vic
+    LIBRARIES eapis_hve
+)
 
 add_vmm_executable(
-    eapis_vmm
-    SOURCES ${SOURCES}
+    eapis_integration_intel_x64_msrs_pass_through_specific_vmm
+    SOURCES pass_through_specific.cpp
+    LIBRARIES eapis_vic
+    LIBRARIES eapis_hve
+)
+
+add_vmm_executable(
+    eapis_integration_intel_x64_msrs_trap_all_vmm
+    SOURCES trap_all.cpp
+    LIBRARIES eapis_vic
+    LIBRARIES eapis_hve
+)
+
+add_vmm_executable(
+    eapis_integration_intel_x64_msrs_trap_specific_vmm
+    SOURCES trap_specific.cpp
     LIBRARIES eapis_vic
     LIBRARIES eapis_hve
 )

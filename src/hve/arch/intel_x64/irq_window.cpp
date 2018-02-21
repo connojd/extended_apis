@@ -27,6 +27,7 @@ namespace intel_x64
 
 namespace reason = ::intel_x64::vmcs::exit_reason::basic_exit_reason;
 namespace pri_ctl = ::intel_x64::vmcs::primary_processor_based_vm_execution_controls;
+namespace irq_window_exiting = pri_ctl::interrupt_window_exiting;
 
 irq_window::irq_window(gsl::not_null<exit_handler_t *> exit_handler)
     : m_exit_handler{exit_handler}
@@ -44,15 +45,20 @@ irq_window::add_handler(handler_t &&d)
 }
 
 void
-irq_window::enable()
+irq_window::trap(bool enable)
 {
-    pri_ctl::interrupt_window_exiting::enable();
+    if (enable) {
+        irq_window_exiting::enable();
+        return;
+    }
+
+    pass_through();
 }
 
 void
-irq_window::disable()
+irq_window::pass_through()
 {
-    pri_ctl::interrupt_window_exiting::disable();
+    irq_window_exiting::disable();
 }
 
 bool

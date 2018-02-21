@@ -266,18 +266,13 @@ msrs::handle_wrmsr(gsl::not_null<bfvmm::intel_x64::vmcs *> vmcs)
 
         struct info_t info = {
             msr,
-<<<<<<< HEAD
             val,
             false,
             false
-=======
-            val
->>>>>>> reword
         };
 
         for (const auto &d : hdlrs->second) {
             if (d(vmcs, info)) {
-<<<<<<< HEAD
                 if (!info.ignore_write) {
                     emulate_wrmsr(msr, info.val);
                 }
@@ -287,10 +282,6 @@ msrs::handle_wrmsr(gsl::not_null<bfvmm::intel_x64::vmcs *> vmcs)
                 }
 
                 return true;
-=======
-                emulate_wrmsr(msr, info.val);
-                return advance(vmcs);
->>>>>>> reword
             }
         }
     }

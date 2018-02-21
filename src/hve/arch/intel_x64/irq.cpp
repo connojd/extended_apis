@@ -29,14 +29,14 @@ namespace exit_irq_info = ::intel_x64::vmcs::vm_exit_interruption_information;
 namespace exit_ctl = ::intel_x64::vmcs::vm_exit_controls;
 namespace pin_ctl = ::intel_x64::vmcs::pin_based_vm_execution_controls;
 namespace ack_on_exit = exit_ctl::acknowledge_interrupt_on_exit;
-namespace irq_exit = pin_ctl::external_interrupt_exiting;
+namespace irq_exiting = pin_ctl::external_interrupt_exiting;
 
 irq::irq(gsl::not_null<exit_handler_t *> exit_handler)
     : m_exit_handler{exit_handler}
 {
     m_exit_handler->add_handler(
         reason::external_interrupt,
-        handler_t::create<irq, &irq::handle>(this)
+        handler_t::create<irq_t, &irq_t::handle>(this)
     );
 }
 
@@ -47,36 +47,30 @@ irq::add_handler(vector_t vector, handler_t &&d)
 }
 
 void
-irq::enable()
+irq::trap()
 {
     ack_on_exit::enable();
-    irq_exit::enable();
+    irq_exiting::enable();
 }
 
 void
-irq::disable()
+irq::pass_through()
 {
-    irq_exit::disable();
     ack_on_exit::disable();
+    irq_exiting::disable();
 }
 
 bool
 irq::handle(gsl::not_null<vmcs_t *> vmcs)
 {
-    const auto vector = exit_irq_info::vector::get();
-    const auto &hdlrs = m_handlers.find(vector);
-
-    if (hdlrs != m_handlers.end()) {
-        for (const auto &d : hdlrs->second) {
-            if (d(vmcs)) {
-                return true;
-            }
+    for (const auto &d : m_handlers[exit_irq_info::vector::get()]) {
+        if (d(vmcs)) {
+            return true;
         }
     }
 
     return false;
 }
-
 
 } // namespace intel_x64
 } // namespace eapis
