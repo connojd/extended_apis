@@ -16,6 +16,9 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+#ifndef VCPU_INTEL_X64_EAPIS_H
+#define VCPU_INTEL_X64_EAPIS_H
+
 #include <bfvmm/vcpu/arch/intel_x64/vcpu.h>
 #include <bfvmm/memory_manager/memory_manager.h>
 
@@ -26,6 +29,7 @@
 #include "../../../hve/arch/intel_x64/rdmsr.h"
 #include "../../../hve/arch/intel_x64/vpid.h"
 #include "../../../hve/arch/intel_x64/wrmsr.h"
+#include "../../../vic/arch/intel_x64/interrupt_manager.h"
 
 namespace eapis
 {
@@ -36,23 +40,12 @@ class vcpu : public bfvmm::intel_x64::vcpu
 {
 public:
 
-    /// Default Constructor
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    vcpu(vcpuid::type id) :
-        bfvmm::intel_x64::vcpu{id}
-    { }
-
     /// Destructor
     ///
     /// @expects
     /// @ensures
     ///
     ~vcpu() = default;
-
-public:
 
     //--------------------------------------------------------------------------
     // Control Register
@@ -458,7 +451,10 @@ private:
     std::unique_ptr<eapis::intel_x64::rdmsr> m_rdmsr;
     std::unique_ptr<eapis::intel_x64::vpid> m_vpid;
     std::unique_ptr<eapis::intel_x64::wrmsr> m_wrmsr;
+    std::unique_ptr<eapis::intel_x64::interrupt_manager> m_intmgr;
 };
 
 }
 }
+
+#endif

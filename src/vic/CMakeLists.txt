@@ -16,25 +16,38 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-cmake_minimum_required(VERSION 3.6)
-project(eapis_main C CXX)
-
-include(${SOURCE_CMAKE_DIR}/project.cmake)
-init_project()
-
 if(${BUILD_TARGET_ARCH} STREQUAL "x86_64")
     list(APPEND SOURCES
-        arch/intel_x64/vcpu_factory.cpp
+        arch/intel_x64/isr.cpp
+        arch/intel_x64/interrupt_manager.cpp
+        arch/intel_x64/xapic_ctl.cpp
+        arch/intel_x64/x2apic_ctl.cpp
     )
+
+    if (NOT WIN32 AND NOT ENABLE_MOCKING)
+        list(APPEND SOURCES
+            arch/intel_x64/isr.asm
+        )
+    endif()
+
 elseif(${BUILD_TARGET_ARCH} STREQUAL "aarch64")
     message(WARNING "Unimplemented")
 else()
     message(FATAL_ERROR "Unsupported archiecture")
 endif()
 
-add_vmm_executable(
-    eapis_vmm
+add_shared_library(
+    eapis_vic
     SOURCES ${SOURCES}
-    LIBRARIES eapis_vic
-    LIBRARIES eapis_hve
+    DEFINES SHARED_EAPIS_VIC
+    DEFINES SHARED_EAPIS_HVE
+    DEFINES SHARED_INTRINSICS
+)
+
+add_static_library(
+    eapis_vic
+    SOURCES ${SOURCES}
+    DEFINES STATIC_EAPIS_VIC
+    DEFINES STATIC_EAPIS_HVE
+    DEFINES STATIC_INTRINSICS
 )

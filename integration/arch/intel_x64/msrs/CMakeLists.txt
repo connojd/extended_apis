@@ -23,8 +23,29 @@ include(${SOURCE_CMAKE_DIR}/project.cmake)
 init_project()
 
 add_vmm_executable(
-    eapis_integration_intel_x64_cpuid_trap_cpuid
-    SOURCES trap_cpuid.cpp
+    eapis_integration_intel_x64_msrs_pass_through_all_vmm
+    SOURCES pass_through_all.cpp
+    LIBRARIES eapis_vic
+    LIBRARIES eapis_hve
+)
+
+add_vmm_executable(
+    eapis_integration_intel_x64_msrs_pass_through_specific_vmm
+    SOURCES pass_through_specific.cpp
+    LIBRARIES eapis_vic
+    LIBRARIES eapis_hve
+)
+
+add_vmm_executable(
+    eapis_integration_intel_x64_msrs_trap_all_vmm
+    SOURCES trap_all.cpp
+    LIBRARIES eapis_vic
+    LIBRARIES eapis_hve
+)
+
+add_vmm_executable(
+    eapis_integration_intel_x64_msrs_trap_specific_vmm
+    SOURCES trap_specific.cpp
     LIBRARIES eapis_vic
     LIBRARIES eapis_hve
 )
