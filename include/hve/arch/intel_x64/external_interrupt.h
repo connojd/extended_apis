@@ -31,10 +31,7 @@ namespace eapis
 namespace intel_x64
 {
 
-///
-/// External external-interrupt handler
-///
-class EXPORT_EAPIS_HVE external_interrupt final : public base
+class EXPORT_EAPIS_HVE external_interrupt : public base
 {
 public:
 
@@ -42,7 +39,8 @@ public:
         uint64_t vector;
     };
 
-    using handler_t = delegate<bool(gsl::not_null<vmcs_t *>, info_t &)>;
+    using handler_delegate_t =
+        delegate<bool(gsl::not_null<vmcs_t *>, info_t &)>;
 
     /// Constructor
     ///
@@ -56,7 +54,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    ~external_interrupt();
+    ~external_interrupt() final;
 
     /// Add handler
     ///
@@ -64,9 +62,9 @@ public:
     /// @ensures
     ///
     /// @param v the external-interrupt vector to listen to
-    /// @param d the handler to call when an exit occurs at vector
+    /// @param d the handler to call when an exit occurs at v
     ///
-    void add_handler(vmcs_n::value_type vector, handler_t &&d);
+    void add_handler(vmcs_n::value_type v, handler_delegate_t &&d);
 
     /// Enable trapping
     ///
@@ -76,7 +74,7 @@ public:
     /// Enable external-interrupt exiting. This vcpu will exit each time
     /// an external-interrupt arrives during VMX-nonroot operation.
     ///
-    void enable_trapping() const;
+    void enable_exiting() const;
 
     /// Handle
     ///
@@ -95,7 +93,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    void dump_log();
+    void dump_log() final;
 
     /// @cond
 
@@ -110,7 +108,7 @@ public:
 private:
 
     exit_handler_t *m_exit_handler;
-    std::array<std::list<handler_t>, 256> m_handlers{};
+    std::array<std::list<handler_delegate_t>, 256> m_handlers{};
 
     struct record_t {
         uint64_t vector;
