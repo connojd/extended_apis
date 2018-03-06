@@ -29,8 +29,7 @@
 
 #include "base.h"
 #include "phys_lapic.h"
-//#include "xapic_ctl.h"
-//#include "x2apic_ctl.h"
+#include "phys_x2apic.h"
 
 // -----------------------------------------------------------------------------
 // Definitions
@@ -94,8 +93,8 @@ private:
     /// @cond
 
     void init_host_idt();
-    void init_apic_ctl();
-    void init_x2apic_ctl();
+    void init_phys_lapic();
+    void init_phys_x2apic();
     void init_save_state();
 
     void init_external_interrupt_handlers();

@@ -18,7 +18,6 @@
 
 #include <bfthreadcontext.h>
 
-#include <vic/arch/intel_x64/base.h>
 #include <vic/arch/intel_x64/isr.h>
 #include <vic/arch/intel_x64/interrupt_manager.h>
 
@@ -28,7 +27,7 @@ namespace intel_x64
 {
 
 static bool
-handle_wrmsr_eoi(gsl::not_null<vmcs_t *> vmcs, msrs::info_t &info)
+handle_wrmsr_eoi(gsl::not_null<vmcs_t *> vmcs, wrmsr::info_t &info)
 {
     bfignored(vmcs);
     info.ignore_write = true;
@@ -47,7 +46,7 @@ interrupt_manager::interrupt_manager(
 {
     init_save_state();
     init_host_idt();
-    init_apic_ctl();
+    init_phys_lapic();
     init_handlers();
 
     ::x64::rflags::interrupt_enable_flag::disable();
@@ -71,14 +70,14 @@ interrupt_manager::init_host_idt()
 }
 
 void
-interrupt_manager::init_apic_ctl()
+interrupt_manager::init_phys_lapic()
 {
     if (!::intel_x64::lapic::is_present()) {
         throw std::runtime_error("lapic not present");
     }
 
     if (::intel_x64::x2apic::supported()) {
-        init_x2apic_ctl();
+        init_phys_x2apic();
         return;
     }
 
@@ -86,7 +85,7 @@ interrupt_manager::init_apic_ctl()
 }
 
 void
-interrupt_manager::init_x2apic_ctl()
+interrupt_manager::init_phys_x2apic()
 {
     switch (::intel_x64::msrs::ia32_apic_base::state::get()) {
         case ::intel_x64::msrs::ia32_apic_base::state::x2apic:
@@ -101,25 +100,25 @@ interrupt_manager::init_x2apic_ctl()
             throw std::exception();
     }
 
-    m_lapic_ctl = std::make_unique<x2apic_ctl>();
+    m_phys_lapic = std::make_unique<phys_x2apic>();
 }
 
 void
 interrupt_manager::init_external_interrupt_handlers()
 {
-    using int_handler_t =
+    using interrupt_handler_t =
         delegate<bool(gsl::not_null<vmcs_t*>, external_interrupt::info_t&)>;
 
     m_external_interrupt = std::make_unique<external_interrupt>(m_exit_handler);
 
     for (auto v = 32; v < 256; ++v) {
-        auto handler = int_handler_t::create<
+        auto handler = interrupt_handler_t::create<
             interrupt_manager,
             &interrupt_manager::handle_external_interrupt>(this);
         m_external_interrupt->add_handler(v, std::move(handler));
     }
 
-    m_external_interrupt->enable_trapping();
+    m_external_interrupt->enable_exiting();
 }
 
 void
@@ -131,12 +130,10 @@ interrupt_manager::init_interrupt_window_handler()
 void
 interrupt_manager::init_x2apic_handlers()
 {
-    m_msrs->add_wrmsr_handler(
+    m_wrmsr->add_handler(
         ::intel_x64::msrs::ia32_x2apic_eoi::addr,
-        msrs::handler_delegate_t::create<handle_wrmsr_eoi>()
+        wrmsr::handler_delegate_t::create<handle_wrmsr_eoi>()
     );
-
-    m_msrs->trap_on_wrmsr_access(::intel_x64::msrs::ia32_x2apic_eoi::addr);
 }
 
 void
@@ -160,7 +157,7 @@ interrupt_manager::handle_external_interrupt(
 void
 interrupt_manager::handle_interrupt(vmcs_n::value_type vector)
 {
-    m_lapic_ctl->write_eoi();
+    m_phys_lapic->write_eoi();
     m_interrupt_window->queue_interrupt(vector);
 }
 
