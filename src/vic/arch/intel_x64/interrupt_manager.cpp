@@ -40,9 +40,10 @@ handle_wrmsr_eoi(gsl::not_null<vmcs_t *> vmcs, msrs::info_t &info)
 interrupt_manager::interrupt_manager(
     gsl::not_null<exit_handler_t *> exit_handler,
     gsl::not_null<vmcs_t *> vmcs,
-    gsl::not_null<msrs *> msrs)
+    gsl::not_null<rdmsr *> rdmsr,
+    gsl::not_null<wrmsr *> wrmsr)
 :
-    m_exit_handler{exit_handler}, m_vmcs{vmcs}, m_msrs{msrs}
+    m_exit_handler{exit_handler}, m_vmcs{vmcs}, m_rdmsr{rdmsr}, m_wrmsr{wrmsr}
 {
     init_save_state();
     init_host_idt();

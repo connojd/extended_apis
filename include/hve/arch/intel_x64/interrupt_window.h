@@ -32,7 +32,7 @@ namespace intel_x64
 ///
 /// Interrupt-window exit
 ///
-class EXPORT_EAPIS_HVE interrupt_window final : public base
+class EXPORT_EAPIS_HVE interrupt_window : public base
 {
 public:
 
@@ -48,7 +48,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    ~interrupt_window() = default;
+    ~interrupt_window() final;
 
     /// Add handler
     ///
@@ -81,6 +81,13 @@ public:
     ///
     bool handle(gsl::not_null<vmcs_t *> vmcs);
 
+    /// Dump Log
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    void dump_log();
+
     /// Is open
     ///
     /// @expects
@@ -102,13 +109,15 @@ public:
 
 private:
 
-    void enable_trapping() const;
-    void disable_trapping() const;
+    void enable_exiting() const;
+    void disable_exiting() const;
     void inject_interrupt(vmcs_n::value_type vector) const;
 
     exit_handler_t *m_exit_handler;
     std::list<handler_delegate_t> m_handlers{};
     std::deque<vmcs_n::value_type> m_irr{};
+
+    uint64_t m_count{};
 };
 
 }

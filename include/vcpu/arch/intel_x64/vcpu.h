@@ -29,7 +29,7 @@
 #include "../../../hve/arch/intel_x64/rdmsr.h"
 #include "../../../hve/arch/intel_x64/vpid.h"
 #include "../../../hve/arch/intel_x64/wrmsr.h"
-#include "../../../vic/arch/intel_x64/interrupt_manager.h"
+//#include "../../../vic/arch/intel_x64/interrupt_manager.h"
 
 namespace eapis
 {
@@ -39,6 +39,8 @@ namespace intel_x64
 class vcpu : public bfvmm::intel_x64::vcpu
 {
 public:
+
+    vcpu(vcpuid::type id) : bfvmm::intel_x64::vcpu{id} {}
 
     /// Destructor
     ///
@@ -451,7 +453,7 @@ private:
     std::unique_ptr<eapis::intel_x64::rdmsr> m_rdmsr;
     std::unique_ptr<eapis::intel_x64::vpid> m_vpid;
     std::unique_ptr<eapis::intel_x64::wrmsr> m_wrmsr;
-    std::unique_ptr<eapis::intel_x64::interrupt_manager> m_intmgr;
+//    std::unique_ptr<eapis::intel_x64::interrupt_manager> m_intmgr;
 };
 
 }

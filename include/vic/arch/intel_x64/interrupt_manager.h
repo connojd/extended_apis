@@ -22,13 +22,15 @@
 
 #include <deque>
 
-#include "../../../hve/arch/intel_x64/msrs.h"
-#include "../../../hve/arch/intel_x64/external_interrupt.h"
+#include "../../../hve/arch/intel_x64/rdmsr.h"
+#include "../../../hve/arch/intel_x64/wrmsr.h"
 #include "../../../hve/arch/intel_x64/interrupt_window.h"
+#include "../../../hve/arch/intel_x64/external_interrupt.h"
 
 #include "base.h"
-#include "xapic_ctl.h"
-#include "x2apic_ctl.h"
+#include "phys_lapic.h"
+//#include "xapic_ctl.h"
+//#include "x2apic_ctl.h"
 
 // -----------------------------------------------------------------------------
 // Definitions
@@ -54,7 +56,8 @@ public:
     interrupt_manager(
         gsl::not_null<exit_handler_t *> exit_handler,
         gsl::not_null<vmcs_t *> vmcs,
-        gsl::not_null<msrs *> msrs
+        gsl::not_null<rdmsr *> rdmsr,
+        gsl::not_null<wrmsr *> wrmsr
     );
 
     /// Destructor
@@ -102,11 +105,12 @@ private:
 
     exit_handler_t *m_exit_handler{nullptr};
     vmcs_t *m_vmcs{nullptr};
-    msrs *m_msrs{nullptr};
+    rdmsr *m_rdmsr{nullptr};
+    wrmsr *m_wrmsr{nullptr};
 
     std::unique_ptr<external_interrupt> m_external_interrupt{nullptr};
     std::unique_ptr<interrupt_window> m_interrupt_window{nullptr};
-    std::unique_ptr<lapic_ctl> m_lapic_ctl{nullptr};
+    std::unique_ptr<phys_lapic> m_phys_lapic{nullptr};
 
     // The interrupt_manager owns the ist, thus once *this is destroyed,
     // exceptions will have an invalid stack to work off of

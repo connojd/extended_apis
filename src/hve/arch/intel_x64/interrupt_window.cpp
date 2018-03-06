@@ -70,6 +70,13 @@ interrupt_window::interrupt_window(gsl::not_null<exit_handler_t *> exit_handler)
     );
 }
 
+interrupt_window::~interrupt_window()
+{
+    if (!ndebug && m_log_enabled) {
+        dump_log();
+    }
+}
+
 void
 interrupt_window::add_handler(handler_delegate_t &&d)
 { m_handlers.push_front(std::move(d)); }
@@ -82,7 +89,7 @@ interrupt_window::queue_interrupt(vmcs_n::value_type vector)
         return;
     }
 
-    enable_trapping();
+    enable_exiting();
     m_irr.push_back(vector);
     return;
 }
@@ -104,14 +111,14 @@ interrupt_window::inject_interrupt(vmcs_n::value_type vector) const
 }
 
 void
-interrupt_window::enable_trapping() const
+interrupt_window::enable_exiting() const
 {
     using namespace vmcs_n::primary_processor_based_vm_execution_controls;
     interrupt_window_exiting::enable();
 }
 
 void
-interrupt_window::disable_trapping() const
+interrupt_window::disable_exiting() const
 {
     using namespace vmcs_n::primary_processor_based_vm_execution_controls;
     interrupt_window_exiting::disable();
@@ -124,8 +131,12 @@ interrupt_window::handle(gsl::not_null<vmcs_t *> vmcs)
     inject_interrupt(vector);
     m_irr.pop_front();
 
+    if (!ndebug && m_log_enabled) {
+        ++m_count;
+    }
+
     if (!m_irr.empty()) {
-        enable_trapping();
+        enable_exiting();
         for (const auto &d : m_handlers) {
             if (d(vmcs)) {
                 return true;
@@ -135,7 +146,7 @@ interrupt_window::handle(gsl::not_null<vmcs_t *> vmcs)
         return true;
     }
 
-    disable_trapping();
+    disable_exiting();
 
     for (const auto &d : m_handlers) {
         if (d(vmcs)) {
@@ -144,6 +155,24 @@ interrupt_window::handle(gsl::not_null<vmcs_t *> vmcs)
     }
 
     return true;
+}
+
+// -----------------------------------------------------------------------------
+// Debug
+// -----------------------------------------------------------------------------
+
+void
+interrupt_window::dump_log()
+{
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_lnbr(0, msg);
+        bfdebug_info(0, "interrupt window log", msg);
+        bfdebug_brk2(0, msg);
+
+        bfdebug_subnhex(0, "number of exits", m_count, msg);
+
+        bfdebug_lnbr(0, msg);
+    });
 }
 
 }
