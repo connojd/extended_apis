@@ -30,53 +30,53 @@ if(ENABLE_BUILD_VMM)
 
 # MOVE ME
 
-    vmm_extension(
-        eapis_integration_intel_x64_control_register
-        DEPENDS eapis
-        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/integration/arch/intel_x64/control_register/
-    )
-
-    vmm_extension(
-        eapis_integration_intel_x64_cpuid
-        DEPENDS eapis
-        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/integration/arch/intel_x64/cpuid/
-    )
-
-    vmm_extension(
-        eapis_integration_intel_x64_io_instruction
-        DEPENDS eapis
-        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/integration/arch/intel_x64/io_instruction/
-    )
-
-    vmm_extension(
-        eapis_integration_intel_x64_monitor_trap
-        DEPENDS eapis
-        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/integration/arch/intel_x64/monitor_trap/
-    )
-
-    vmm_extension(
-        eapis_integration_intel_x64_mov_dr
-        DEPENDS eapis
-        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/integration/arch/intel_x64/mov_dr/
-    )
-
-    vmm_extension(
-        eapis_integration_intel_x64_rdmsr
-        DEPENDS eapis
-        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/integration/arch/intel_x64/rdmsr/
-    )
-
-    vmm_extension(
-        eapis_integration_intel_x64_vpid
-        DEPENDS eapis
-        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/integration/arch/intel_x64/vpid/
-    )
-
-    vmm_extension(
-        eapis_integration_intel_x64_wrmsr
-        DEPENDS eapis
-        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/integration/arch/intel_x64/wrmsr/
-    )
+#    vmm_extension(
+#        eapis_integration_intel_x64_control_register
+#        DEPENDS eapis
+#        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/integration/arch/intel_x64/control_register/
+#    )
+#
+#    vmm_extension(
+#        eapis_integration_intel_x64_cpuid
+#        DEPENDS eapis
+#        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/integration/arch/intel_x64/cpuid/
+#    )
+#
+#    vmm_extension(
+#        eapis_integration_intel_x64_io_instruction
+#        DEPENDS eapis
+#        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/integration/arch/intel_x64/io_instruction/
+#    )
+#
+#    vmm_extension(
+#        eapis_integration_intel_x64_monitor_trap
+#        DEPENDS eapis
+#        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/integration/arch/intel_x64/monitor_trap/
+#    )
+#
+#    vmm_extension(
+#        eapis_integration_intel_x64_mov_dr
+#        DEPENDS eapis
+#        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/integration/arch/intel_x64/mov_dr/
+#    )
+#
+#    vmm_extension(
+#        eapis_integration_intel_x64_rdmsr
+#        DEPENDS eapis
+#        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/integration/arch/intel_x64/rdmsr/
+#    )
+#
+#    vmm_extension(
+#        eapis_integration_intel_x64_vpid
+#        DEPENDS eapis
+#        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/integration/arch/intel_x64/vpid/
+#    )
+#
+#    vmm_extension(
+#        eapis_integration_intel_x64_wrmsr
+#        DEPENDS eapis
+#        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/integration/arch/intel_x64/wrmsr/
+#    )
 endif()
 
 # if(ENABLE_BUILD_TEST)

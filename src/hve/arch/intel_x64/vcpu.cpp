@@ -20,6 +20,7 @@
 #include <bfvmm/memory_manager/memory_manager.h>
 
 #include <hve/arch/intel_x64/vcpu.h>
+#include <vic/arch/intel_x64/isr.h>
 
 namespace eapis
 {
@@ -28,7 +29,9 @@ namespace intel_x64
 
 vcpu::vcpu(vcpuid::type id) :
     bfvmm::intel_x64::vcpu{id}
-{ }
+{
+    eapis::intel_x64::isr::init_vmm_idt(this->exit_handler());
+}
 
 //--------------------------------------------------------------------------
 // Control Register
