@@ -18,7 +18,7 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 #include <bfvmm/vcpu/vcpu_factory.h>
-#include <eapis/vcpu/arch/intel_x64/eapis_vcpu.h>
+#include <vcpu/arch/intel_x64/efi_vcpu.h>
 
 namespace bfvmm
 {
@@ -27,7 +27,8 @@ std::unique_ptr<vcpu>
 vcpu_factory::make_vcpu(vcpuid::type vcpuid, bfobject *obj)
 {
     bfignored(obj);
-    return std::make_unique<eapis::intel_x64::vcpu>(vcpuid);
+    return std::make_unique<efi::vcpu>(vcpuid);
 }
+
 
 }

@@ -17,16 +17,25 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 cmake_minimum_required(VERSION 3.6)
-project(eapis C CXX)
+project(efi_main C CXX)
 
 include(${SOURCE_CMAKE_DIR}/project.cmake)
 init_project(
-    INCLUDES ${CMAKE_CURRENT_LIST_DIR}/../include
+    INCLUDES ${CMAKE_CURRENT_LIST_DIR}/../../include
 )
 
-add_subdirectory(hve)
+if(${BUILD_TARGET_ARCH} STREQUAL "x86_64")
+    list(APPEND SOURCES
+        arch/intel_x64/vcpu_factory.cpp
+    )
+elseif(${BUILD_TARGET_ARCH} STREQUAL "aarch64")
+    message(WARNING "Unimplemented")
+else()
+    message(FATAL_ERROR "Unsupported archiecture")
+endif()
 
-# -----------------------------------------------------------------------------
-# Install
-# -----------------------------------------------------------------------------
-install(DIRECTORY ../include/ DESTINATION include/eapis)
+add_vmm_executable(
+    eapis_efi
+    SOURCES ${SOURCES}
+    LIBRARIES eapis_hve
+)

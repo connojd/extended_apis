@@ -47,12 +47,8 @@ public:
     ///
     /// @param id the id of this vcpu
     ///
-    vcpu(vcpuid::type id) :
-        bfvmm::intel_x64::vcpu{id},
-        m_hve{std::make_unique<eapis::intel_x64::hve>(exit_handler(), vmcs())},
-        m_vic{std::make_unique<eapis::intel_x64::vic>(m_hve.get())}
-    { }
-
+    vcpu(vcpuid::type id);
+    
     /// Destructor
     ///
     /// @expects
@@ -67,8 +63,7 @@ public:
     ///
     /// @return Returns the hve object stored in this vCPU
     ///
-    gsl::not_null<eapis::intel_x64::hve *> hve()
-    { return m_hve.get(); }
+    gsl::not_null<eapis::intel_x64::hve *> hve();
 
     /// Get VIC (virtual interrupt controller)
     ///
@@ -77,8 +72,7 @@ public:
     ///
     /// @return Returns the vic object stored in this vCPU
     ///
-    gsl::not_null<eapis::intel_x64::vic *> vic()
-    { return m_vic.get(); }
+    gsl::not_null<eapis::intel_x64::vic *> vic();
 
 private:
 

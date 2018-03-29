@@ -18,6 +18,7 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 #include <intrinsics.h>
+#include <hve/arch/intel_x64/hve.h>
 #include "hve/arch/intel_x64/ept/helpers.h"
 #include "hve/arch/intel_x64/ept/memory_map.h"
 #include "hve/arch/intel_x64/ept/intrinsics.h"

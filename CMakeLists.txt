@@ -28,6 +28,14 @@ if(ENABLE_BUILD_VMM)
         SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/bfvmm/src/main
     )
 
+    if (ENABLE_BUILD_EFI)
+        vmm_extension(
+            efi_main
+            DEPENDS eapis
+            SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/bfvmm/src/efi_main
+        )
+    endif()
+
 # MOVE ME
 
     vmm_extension(
