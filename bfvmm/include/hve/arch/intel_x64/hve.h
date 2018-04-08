@@ -451,7 +451,8 @@ public:
     /// @return Returns the EPT misconfiguration object stored in the hve if EPT
     ///     trapping is enabled, otherwise an exception is thrown
     ///
-    gsl::not_null<ept_misconfiguration *> ept_misconfiguration();
+    gsl::not_null<eapis::intel_x64::ept_misconfiguration *>
+    ept_misconfiguration();
 
     /// Add EPT Misconfiguration Handler
     ///
@@ -459,7 +460,7 @@ public:
     /// @ensures
     ///
     void add_ept_misconfiguration_handler(
-            ept_misconfiguration::handler_delegate_t &&d);
+            eapis::intel_x64::ept_misconfiguration::handler_delegate_t &&d);
 
     //--------------------------------------------------------------------------
     // EPT Violation
@@ -473,7 +474,7 @@ public:
     /// @return Returns the EPT violation object stored in the hve if EPT
     ///     trapping is enabled, otherwise an exception is thrown
     ///
-    gsl::not_null<ept_violation *> ept_violation();
+    gsl::not_null<eapis::intel_x64::ept_violation *> ept_violation();
 
     /// Add EPT read violation handler
     ///
@@ -481,7 +482,7 @@ public:
     /// @ensures
     ///
     void add_ept_read_violation_handler(
-            ept_violation::handler_delegate_t &&d);
+            eapis::intel_x64::ept_violation::handler_delegate_t &&d);
 
     /// Add EPT write violation handler
     ///
@@ -489,7 +490,7 @@ public:
     /// @ensures
     ///
     void add_ept_write_violation_handler(
-            ept_violation::handler_delegate_t &&d);
+            eapis::intel_x64::ept_violation::handler_delegate_t &&d);
 
     /// Add EPT execute violation handler
     ///
@@ -497,7 +498,7 @@ public:
     /// @ensures
     ///
     void add_ept_execute_violation_handler(
-            ept_violation::handler_delegate_t &&d);
+            eapis::intel_x64::ept_violation::handler_delegate_t &&d);
 
 
 private:
