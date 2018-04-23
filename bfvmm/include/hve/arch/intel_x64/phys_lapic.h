@@ -49,6 +49,13 @@ public:
     ///
     virtual ~phys_lapic() = default;
 
+    /// Relocate
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    virtual void relocate(uintptr_t base) = 0;
+
     /// Enable interrupts
     ///
     /// Enable physical interrupts on this cpu

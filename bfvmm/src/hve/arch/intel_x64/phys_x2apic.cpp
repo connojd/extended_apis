@@ -27,6 +27,10 @@ namespace intel_x64
 {
 
 void
+phys_x2apic::relocate(uintptr_t base)
+{ bfignored(base); }
+
+void
 phys_x2apic::enable_interrupts()
 { ::x64::rflags::interrupt_enable_flag::enable(); }
 
