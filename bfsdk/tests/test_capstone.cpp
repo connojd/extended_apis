@@ -62,7 +62,6 @@ TEST_CASE("eapis::intel_x64::capstone::read16")
     CHECK(eapis::intel_x64::capstone::read16(&state, 0U) == 0x1100U);
 }
 
-
 TEST_CASE("eapis::intel_x64::capstone::read32")
 {
     bfvmm::intel_x64::save_state_t state;
@@ -166,7 +165,3 @@ TEST_CASE("eapis::intel_x64::capstone::read_op_val")
 
     free(insn.detail);
 }
-
-
-
-

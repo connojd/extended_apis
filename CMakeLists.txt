@@ -103,15 +103,15 @@ endif()
 if(ENABLE_BUILD_TEST)
     test_extension(
         eapis
-        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/bfvmm/tests/
         DEPENDS bfvmm
-        DEPENDS bfintrinsics
+        DEPENDS capstone
+        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/bfvmm/tests/
     )
 
     test_extension(
         eapis_bfsdk
-        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/bfsdk/tests/
         DEPENDS bfvmm
         DEPENDS capstone
+        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/bfsdk/tests/
     )
 endif()
