@@ -51,6 +51,16 @@ do_test(test_vpid
     ${ARGN}
 )
 
+do_test(test_ioapic
+    SOURCES arch/intel_x64/test_ioapic.cpp
+    ${ARGN}
+)
+
+do_test(test_phys_ioapic
+    SOURCES arch/intel_x64/test_phys_ioapic.cpp
+    ${ARGN}
+)
+
 do_test(test_phys_xapic
     SOURCES arch/intel_x64/test_phys_xapic.cpp
     ${ARGN}
