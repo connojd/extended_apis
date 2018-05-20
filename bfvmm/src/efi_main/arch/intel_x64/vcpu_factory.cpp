@@ -1,5 +1,6 @@
 //
 // Bareflank Extended APIs
+//
 // Copyright (C) 2018 Assured Information Security, Inc.
 //
 // This library is free software; you can redistribute it and/or
@@ -17,46 +18,7 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 #include <bfvmm/vcpu/vcpu_factory.h>
-#include <eapis/vcpu/arch/intel_x64/efi_vcpu.h>
-
-using namespace eapis::intel_x64;
-
-// -----------------------------------------------------------------------------
-// vCPU
-// -----------------------------------------------------------------------------
-
-namespace test
-{
-
-class vcpu : public eapis::intel_x64::vcpu
-{
-public:
-
-    /// Default Constructor
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    explicit vcpu(vcpuid::type id) :
-        eapis::intel_x64::vcpu{id}
-    {
-        hve()->enable_vpid();
-        bfdebug_nhex(0, "vpid", hve()->vpid()->id());
-    }
-
-    /// Destructor
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    ~vcpu() = default;
-};
-
-}
-
-// -----------------------------------------------------------------------------
-// vCPU Factory
-// -----------------------------------------------------------------------------
+#include <vcpu/arch/intel_x64/efi_vcpu.h>
 
 namespace bfvmm
 {
@@ -65,7 +27,8 @@ std::unique_ptr<vcpu>
 vcpu_factory::make_vcpu(vcpuid::type vcpuid, bfobject *obj)
 {
     bfignored(obj);
-    return std::make_unique<test::vcpu>(vcpuid);
+    return std::make_unique<efi::vcpu>(vcpuid);
 }
+
 
 }

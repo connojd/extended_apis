@@ -43,6 +43,7 @@ if(${BUILD_TARGET_ARCH} STREQUAL "x86_64")
         arch/intel_x64/wrmsr.cpp
         arch/intel_x64/hve.cpp
         arch/x64/pci_register.cpp
+        arch/intel_x64/vcpu/eapis_vcpu.cpp
     )
 
     if (NOT WIN32 AND NOT ENABLE_MOCKING)
@@ -62,6 +63,12 @@ list(APPEND SOURCES
     phys_pci.cpp
     pci_device_allocator.cpp
 )
+
+if (ENABLE_BUILD_EFI)
+    list(APPEND SOURCES
+        arch/intel_x64/vcpu/efi_vcpu.cpp
+    )
+endif()
 
 add_shared_library(
     eapis_hve
