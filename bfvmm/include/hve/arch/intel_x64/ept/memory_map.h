@@ -52,6 +52,7 @@ namespace eapis
 {
 namespace intel_x64
 {
+
 namespace ept
 {
 
