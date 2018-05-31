@@ -21,6 +21,7 @@
 
 #include <arch/x64/misc.h>
 #include <arch/intel_x64/cpuid.h>
+#include <hve/arch/intel_x64/mtrr.h>
 #include <hve/arch/intel_x64/phys_mtrr.h>
 #include <support/arch/intel_x64/test_support.h>
 
@@ -34,6 +35,7 @@ namespace intel_x64
 using namespace ::x64::cpuid;
 using namespace ::intel_x64::cpuid;
 using namespace ::intel_x64::mtrr;
+using namespace eapis::intel_x64::mtrr;
 
 static const std::array<uint64_t, 6U> mtrr_type = {
     uncacheable,
@@ -165,7 +167,7 @@ TEST_CASE("phys_mtrr: constructor")
     CHECK_THROWS(phys_mtrr());
 
     base = 0x080000U;
-    mask = variable_range::size_to_mask(0x1000U, 39U) | (1U << 11U);
+    mask = size_to_mask(0x1000U, 39U) | (1U << 11U);
     ::intel_x64::msrs::set(physbase::start_addr, base);
     ::intel_x64::msrs::set(physmask::start_addr, mask);
 
@@ -201,8 +203,6 @@ TEST_CASE("phys_mtrr: mem_type - fixed, single type")
                 val |= type << (j << 3U);
             }
             ::intel_x64::msrs::set(fixed_addrs.at(i), val);
-            bfdebug_nhex(0, "addr", fixed_addrs.at(i));
-            bfdebug_nhex(0, "val", val);
         }
 
         auto mtrr = phys_mtrr();
@@ -265,7 +265,7 @@ TEST_CASE("phys_mtrr: mem_type - variable throws")
     uint64_t physbase = 0U;
     uint64_t physmask = 0U;
     uint64_t pas = g_eax_cpuid[addr_size::addr];
-    uint64_t mask = variable_range::size_to_mask(0x2000U, pas);
+    uint64_t mask = size_to_mask(0x2000U, pas);
 
     physbase::physbase::set(physbase, 0x800000U, pas);
     physmask::physmask::set(physmask, mask, pas);

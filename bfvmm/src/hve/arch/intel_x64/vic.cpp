@@ -58,10 +58,24 @@ static auto init_xapic_ept(
     const auto lo_end = ept::align_4k(xapic_gpa) - ept::page_size_4k;
     const auto hi_end = 0x900000000ULL - ept::page_size_1g;
 
-    ept::identity_map_bestfit_lo(emm, 0ULL, lo_end);
+    // TODO: Respect the MTRRs
+    ept::identity_map_bestfit_lo(emm, 0ULL, lo_end, ept::epte::memory_attr::uc_pt);
     ept::map_4k(emm, xapic_gpa, xapic_hpa, ept::epte::memory_attr::uc_re);
-    ept::identity_map_bestfit_hi(emm, xapic_gpa + ept::page_size_4k, hi_end);
+    ept::identity_map_bestfit_hi(emm, xapic_gpa + ept::page_size_4k, hi_end, ept::epte::memory_attr::uc_pt);
     ept::enable_ept(ept::eptp(emm), hve);
+}
+
+
+bool handle_desc_table(gsl::not_null<vmcs_t *> vmcs)
+{
+    vmcs_n::vm_exit_instruction_information::lgdt::dump(0);
+    return advance(vmcs);
+}
+
+bool handle_tr(gsl::not_null<vmcs_t *> vmcs)
+{
+    vmcs_n::vm_exit_instruction_information::ltr::dump(0);
+    return advance(vmcs);
 }
 
 vic::vic(
@@ -80,8 +94,14 @@ vic::vic(
     this->init_interrupt_map();
 
     this->add_exit_handlers();
-
-    m_phys_lapic->disable_interrupts();
+//
+//    vmcs_n::secondary_processor_based_vm_execution_controls::descriptor_table_exiting::enable();
+//    hve->exit_handler()->add_handler(vmcs_n::exit_reason::basic_exit_reason::access_to_gdtr_or_idtr,
+//        ::handler_delegate_t::create<handle_desc_table>());
+//    hve->exit_handler()->add_handler(vmcs_n::exit_reason::basic_exit_reason::access_to_ldtr_or_tr,
+//        ::handler_delegate_t::create<handle_tr>());
+//
+//    m_phys_lapic->disable_interrupts();
     m_phys_lapic->relocate(reinterpret_cast<uintptr_t>(m_xapic_ump.get()));
 }
 
@@ -511,7 +531,7 @@ vic::handle_rdmsr_apic_base(gsl::not_null<vmcs_t *> vmcs, rdmsr::info_t &info)
 {
     bfignored(vmcs);
 
-    bfdebug_info(VIC_LOG_ALERT, "rdmsr: apic_base");
+    bfdebug_info(VIC_LOG_FATAL, "rdmsr: apic_base");
     info.val = m_virt_base_msr;
 
     return true;
@@ -524,7 +544,7 @@ vic::handle_wrmsr_apic_base(gsl::not_null<vmcs_t *> vmcs, wrmsr::info_t &info)
 {
     bfignored(vmcs);
 
-    bfdebug_info(VIC_LOG_ALERT, "wrmsr: apic_base");
+    bfdebug_info(VIC_LOG_FATAL, "wrmsr: apic_base");
     m_virt_base_msr = info.val;
 
     return true;
@@ -559,7 +579,7 @@ vic::handle_spurious_interrupt(
 {
     bfignored(vmcs);
 
-    bfalert_nhex(VIC_LOG_ALERT, "Spurious interrupt handled:", info.vector);
+    bfalert_nhex(VIC_LOG_FATAL, "Spurious interrupt handled:", info.vector);
     m_virt_lapic->inject_spurious(this->phys_to_virt(info.vector));
 
     return true;

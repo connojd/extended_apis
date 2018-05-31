@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <arch/x64/misc.h>
 #include <arch/intel_x64/bit.h>
+#include <hve/arch/intel_x64/mtrr.h>
 #include <hve/arch/intel_x64/phys_mtrr.h>
 
 namespace eapis
@@ -170,25 +171,16 @@ void
 phys_mtrr::init_variable_ranges()
 {
     const auto vcnt = ia32_mtrrcap::vcnt::get(m_cap);
-
     const auto base_addr = physbase::start_addr;
-    const auto base_from = physbase::physbase::from;
     const auto mask_addr = physmask::start_addr;
-    const auto mask_from = physmask::physmask::from;
 
     for (auto i = 0U; i < (vcnt << 1U); i += 2U) {
         const auto mask_msr = ::intel_x64::msrs::get(mask_addr + i);
         if (physmask::valid::is_disabled(mask_msr)) {
             continue;
         }
-
         const auto base_msr = ::intel_x64::msrs::get(base_addr + i);
-        const auto type = physbase::type::get(base_msr);
-        const auto base = physbase::physbase::get(base_msr, m_pas) << base_from;
-        const auto mask = physmask::physmask::get(mask_msr, m_pas) << mask_from;
-
-        struct variable_range r(base, mask, type, m_pas);
-        m_variable_range.push_back(std::move(r));
+        m_variable_range.push_back({base_msr, mask_msr, m_pas});
     }
 }
 

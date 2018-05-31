@@ -20,6 +20,7 @@
 #define PHYS_MTRR_INTEL_X64_EAPIS_H
 
 #include <arch/intel_x64/mtrr.h>
+#include <hve/arch/intel_x64/mtrr.h>
 #include <hve/arch/intel_x64/base.h>
 
 namespace eapis
@@ -148,7 +149,7 @@ private:
 
     std::array<uint64_t, 256U> m_fixed_range = {0U};
     std::array<uint64_t, s_fixed_count> m_fixed_type = {0U};
-    std::vector<::intel_x64::mtrr::variable_range> m_variable_range;
+    std::vector<eapis::intel_x64::mtrr::variable_range> m_variable_range;
 
     uint64_t m_pas; // Physical address size
     uint64_t m_cap; // MTRR capability MSR
