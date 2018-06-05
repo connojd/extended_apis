@@ -54,13 +54,7 @@ static auto init_xapic_ept(
     uintptr_t xapic_hpa)
 {
     expects(ept::align_4k(xapic_gpa) > 0ULL);
-
-    const auto lo_end = ept::align_4k(xapic_gpa) - ept::page_size_4k;
-    const auto hi_end = 0x900000000ULL - ept::page_size_1g;
-
-    ept::identity_map_bestfit_lo(emm, 0ULL, lo_end);
     ept::map_4k(emm, xapic_gpa, xapic_hpa, ept::epte::memory_attr::uc_re);
-    ept::identity_map_bestfit_hi(emm, xapic_gpa + ept::page_size_4k, hi_end);
     ept::enable_ept(ept::eptp(emm), hve);
 }
 
@@ -81,7 +75,7 @@ vic::vic(
 
     this->add_exit_handlers();
 
-    m_phys_lapic->disable_interrupts();
+    //m_phys_lapic->disable_interrupts();
     m_phys_lapic->relocate(reinterpret_cast<uintptr_t>(m_xapic_ump.get()));
 }
 
@@ -393,6 +387,7 @@ vic::handle_xapic_write(gsl::not_null<vmcs_t *> vmcs, ept_violation::info_t &inf
     }
 
     const auto reg = lapic::mem_addr_to_offset(info.gpa);
+    bfdebug_nhex(0, "xapic write", reg);
     if (reg == lapic::msr_addr_to_offset(ia32_x2apic_eoi::addr)) {
         // Returning straight-away here without checking the value assumes that
         // the guest wrote a zero; if not then we technically should inject a GP

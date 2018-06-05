@@ -18,6 +18,8 @@
 
 #include <bfdebug.h>
 #include <hve/arch/intel_x64/hve.h>
+#include <hve/arch/intel_x64/ept.h>
+#include <hve/arch/intel_x64/phys_mtrr.h>
 
 namespace eapis
 {
@@ -25,9 +27,14 @@ namespace intel_x64
 {
 
 ept_violation::ept_violation(
-    gsl::not_null<eapis::intel_x64::hve *> hve
+    gsl::not_null<eapis::intel_x64::hve *> hve,
+    gsl::not_null<eapis::intel_x64::ept::memory_map *> emm,
+    gsl::not_null<eapis::intel_x64::phys_mtrr *> mtrr
 ) :
-    m_exit_handler{hve->exit_handler()}
+    m_exit_handler{hve->exit_handler()},
+    m_hve{hve},
+    m_emm{emm},
+    m_phys_mtrr{mtrr}
 {
     using namespace vmcs_n;
 
@@ -35,6 +42,13 @@ ept_violation::ept_violation(
         exit_reason::basic_exit_reason::ept_violation,
         ::handler_delegate_t::create<ept_violation, &ept_violation::handle>(this)
     );
+
+    this->add_read_handler(handler_delegate_t::create<
+        ept_violation, &ept_violation::map_read>(this));
+    this->add_write_handler(handler_delegate_t::create<
+        ept_violation, &ept_violation::map_write>(this));
+    this->add_execute_handler(handler_delegate_t::create<
+        ept_violation, &ept_violation::map_execute>(this));
 }
 
 ept_violation::~ept_violation()
@@ -197,6 +211,64 @@ ept_violation::handle_execute(gsl::not_null<vmcs_t *> vmcs, info_t &info)
     }
 
     throw std::runtime_error("ept_violation: unhandled ept execute violation");
+}
+
+bool
+ept_violation::map_read(gsl::not_null<vmcs_t *> vmcs, info_t &info)
+{
+    (void)vmcs;
+    auto gfn = ept::align_4k(info.gpa);
+    try {
+        auto &entry = m_emm->gpa_to_epte(gfn);
+        ept::epte::read_access::enable(entry);
+        ::intel_x64::vmx::invept_single_context(::vmcs_n::ept_pointer::get());
+    }
+    catch (std::runtime_error &re) {
+        auto type = m_phys_mtrr->mem_type(gfn);
+        auto attr = (type << 3U) | 1U;
+        map_4k(*m_emm, gfn, gfn, attr);
+    }
+
+    info.ignore_advance = true;
+    return true;
+}
+
+bool
+ept_violation::map_write(gsl::not_null<vmcs_t *> vmcs, info_t &info)
+{
+    auto gfn = ept::align_4k(info.gpa);
+    try {
+        auto &entry = m_emm->gpa_to_epte(gfn);
+        ept::epte::write_access::enable(entry);
+        ::intel_x64::vmx::invept_single_context(::vmcs_n::ept_pointer::get());
+    }
+    catch (std::runtime_error &re) {
+        auto type = m_phys_mtrr->mem_type(gfn);
+        auto attr = (type << 3U) | 3U;
+        map_4k(*m_emm, gfn, gfn, attr);
+    }
+
+    info.ignore_advance = true;
+    return true;
+}
+
+bool
+ept_violation::map_execute(gsl::not_null<vmcs_t *> vmcs, info_t &info)
+{
+    auto gfn = ept::align_4k(info.gpa);
+    try {
+        auto &entry = m_emm->gpa_to_epte(gfn);
+        ept::epte::execute_access::enable(entry);
+        ::intel_x64::vmx::invept_single_context(::vmcs_n::ept_pointer::get());
+    }
+    catch (std::runtime_error &re) {
+        auto type = m_phys_mtrr->mem_type(gfn);
+        auto attr = (type << 3U) | 7U;
+        map_4k(*m_emm, gfn, gfn, attr);
+    }
+
+    info.ignore_advance = true;
+    return true;
 }
 
 }

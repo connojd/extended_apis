@@ -19,6 +19,7 @@
 #include <bfvmm/memory_manager/memory_manager.h>
 
 #include <hve/arch/intel_x64/hve.h>
+#include <hve/arch/intel_x64/phys_mtrr.h>
 
 namespace eapis
 {
@@ -27,10 +28,14 @@ namespace intel_x64
 
 hve::hve(
     gsl::not_null<exit_handler_t *> exit_handler,
-    gsl::not_null<vmcs_t *> vmcs
+    gsl::not_null<vmcs_t *> vmcs,
+    gsl::not_null<ept::memory_map *> emm,
+    gsl::not_null<phys_mtrr *> mtrr
 ) :
     m_exit_handler{exit_handler},
-    m_vmcs{vmcs}
+    m_vmcs{vmcs},
+    m_emm{emm},
+    m_mtrr{mtrr}
 { }
 
 gsl::not_null<exit_handler_t *>
@@ -282,7 +287,7 @@ void hve::add_ept_read_violation_handler(
     ept_violation::handler_delegate_t &&d)
 {
     if (!m_ept_violation) {
-        m_ept_violation = std::make_unique<eapis::intel_x64::ept_violation>(this);
+        m_ept_violation = std::make_unique<eapis::intel_x64::ept_violation>(this, m_emm, m_mtrr);
     }
 
     m_ept_violation->add_read_handler(std::move(d));
@@ -292,7 +297,7 @@ void hve::add_ept_write_violation_handler(
     ept_violation::handler_delegate_t &&d)
 {
     if (!m_ept_violation) {
-        m_ept_violation = std::make_unique<eapis::intel_x64::ept_violation>(this);
+        m_ept_violation = std::make_unique<eapis::intel_x64::ept_violation>(this, m_emm, m_mtrr);
     }
 
     m_ept_violation->add_write_handler(std::move(d));
@@ -302,7 +307,7 @@ void hve::add_ept_execute_violation_handler(
     ept_violation::handler_delegate_t &&d)
 {
     if (!m_ept_violation) {
-        m_ept_violation = std::make_unique<eapis::intel_x64::ept_violation>(this);
+        m_ept_violation = std::make_unique<eapis::intel_x64::ept_violation>(this, m_emm, m_mtrr);
     }
 
     m_ept_violation->add_execute_handler(std::move(d));

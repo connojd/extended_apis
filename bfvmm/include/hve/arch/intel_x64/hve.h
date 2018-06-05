@@ -39,6 +39,8 @@ namespace eapis
 namespace intel_x64
 {
 
+class phys_mtrr;
+
 /// HVE
 ///
 /// Provides a wrapper interface around specific exit handlers,
@@ -60,7 +62,9 @@ public:
     ///
     hve(
         gsl::not_null<exit_handler_t *> exit_handler,
-        gsl::not_null<vmcs_t *> vmcs
+        gsl::not_null<vmcs_t *> vmcs,
+        gsl::not_null<ept::memory_map *> emm,
+        gsl::not_null<phys_mtrr *> mtrr
     );
 
     /// Destructor
@@ -547,6 +551,8 @@ private:
 
     exit_handler_t *m_exit_handler;
     vmcs_t *m_vmcs;
+    ept::memory_map *m_emm;
+    phys_mtrr *m_mtrr;
 };
 
 }

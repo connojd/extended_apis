@@ -24,6 +24,7 @@
 #include "../../../hve/arch/intel_x64/hve.h"
 #include "../../../hve/arch/intel_x64/vic.h"
 #include "../../../hve/arch/intel_x64/ept/memory_map.h"
+#include "../../../hve/arch/intel_x64/phys_mtrr.h"
 
 namespace eapis
 {
@@ -51,7 +52,8 @@ public:
     vcpu(vcpuid::type id) :
         bfvmm::intel_x64::vcpu{id},
         m_emm{std::make_unique<eapis::intel_x64::ept::memory_map>()},
-        m_hve{std::make_unique<eapis::intel_x64::hve>(exit_handler(), vmcs())},
+        m_mtrr{std::make_unique<eapis::intel_x64::phys_mtrr>()},
+        m_hve{std::make_unique<eapis::intel_x64::hve>(exit_handler(), vmcs(), m_emm.get(), m_mtrr.get())},
         m_vic{std::make_unique<eapis::intel_x64::vic>(m_hve.get(), m_emm.get())}
     { }
 
@@ -97,6 +99,7 @@ private:
     /// @cond
 
     std::unique_ptr<eapis::intel_x64::ept::memory_map> m_emm;
+    std::unique_ptr<eapis::intel_x64::phys_mtrr> m_mtrr;
     std::unique_ptr<eapis::intel_x64::hve> m_hve;
     std::unique_ptr<eapis::intel_x64::vic> m_vic;
 

@@ -20,6 +20,7 @@
 #define EPT_VIOLATION_INTEL_X64_H
 
 #include "base.h"
+#include "ept.h"
 
 // -----------------------------------------------------------------------------
 // Definitions
@@ -31,6 +32,12 @@ namespace intel_x64
 {
 
 class hve;
+class phys_mtrr;
+
+namespace ept
+{
+class memory_map;
+}
 
 /// EPT Violation
 ///
@@ -93,7 +100,10 @@ public:
     ///
     /// @param hve the hve object for this EPT violation handler
     ///
-    ept_violation(gsl::not_null<eapis::intel_x64::hve *> hve);
+    ept_violation(
+        gsl::not_null<eapis::intel_x64::hve *> hve,
+        gsl::not_null<eapis::intel_x64::ept::memory_map *> emm,
+        gsl::not_null<eapis::intel_x64::phys_mtrr *> mtrr);
 
     /// Destructor
     ///
@@ -143,6 +153,10 @@ public:
     ///
     void dump_log() final;
 
+    bool map_read(gsl::not_null<vmcs_t *> vmcs, info_t &info);
+    bool map_write(gsl::not_null<vmcs_t *> vmcs, info_t &info);
+    bool map_execute(gsl::not_null<vmcs_t *> vmcs, info_t &info);
+
 private:
 
     /// @cond
@@ -158,6 +172,9 @@ private:
 private:
 
     gsl::not_null<exit_handler_t *> m_exit_handler;
+    gsl::not_null<eapis::intel_x64::hve *> m_hve;
+    gsl::not_null<eapis::intel_x64::ept::memory_map *> m_emm;
+    gsl::not_null<eapis::intel_x64::phys_mtrr *> m_phys_mtrr;
 
     std::list<handler_delegate_t> m_read_handlers;
     std::list<handler_delegate_t> m_write_handlers;

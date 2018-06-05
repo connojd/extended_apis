@@ -54,13 +54,6 @@ class EXPORT_EAPIS_HVE phys_mtrr
 {
 public:
 
-    /// There are 88 fixed ranges total
-    static constexpr uint64_t s_fixed_count = 88U;
-
-    /// The total size over all fixed range MTRRs is 1MB. The base is
-    /// defined by the manual as 0.
-    static constexpr uint64_t s_fixed_size = 0x100000U; // First 1MB
-
     /// Default Constructor
     ///
     /// @expects
@@ -90,9 +83,9 @@ public:
 
     /// Range list
     ///
-    /// Return a set of ranges, each with one memory type, ordered
-    /// by ascending address starting from the given @param base and
-    /// extending to @param base + @param size - 1.
+    /// Return the range list
+    ///
+    /// TODO: update
     ///
     /// @note each produced range is a multple of 4KB > 0
     /// @note the guarantee of one type per range does not imply that the range
@@ -106,10 +99,7 @@ public:
     /// @param[in] size the number of bytes in the range
     /// @param[in,out] list the list of ranges
     ///
-    void range_list(
-        const uintptr_t base,
-        const uint64_t size,
-        std::vector<mtrr::range> &list) const;
+    const std::vector<mtrr::range> *range_list();
 
     /// Enabled
     ///
@@ -164,15 +154,22 @@ public:
 
 private:
 
-    void init_variable_ranges();
-    void init_fixed_ranges();
-    void init_fixed_types();
+    void parse_fixed_types();
+    void parse_fixed_mtrrs();
+    void parse_variable_mtrrs();
+
+    void setup_range_list();
+    void setup_fixed_range_list();
+    void setup_variable_range_list();
+
     void print_fixed_ranges(uint64_t level) const;
     void print_variable_ranges(uint64_t level) const;
+    void print_range_list(uint64_t level) const;
 
-    std::array<uint64_t, 256U> m_fixed_range = {0U};
-    std::array<uint64_t, s_fixed_count> m_fixed_type = {0U};
-    std::vector<eapis::intel_x64::mtrr::variable_range> m_variable_range;
+    std::array<uint8_t, 256U> m_fixed_range = {0U};
+    std::array<uint8_t, intel_x64::mtrr::fixed_count> m_fixed_type = {0U};
+    std::vector<intel_x64::mtrr::variable_range> m_variable_range;
+    std::vector<intel_x64::mtrr::range> m_range_list;
 
     uint64_t m_pas; // Physical address size
     uint64_t m_cap; // MTRR capability MSR
