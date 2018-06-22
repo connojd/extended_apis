@@ -18,6 +18,9 @@
 
 #include <bfdebug.h>
 #include <hve/arch/intel_x64/hve.h>
+#include <hve/arch/intel_x64/ept/helpers.h>
+#include <bfvmm/memory_manager/arch/x64/map_ptr.h>
+#include <hve/arch/intel_x64/esr.h>
 
 namespace eapis
 {
@@ -86,6 +89,19 @@ external_interrupt::dump_log()
 // Handle
 // -----------------------------------------------------------------------------
 
+static void inject_exception(uint64_t vector)
+{
+    using namespace vmcs_n::vm_entry_interruption_information;
+
+    uint64_t info = 0;
+    vector::set(info, vector);
+    interruption_type::set(info, interruption_type::hardware_exception);
+    valid_bit::enable(info);
+    vmcs_n::vm_entry_interruption_information::set(info);
+
+    return;
+}
+
 bool
 external_interrupt::handle(gsl::not_null<vmcs_t *> vmcs)
 {
@@ -101,6 +117,29 @@ external_interrupt::handle(gsl::not_null<vmcs_t *> vmcs)
         if (d(vmcs, info)) {
             return true;
         }
+    }
+
+//    bfalert_nhex(0, "exception vector", info.vector);
+//    const auto rip = vmcs_n::guest_rip::get();
+//    const auto size = 0x1000U;
+//    const auto pat = vmcs_n::guest_ia32_pat::get();
+//    const auto cr3 = vmcs_n::guest_cr3::get();
+//    auto ump = bfvmm::x64::make_unique_map<uint8_t>(rip, ept::align_4k(cr3), size, pat);
+//    for (auto i = 0U; i < 256; ++i) {
+//        printf("%02x", ump.get()[i]);
+//    }
+
+    printf("\n");
+
+    switch (info.vector) {
+        case eapis::intel_x64::exception::nm:
+            bfalert_info(0, "Received #NM as external interrupt...advancing");
+            return advance(vmcs);
+        case eapis::intel_x64::exception::de:
+            bfalert_info(0, "Received #DE as external interrupt...returning");
+            //return advance(vmcs);
+            //inject_exception(info.vector);
+            return true;
     }
 
     throw std::runtime_error("Unhandled interrupt vector: "
