@@ -84,8 +84,8 @@ do_test(test_phys_x2apic
     ${ARGN}
 )
 
-do_test(test_virt_lapic
-    SOURCES arch/intel_x64/apic/test_virt_lapic.cpp
+do_test(test_virt_x2apic
+    SOURCES arch/intel_x64/apic/test_virt_x2apic.cpp
     ${ARGN}
 )
 
@@ -95,17 +95,6 @@ do_test(test_virt_lapic
 # g_mm is bfignored in test_support.h
 do_test(test_vic
     SOURCES arch/intel_x64/apic/test_vic.cpp
-    ${ARGN}
-)
-
-# do_test(test_isr
-#     SOURCES arch/intel_x64/test_isr.cpp
-#     ${ARGN}
-#     CMD_LINE_ARGS ASAN_OPTIONS=detect_leaks=0
-# )
-
-do_test(test_esr
-    SOURCES arch/intel_x64/test_esr.cpp
     ${ARGN}
 )
 

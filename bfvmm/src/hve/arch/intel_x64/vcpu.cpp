@@ -411,10 +411,24 @@ void vcpu::add_efi_handlers()
     );
 }
 
+static bool
+test_handler(
+    gsl::not_null<vmcs_t *> vmcs, control_register::info_t &info)
+{ bfignored(vmcs); bfignored(info); return true; }
+
 vcpu::vcpu(vcpuid::type id) :
     bfvmm::intel_x64::vcpu{id},
     m_hve{std::make_unique<eapis::intel_x64::hve>(exit_handler(), vmcs())}
-{ }
+{
+//    hve()->add_rdcr3_handler(
+//        control_register::handler_delegate_t::create<test_handler>()
+//    );
+//
+//    hve()->add_wrcr3_handler(
+//        control_register::handler_delegate_t::create<test_handler>()
+//    );
+    this->enable_efi();
+}
 
 gsl::not_null<eapis::intel_x64::hve *> vcpu::hve()
 { return m_hve.get(); }
