@@ -82,7 +82,7 @@ bool
 mov_dr_handler::handle(gsl::not_null<vmcs_t *> vmcs)
 {
     struct info_t info = {
-        this->emulate_rdgpr(vmcs),
+        emulate_rdgpr(vmcs),
         false,
         false
     };

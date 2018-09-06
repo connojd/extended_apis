@@ -40,14 +40,6 @@ class EXPORT_EAPIS_HVE init_signal_handler : public base
 {
 public:
 
-    /// Handler delegate type
-    ///
-    /// The type of delegate clients must use when registering
-    /// handlers
-    ///
-    using handler_delegate_t =
-        delegate<bool(gsl::not_null<vmcs_t *>)>;
-
     /// Constructor
     ///
     /// @expects
@@ -62,18 +54,7 @@ public:
     /// @expects
     /// @ensures
     ///
-    ~init_signal_handler() final;
-
-public:
-
-    /// Add Handler
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param d the handler to call when an exit occurs
-    ///
-    void add_handler(const handler_delegate_t &d);
+    ~init_signal_handler() final = default;
 
 public:
 
@@ -87,7 +68,8 @@ public:
     /// @expects
     /// @ensures
     ///
-    void dump_log() final;
+    void dump_log() final
+    { }
 
 public:
 
@@ -96,10 +78,6 @@ public:
     bool handle(gsl::not_null<vmcs_t *> vmcs);
 
     /// @endcond
-
-private:
-
-    std::list<handler_delegate_t> m_handlers;
 
 public:
 

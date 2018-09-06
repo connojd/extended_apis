@@ -30,7 +30,7 @@
 #include "vmexit/monitor_trap.h"
 #include "vmexit/mov_dr.h"
 #include "vmexit/rdmsr.h"
-#include "vmexit/sipi.h"
+#include "vmexit/sipi_signal.h"
 #include "vmexit/wrmsr.h"
 
 #include "misc/ept.h"
@@ -347,29 +347,6 @@ public:
         vmcs_n::value_type vector, const external_interrupt_handler::handler_delegate_t &d);
 
     //--------------------------------------------------------------------------
-    // INIT Signal
-    //--------------------------------------------------------------------------
-
-    /// Get INIT Signal Object
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @return Returns the INIT signal handler stored in the hve
-    ///
-    gsl::not_null<init_signal_handler *> init_signal();
-
-    /// Add INIT Signal Handler
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param d the delegate to call when an INIT signal exit occurs
-    ///
-    VIRTUAL void add_init_signal_handler(
-        const init_signal_handler::handler_delegate_t &d);
-
-    //--------------------------------------------------------------------------
     // Interrupt Window
     //--------------------------------------------------------------------------
 
@@ -509,29 +486,6 @@ public:
         vmcs_n::value_type msr, const rdmsr_handler::handler_delegate_t &d);
 
     //--------------------------------------------------------------------------
-    // SIPI
-    //--------------------------------------------------------------------------
-
-    /// Get SIPI Object
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @return Returns the sipi handler stored in the hve
-    ///
-    gsl::not_null<sipi_handler *> sipi();
-
-    /// Add SIPI Handler
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param d the delegate to call when a SIPI exit occurs
-    ///
-    VIRTUAL void add_sipi_handler(
-        const sipi_handler::handler_delegate_t &d);
-
-    //--------------------------------------------------------------------------
     // Write MSR
     //--------------------------------------------------------------------------
 
@@ -644,7 +598,7 @@ private:
     std::unique_ptr<monitor_trap_handler> m_monitor_trap_handler;
     std::unique_ptr<mov_dr_handler> m_mov_dr_handler;
     std::unique_ptr<rdmsr_handler> m_rdmsr_handler;
-    std::unique_ptr<sipi_handler> m_sipi_handler;
+    std::unique_ptr<sipi_signal_handler> m_sipi_signal_handler;
     std::unique_ptr<wrmsr_handler> m_wrmsr_handler;
 
     bfvmm::intel_x64::vmcs *m_vmcs;

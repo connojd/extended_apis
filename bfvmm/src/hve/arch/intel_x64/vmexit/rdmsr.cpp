@@ -35,6 +35,8 @@ rdmsr_handler::rdmsr_handler(
         exit_reason::basic_exit_reason::rdmsr,
         ::handler_delegate_t::create<rdmsr_handler, &rdmsr_handler::handle>(this)
     );
+
+    this->trap_on_all_accesses();
 }
 
 rdmsr_handler::~rdmsr_handler()
@@ -51,12 +53,7 @@ rdmsr_handler::~rdmsr_handler()
 void
 rdmsr_handler::add_handler(
     vmcs_n::value_type msr, const handler_delegate_t &d)
-{
-#ifndef DISABLE_AUTO_TRAP_ON_ACCESS
-    this->trap_on_access(msr);
-#endif
-    m_handlers[msr].push_front(d);
-}
+{ m_handlers[msr].push_front(d); }
 
 void
 rdmsr_handler::trap_on_access(vmcs_n::value_type msr)
@@ -179,14 +176,7 @@ rdmsr_handler::handle(gsl::not_null<vmcs_t *> vmcs)
         }
     }
 
-#ifndef SECURE_MODE
     return false;
-#endif
-
-    vmcs->save_state()->rax = 0;
-    vmcs->save_state()->rdx = 0;
-
-    return advance(vmcs);
 }
 
 }

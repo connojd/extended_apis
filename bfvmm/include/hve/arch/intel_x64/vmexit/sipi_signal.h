@@ -16,8 +16,8 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-#ifndef SIPI_INTEL_X64_EAPIS_H
-#define SIPI_INTEL_X64_EAPIS_H
+#ifndef SIPI_SIGNAL_INTEL_X64_EAPIS_H
+#define SIPI_SIGNAL_INTEL_X64_EAPIS_H
 
 #include "../base.h"
 
@@ -36,16 +36,9 @@ class apis;
 ///
 /// Provides an interface for registering handlers of SIPI exits
 ///
-class EXPORT_EAPIS_HVE sipi_handler : public base
+class EXPORT_EAPIS_HVE sipi_signal_handler : public base
 {
 public:
-
-    /// Handler delegate type
-    ///
-    /// The type of delegate clients must use when registering
-    /// handlers
-    ///
-    using handler_delegate_t = delegate<bool(gsl::not_null<vmcs_t *>)>;
 
     /// Constructor
     ///
@@ -54,25 +47,14 @@ public:
     ///
     /// @param apis the apis object for this sipi handler
     ///
-    sipi_handler(gsl::not_null<apis *> apis);
+    sipi_signal_handler(gsl::not_null<apis *> apis);
 
     /// Destructor
     ///
     /// @expects
     /// @ensures
     ///
-    ~sipi_handler() = default;
-
-public:
-
-    /// Add Handler
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @param d the handler to call when an exit occurs
-    ///
-    void add_handler(const handler_delegate_t &d);
+    ~sipi_signal_handler() final = default;
 
 public:
 
@@ -86,7 +68,8 @@ public:
     /// @expects
     /// @ensures
     ///
-    void dump_log() final;
+    void dump_log() final
+    { }
 
 public:
 
@@ -96,21 +79,19 @@ public:
 
     /// @endcond
 
-private:
-
-    std::list<handler_delegate_t> m_handlers;
-
 public:
 
     /// @cond
 
-    sipi_handler(sipi_handler &&) = default;
-    sipi_handler &operator=(sipi_handler &&) = default;
+    sipi_signal_handler(sipi_signal_handler &&) = default;
+    sipi_signal_handler &operator=(sipi_signal_handler &&) = default;
 
-    sipi_handler(const sipi_handler &) = delete;
-    sipi_handler &operator=(const sipi_handler &) = delete;
+    sipi_signal_handler(const sipi_signal_handler &) = delete;
+    sipi_signal_handler &operator=(const sipi_signal_handler &) = delete;
 
     /// @endcond
+
+bool first{true};
 };
 
 }
