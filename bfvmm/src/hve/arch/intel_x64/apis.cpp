@@ -30,11 +30,35 @@ apis::apis(
     m_vmcs{vmcs},
     m_exit_handler{exit_handler}
 {
-    using namespace vmcs_n::secondary_processor_based_vm_execution_controls;
-    unrestricted_guest::enable();
-
     m_init_signal_handler = std::make_unique<init_signal_handler>(this);
     m_sipi_signal_handler = std::make_unique<sipi_signal_handler>(this);
+
+
+
+
+
+
+
+check_msr_bitmap();
+
+
+
+    m_rdmsr_handler = std::make_unique<rdmsr_handler>(this);
+    m_wrmsr_handler = std::make_unique<wrmsr_handler>(this);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 //==========================================================================

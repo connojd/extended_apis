@@ -61,6 +61,17 @@ public:
             vmcs_n::exit_reason::basic_exit_reason::xsetbv,
             ::handler_delegate_t::create<vcpu, &vcpu::handle_xsetbv>(this)
         );
+
+        eapis()->wrmsr()->trap_on_all_accesses();
+        eapis()->rdmsr()->trap_on_all_accesses();
+
+        eapis()->rdmsr()->pass_through_access(0x0000000000000017);
+        eapis()->rdmsr()->pass_through_access(0x0000000000000079);
+        eapis()->rdmsr()->pass_through_access(0x000000000000008b);
+
+        eapis()->wrmsr()->pass_through_access(0x0000000000000017);
+        eapis()->wrmsr()->pass_through_access(0x0000000000000079);
+        eapis()->wrmsr()->pass_through_access(0x000000000000008b);
     }
 
     bool

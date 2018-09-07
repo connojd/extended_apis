@@ -53,11 +53,11 @@ default_wrcr0_handler(
         }
     }
 
-    // bfdebug_transaction(0, [&](std::string * msg) {
-    //     bfdebug_info(0, "default_wrcr0_handler", msg);
-    //     bfdebug_subnhex(0, "val", info.val, msg);
-    //     bfdebug_subnhex(0, "shadow", info.shadow, msg);
-    // });
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_info(0, "default_wrcr0_handler", msg);
+        bfdebug_subnhex(0, "val", info.val, msg);
+        bfdebug_subnhex(0, "shadow", info.shadow, msg);
+    });
 
     return true;
 }
@@ -92,11 +92,11 @@ default_wrcr4_handler(
     info.shadow = info.val;
     info.val |= g_ia32_vmx_cr4_fixed0;
 
-    // bfdebug_transaction(0, [&](std::string * msg) {
-    //     bfdebug_info(0, "default_wrcr4_handler", msg);
-    //     bfdebug_subnhex(0, "val", info.val, msg);
-    //     bfdebug_subnhex(0, "shadow", info.shadow, msg);
-    // });
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_info(0, "default_wrcr4_handler", msg);
+        bfdebug_subnhex(0, "val", info.val, msg);
+        bfdebug_subnhex(0, "shadow", info.shadow, msg);
+    });
 
     return true;
 }

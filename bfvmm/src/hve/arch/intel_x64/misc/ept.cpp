@@ -37,13 +37,17 @@ void ept_handler::set_eptp(ept::mmap *map)
             vmcs_n::ept_pointer::accessed_and_dirty_flags::disable();
             vmcs_n::ept_pointer::page_walk_length_minus_one::set(3U);
 
+            vmcs_n::secondary_processor_based_vm_execution_controls::unrestricted_guest::enable();
             vmcs_n::secondary_processor_based_vm_execution_controls::enable_ept::enable();
+
             m_enabled = true;
         }
     }
     else {
         if (m_enabled) {
+            vmcs_n::secondary_processor_based_vm_execution_controls::unrestricted_guest::disable();
             vmcs_n::secondary_processor_based_vm_execution_controls::enable_ept::disable();
+
             m_enabled = false;
         }
 
