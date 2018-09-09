@@ -37,6 +37,10 @@ if(${BUILD_TARGET_ARCH} STREQUAL "x86_64")
         arch/intel_x64/apis.cpp
     )
 
+    if(ENABLE_BUILD_EFI)
+        list(APPEND SOURCES arch/intel_x64/vmexit/efi.cpp)
+    endif()
+
 elseif(${BUILD_TARGET_ARCH} STREQUAL "aarch64")
     message(WARNING "Unimplemented")
 else()

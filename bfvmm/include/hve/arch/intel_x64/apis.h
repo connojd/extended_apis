@@ -21,6 +21,7 @@
 
 #include "vmexit/control_register.h"
 #include "vmexit/cpuid.h"
+#include "vmexit/efi.h"
 #include "vmexit/ept_misconfiguration.h"
 #include "vmexit/ept_violation.h"
 #include "vmexit/external_interrupt.h"
@@ -85,6 +86,11 @@ public:
     //==========================================================================
     // MISC
     //==========================================================================
+
+    /// Get EPT Handler
+    ///
+    gsl::not_null<efi_handler *> efi();
+    void add_efi_handlers(gsl::not_null<apis *> apis);
 
     //--------------------------------------------------------------------------
     // EPT
@@ -584,6 +590,7 @@ private:
     std::unique_ptr<uint8_t[]> m_msr_bitmap;
     std::unique_ptr<uint8_t[]> m_io_bitmaps;
 
+    std::unique_ptr<efi_handler> m_efi_handler;
     std::unique_ptr<ept_handler> m_ept_handler;
     std::unique_ptr<vpid_handler> m_vpid_handler;
 

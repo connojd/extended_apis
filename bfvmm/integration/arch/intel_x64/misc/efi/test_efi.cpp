@@ -72,6 +72,9 @@ public:
         eapis()->wrmsr()->pass_through_access(0x0000000000000017);
         eapis()->wrmsr()->pass_through_access(0x0000000000000079);
         eapis()->wrmsr()->pass_through_access(0x000000000000008b);
+
+        eapis()->add_efi_handlers(eapis());
+        bfdebug_info(0, "EFI handlers added");
     }
 
     bool
@@ -88,31 +91,31 @@ public:
         return advance(vmcs);
     }
 
-    bool
-    wrmsr_handle_efer(
-        gsl::not_null<vmcs_t *> vmcs, wrmsr_handler::info_t &info)
-    {
-        using namespace vmcs_n::guest_ia32_efer;
+    //bool
+    //wrmsr_handle_efer(
+    //    gsl::not_null<vmcs_t *> vmcs, wrmsr_handler::info_t &info)
+    //{
+    //    using namespace vmcs_n::guest_ia32_efer;
 
-        bfignored(vmcs);
+    //    bfignored(vmcs);
 
-        if (vmcs_n::guest_cr0::paging::is_disabled()) {
-            lma::disable(info.val);
-        }
-        else {
-            lma::enable(info.val);
-        }
+    //    if (vmcs_n::guest_cr0::paging::is_disabled()) {
+    //        lma::disable(info.val);
+    //    }
+    //    else {
+    //        lma::enable(info.val);
+    //    }
 
-        m_ia32_efer_shadow = info.val;
+    //    m_ia32_efer_shadow = info.val;
 
-        bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_info(0, "wrmsr_handle_efer", msg);
-            bfdebug_subnhex(0, "val", info.val, msg);
-            bfdebug_subnhex(0, "shadow", m_ia32_efer_shadow, msg);
-        });
+    //    bfdebug_transaction(0, [&](std::string * msg) {
+    //        bfdebug_info(0, "wrmsr_handle_efer", msg);
+    //        bfdebug_subnhex(0, "val", info.val, msg);
+    //        bfdebug_subnhex(0, "shadow", m_ia32_efer_shadow, msg);
+    //    });
 
-        return true;
-    }
+    //    return true;
+    //}
 
 private:
 

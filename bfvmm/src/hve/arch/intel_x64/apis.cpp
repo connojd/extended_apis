@@ -30,35 +30,13 @@ apis::apis(
     m_vmcs{vmcs},
     m_exit_handler{exit_handler}
 {
-    m_init_signal_handler = std::make_unique<init_signal_handler>(this);
-    m_sipi_signal_handler = std::make_unique<sipi_signal_handler>(this);
+//    m_init_signal_handler = std::make_unique<init_signal_handler>(this);
+//    m_sipi_signal_handler = std::make_unique<sipi_signal_handler>(this);
 
-
-
-
-
-
-
-check_msr_bitmap();
-
-
+    check_msr_bitmap();
 
     m_rdmsr_handler = std::make_unique<rdmsr_handler>(this);
     m_wrmsr_handler = std::make_unique<wrmsr_handler>(this);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
 
 //==========================================================================
@@ -68,6 +46,20 @@ check_msr_bitmap();
 //--------------------------------------------------------------------------
 // EPT
 //--------------------------------------------------------------------------
+
+gsl::not_null<efi_handler *>
+apis::efi()
+{ return m_efi_handler.get(); }
+
+void
+apis::add_efi_handlers(gsl::not_null<apis *> apis)
+{
+    if (!m_efi_handler) {
+        m_efi_handler = std::make_unique<efi_handler>();
+    }
+
+    m_efi_handler->add_handlers(apis);
+}
 
 gsl::not_null<ept_handler *>
 apis::ept()
