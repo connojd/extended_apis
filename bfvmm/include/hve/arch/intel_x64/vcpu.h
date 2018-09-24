@@ -42,17 +42,21 @@ public:
     /// @param id the id of this vcpu
     /// @param eapis_vcpu_state a pointer to the vCPUs state
     ///
+    /// @cond
+    ///
     vcpu(
         vcpuid::type id,
         eapis_vcpu_state_t *eapis_vcpu_state = nullptr
     ) :
         bfvmm::intel_x64::vcpu(id),
         m_apis{
-        vmcs(),
-        exit_handler(),
-        eapis_vcpu_state == nullptr ? & g_eapis_vcpu_state : eapis_vcpu_state
-    }
+            vmcs(),
+            exit_handler(),
+            eapis_vcpu_state == nullptr ? & g_eapis_vcpu_state : eapis_vcpu_state
+        }
     { }
+
+    /// @endcond
 
     /// Destructor
     ///
