@@ -77,7 +77,7 @@ public:
 
 private:
 
-    eapis::intel_x64::apis m_apis;
+    apis m_apis;
 };
 
 }
