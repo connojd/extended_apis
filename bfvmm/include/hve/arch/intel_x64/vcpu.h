@@ -44,7 +44,7 @@ public:
     ///
     /// @cond
     ///
-    vcpu(
+    explicit vcpu(
         vcpuid::type id,
         eapis_vcpu_state_t *eapis_vcpu_state = nullptr
     ) :
