@@ -79,55 +79,12 @@ struct eapis_vcpu_global_state_t {
     };
 };
 
-/// EAPIs Object
+/// VM Global State Instance
 ///
-/// This is a generic bfobject specific to the EAPIs that is used for
-/// constructing a vCPU. The only data the EAPIs needs is global state
-/// information, which is used to group vCPUs as needed.
+/// The default global state. This is needed for host vCPUs. Guest vCPUs
+/// need to create and store an instance for each guest VM.
 ///
-/// NOTE: Do not store a reference to this object. This is only used to pass
-///     around construction information, and a pointer to a global state
-///     object (which can be stored). It is assumed that once construction
-///     is complete, all references to this object will be deleted or removed.
-///     This is needed to simplify the implementation of the vCPU factory as
-///     no memory management is needed.
-///
-/// NOTE: It is also expected that extensions will subclass this object to
-///     add additional instructions for construction as needed, but the same
-///     rule above applies (references should not be stored).
-///
-class eapis_vcpu_state_t : public bfobject
-{
-    /// Global CPU State
-    ///
-    /// This is state that is shared between all of the vCPU in the same
-    /// vCPU group. If no guest support is needed, this would be the global
-    /// state for all of the vCPUs.
-    ///
-    eapis_vcpu_global_state_t *m_eapis_vcpu_global_state;
-
-public:
-
-    /// Constructor
-    ///
-    /// @param eapis_vcpu_global_state a pointer to a global state struct
-    ///
-    eapis_vcpu_state_t(
-        gsl::not_null<eapis_vcpu_global_state_t *> eapis_vcpu_global_state
-    ) :
-        m_eapis_vcpu_global_state{eapis_vcpu_global_state}
-    { }
-
-    /// Get Global State
-    ///
-    /// @return returns a pointer to the global state for this vCPU
-    ///
-    gsl::not_null<eapis_vcpu_global_state_t *> eapis_vcpu_global_state()
-    { return m_eapis_vcpu_global_state; }
-};
-
-inline eapis_vcpu_global_state_t g_eapis_vcpu_global_state;                     ///< Default global vcpu state
-inline eapis_vcpu_state_t g_eapis_vcpu_state{&g_eapis_vcpu_global_state};       ///< Default vcpu state
+inline eapis_vcpu_global_state_t g_eapis_vcpu_global_state;
 
 /// APIs
 ///
@@ -161,7 +118,7 @@ public:
     apis(
         gsl::not_null<bfvmm::intel_x64::vmcs *> vmcs,
         gsl::not_null<bfvmm::intel_x64::exit_handler *> exit_handler,
-        gsl::not_null<eapis_vcpu_state_t *> eapis_vcpu_state
+        gsl::not_null<eapis_vcpu_global_state_t *> eapis_vcpu_global_state
     );
 
     /// Destructor

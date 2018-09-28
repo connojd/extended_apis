@@ -46,13 +46,13 @@ public:
     ///
     explicit vcpu(
         vcpuid::type id,
-        eapis_vcpu_state_t *eapis_vcpu_state = nullptr
+        eapis_vcpu_global_state_t *eapis_vcpu_global_state = nullptr
     ) :
         bfvmm::intel_x64::vcpu(id),
         m_apis{
             vmcs(),
             exit_handler(),
-            eapis_vcpu_state == nullptr ? & g_eapis_vcpu_state : eapis_vcpu_state
+            eapis_vcpu_global_state == nullptr ? & g_eapis_vcpu_global_state : eapis_vcpu_global_state
         }
     { }
 

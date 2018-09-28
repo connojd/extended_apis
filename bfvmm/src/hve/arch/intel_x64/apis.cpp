@@ -26,7 +26,7 @@ namespace intel_x64
 apis::apis(
     gsl::not_null<bfvmm::intel_x64::vmcs *> vmcs,
     gsl::not_null<bfvmm::intel_x64::exit_handler *> exit_handler,
-    gsl::not_null<eapis_vcpu_state_t *> eapis_vcpu_state
+    gsl::not_null<eapis_vcpu_global_state_t *> eapis_vcpu_global_state
 ) :
     m_vmcs{vmcs},
     m_exit_handler{exit_handler},
@@ -35,25 +35,25 @@ apis::apis(
     m_io_bitmap_a{static_cast<uint8_t *>(alloc_page()), free_page},
     m_io_bitmap_b{static_cast<uint8_t *>(alloc_page()), free_page},
 
-    m_control_register_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
-    m_cpuid_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
-    m_io_instruction_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
-    m_monitor_trap_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
-    m_mov_dr_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
-    m_rdmsr_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
-    m_wrmsr_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
-    m_xsetbv_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
+    m_control_register_handler{this, eapis_vcpu_global_state},
+    m_cpuid_handler{this, eapis_vcpu_global_state},
+    m_io_instruction_handler{this, eapis_vcpu_global_state},
+    m_monitor_trap_handler{this, eapis_vcpu_global_state},
+    m_mov_dr_handler{this, eapis_vcpu_global_state},
+    m_rdmsr_handler{this, eapis_vcpu_global_state},
+    m_wrmsr_handler{this, eapis_vcpu_global_state},
+    m_xsetbv_handler{this, eapis_vcpu_global_state},
 
-    m_ept_misconfiguration_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
-    m_ept_violation_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
-    m_external_interrupt_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
-    m_init_signal_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
-    m_interrupt_window_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
-    m_sipi_signal_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
+    m_ept_misconfiguration_handler{this, eapis_vcpu_global_state},
+    m_ept_violation_handler{this, eapis_vcpu_global_state},
+    m_external_interrupt_handler{this, eapis_vcpu_global_state},
+    m_init_signal_handler{this, eapis_vcpu_global_state},
+    m_interrupt_window_handler{this, eapis_vcpu_global_state},
+    m_sipi_signal_handler{this, eapis_vcpu_global_state},
 
-    m_ept_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
-    m_microcode_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
-    m_vpid_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()}
+    m_ept_handler{this, eapis_vcpu_global_state},
+    m_microcode_handler{this, eapis_vcpu_global_state},
+    m_vpid_handler{this, eapis_vcpu_global_state}
 {
     using namespace vmcs_n;
 
