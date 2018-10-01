@@ -83,4 +83,17 @@ private:
 }
 }
 
+/// Get vCPU
+///
+/// Gets a vCPU from the vCPU manager given a vcpuid
+///
+/// @expects
+/// @ensures
+///
+/// @return returns a pointer to the vCPU being queried or throws
+///     and exception.
+///
+#define get_eapis_vcpu(a) \
+    g_vcm->get<eapis::intel_x64::vcpu *>(a, __FILE__ ": invalid eapis vcpuid")
+
 #endif
