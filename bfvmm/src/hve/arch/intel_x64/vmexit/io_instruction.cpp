@@ -24,37 +24,25 @@
 //     saying the lvalue (d) can't bind to the rvalue.
 //
 
-#include <bfdebug.h>
-#include <hve/arch/intel_x64/apis.h>
-
+#include <hve/arch/intel_x64/vcpu.h>
 #include <bfvmm/memory_manager/arch/x64/unique_map.h>
 
-namespace eapis
-{
-namespace intel_x64
+namespace eapis::intel_x64
 {
 
 io_instruction_handler::io_instruction_handler(
-    gsl::not_null<apis *> apis,
-    gsl::not_null<eapis_vcpu_global_state_t *> eapis_vcpu_global_state
+    gsl::not_null<vcpu *> vcpu
 ) :
-    m_io_bitmap_a{apis->m_io_bitmap_a.get(), ::x64::pt::page_size},
-    m_io_bitmap_b{apis->m_io_bitmap_b.get(), ::x64::pt::page_size}
+    m_vcpu{vcpu},
+    m_io_bitmap_a{vcpu->m_io_bitmap_a.get(), ::x64::pt::page_size},
+    m_io_bitmap_b{vcpu->m_io_bitmap_b.get(), ::x64::pt::page_size}
 {
     using namespace vmcs_n;
-    bfignored(eapis_vcpu_global_state);
 
-    apis->add_handler(
+    vcpu->add_handler(
         exit_reason::basic_exit_reason::io_instruction,
         ::handler_delegate_t::create<io_instruction_handler, &io_instruction_handler::handle>(this)
     );
-}
-
-io_instruction_handler::~io_instruction_handler()
-{
-    if (!ndebug && m_log_enabled) {
-        dump_log();
-    }
 }
 
 // -----------------------------------------------------------------------------
@@ -115,31 +103,6 @@ io_instruction_handler::pass_through_all_accesses()
 {
     gsl::memset(m_io_bitmap_a, 0x0);
     gsl::memset(m_io_bitmap_b, 0x0);
-}
-
-// -----------------------------------------------------------------------------
-// Debug
-// -----------------------------------------------------------------------------
-
-void
-io_instruction_handler::dump_log()
-{
-    bfdebug_transaction(0, [&](std::string * msg) {
-        bfdebug_lnbr(0, msg);
-        bfdebug_info(0, "io instruction log", msg);
-        bfdebug_brk2(0, msg);
-
-        for (const auto &record : m_log) {
-            bfdebug_info(0, "record", msg);
-            bfdebug_subnhex(0, "port_number", record.port_number, msg);
-            bfdebug_subnhex(0, "size_of_access", record.size_of_access, msg);
-            bfdebug_subnhex(0, "direction_of_access", record.direction_of_access, msg);
-            bfdebug_subnhex(0, "address", record.address, msg);
-            bfdebug_subnhex(0, "val", record.val, msg);
-        }
-
-        bfdebug_lnbr(0, msg);
-    });
 }
 
 // -----------------------------------------------------------------------------
@@ -208,16 +171,6 @@ io_instruction_handler::handle_in(gsl::not_null<vmcs_t *> vmcs, info_t &info)
     if (GSL_LIKELY(hdlrs != m_in_handlers.end())) {
         emulate_in(info);
 
-        if (!ndebug && m_log_enabled) {
-            add_record(m_log, {
-                info.port_number,
-                info.size_of_access,
-                io_instruction::direction_of_access::in,
-                info.address,
-                info.val
-            });
-        }
-
         for (const auto &d : hdlrs->second) {
             if (d(vmcs, info)) {
 
@@ -248,16 +201,6 @@ io_instruction_handler::handle_out(gsl::not_null<vmcs_t *> vmcs, info_t &info)
 
     if (GSL_LIKELY(hdlrs != m_in_handlers.end())) {
         load_operand(vmcs, info);
-
-        if (!ndebug && m_log_enabled) {
-            add_record(m_log, {
-                info.port_number,
-                info.size_of_access,
-                io_instruction::direction_of_access::out,
-                info.address,
-                info.val
-            });
-        }
 
         for (const auto &d : hdlrs->second) {
             if (d(vmcs, info)) {
@@ -455,5 +398,4 @@ io_instruction_handler::store_operand(
     }
 }
 
-}
 }

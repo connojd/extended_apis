@@ -16,34 +16,23 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-#include <bfdebug.h>
-#include <hve/arch/intel_x64/apis.h>
+#include <hve/arch/intel_x64/vcpu.h>
 
-namespace eapis
-{
-namespace intel_x64
+namespace eapis::intel_x64
 {
 
 rdmsr_handler::rdmsr_handler(
-    gsl::not_null<apis *> apis,
-    gsl::not_null<eapis_vcpu_global_state_t *> eapis_vcpu_global_state
+    gsl::not_null<vcpu *> vcpu
 ) :
-    m_msr_bitmap{apis->m_msr_bitmap.get(), ::x64::pt::page_size}
+    m_vcpu{vcpu},
+    m_msr_bitmap{vcpu->m_msr_bitmap.get(), ::x64::pt::page_size}
 {
     using namespace vmcs_n;
-    bfignored(eapis_vcpu_global_state);
 
-    apis->add_handler(
+    vcpu->add_handler(
         exit_reason::basic_exit_reason::rdmsr,
         ::handler_delegate_t::create<rdmsr_handler, &rdmsr_handler::handle>(this)
     );
-}
-
-rdmsr_handler::~rdmsr_handler()
-{
-    if (!ndebug && m_log_enabled) {
-        dump_log();
-    }
 }
 
 // -----------------------------------------------------------------------------
@@ -92,28 +81,6 @@ rdmsr_handler::pass_through_all_accesses()
 { gsl::memset(m_msr_bitmap.subspan(0, m_msr_bitmap.size() >> 1), 0x00); }
 
 // -----------------------------------------------------------------------------
-// Debug
-// -----------------------------------------------------------------------------
-
-void
-rdmsr_handler::dump_log()
-{
-    bfdebug_transaction(0, [&](std::string * msg) {
-        bfdebug_lnbr(0, msg);
-        bfdebug_info(0, "rdmsr_handler log", msg);
-        bfdebug_brk2(0, msg);
-
-        for (const auto &record : m_log) {
-            bfdebug_info(0, "record", msg);
-            bfdebug_subnhex(0, "msr", record.msr, msg);
-            bfdebug_subnhex(0, "val", record.val, msg);
-        }
-
-        bfdebug_lnbr(0, msg);
-    });
-}
-
-// -----------------------------------------------------------------------------
 // Handlers
 // -----------------------------------------------------------------------------
 
@@ -153,12 +120,6 @@ rdmsr_handler::handle(gsl::not_null<vmcs_t *> vmcs)
                 gsl::narrow_cast<::x64::msrs::field_type>(vmcs->save_state()->rcx)
             );
 
-        if (!ndebug && m_log_enabled) {
-            add_record(m_log, {
-                info.msr, info.val
-            });
-        }
-
         for (const auto &d : hdlrs->second) {
             if (d(vmcs, info)) {
 
@@ -179,5 +140,4 @@ rdmsr_handler::handle(gsl::not_null<vmcs_t *> vmcs)
     return false;
 }
 
-}
 }

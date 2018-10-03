@@ -70,12 +70,10 @@ public:
             hlt_delegate_t::create<test_hlt_delegate>()
         );
 
-        eapis()->add_wrcr0_handler(
+        this->add_wrcr0_handler(
             0xFFFFFFFFFFFFFFFF,
             control_register_handler::handler_delegate_t::create<test_handler>()
         );
-
-        eapis()->control_register()->enable_log();
     }
 };
 

@@ -16,12 +16,9 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-#include <bfdebug.h>
-#include <hve/arch/intel_x64/apis.h>
+#include <hve/arch/intel_x64/vcpu.h>
 
-namespace eapis
-{
-namespace intel_x64
+namespace eapis::intel_x64
 {
 
 static bool
@@ -97,14 +94,13 @@ default_wrcr4_handler(
 }
 
 control_register_handler::control_register_handler(
-    gsl::not_null<apis *> apis,
-    gsl::not_null<eapis_vcpu_global_state_t *> eapis_vcpu_global_state
+    gsl::not_null<vcpu *> vcpu
 ) :
-    m_eapis_vcpu_global_state{eapis_vcpu_global_state}
+    m_vcpu{vcpu}
 {
     using namespace vmcs_n;
 
-    apis->add_handler(
+    vcpu->add_handler(
         exit_reason::basic_exit_reason::control_register_accesses,
         ::handler_delegate_t::create<control_register_handler, &control_register_handler::handle>(this)
     );
@@ -127,13 +123,6 @@ control_register_handler::control_register_handler(
 
     this->enable_wrcr0_exiting(0);
     this->enable_wrcr4_exiting(0);
-}
-
-control_register_handler::~control_register_handler()
-{
-    if (!ndebug && m_log_enabled) {
-        dump_log();
-    }
 }
 
 // -----------------------------------------------------------------------------
@@ -165,7 +154,7 @@ control_register_handler::enable_wrcr0_exiting(
     vmcs_n::value_type mask)
 {
     using namespace vmcs_n;
-    mask |= m_eapis_vcpu_global_state->ia32_vmx_cr0_fixed0;
+    mask |= m_vcpu->global_state()->ia32_vmx_cr0_fixed0;
 
     cr0_guest_host_mask::set(mask);
     cr0_read_shadow::set(guest_cr0::get());
@@ -190,66 +179,10 @@ control_register_handler::enable_wrcr4_exiting(
     vmcs_n::value_type mask)
 {
     using namespace vmcs_n;
-    mask |= m_eapis_vcpu_global_state->ia32_vmx_cr4_fixed0;
+    mask |= m_vcpu->global_state()->ia32_vmx_cr4_fixed0;
 
     cr4_guest_host_mask::set(mask);
     cr4_read_shadow::set(guest_cr4::get());
-}
-
-// -----------------------------------------------------------------------------
-// Debug
-// -----------------------------------------------------------------------------
-
-void
-control_register_handler::dump_log()
-{
-    if (!m_cr0_log.empty()) {
-        bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_lnbr(0, msg);
-            bfdebug_info(0, "cr0 log", msg);
-            bfdebug_brk2(0, msg);
-
-            for (const auto &record : m_cr0_log) {
-                bfdebug_info(0, "record", msg);
-                bfdebug_subnhex(0, "val", record.val, msg);
-                bfdebug_subnhex(0, "shadow", record.shadow, msg);
-            }
-
-            bfdebug_lnbr(0, msg);
-        });
-    }
-
-    if (!m_cr3_log.empty()) {
-        bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_lnbr(0, msg);
-            bfdebug_info(0, "cr3 log", msg);
-            bfdebug_brk2(0, msg);
-
-            for (const auto &record : m_cr3_log) {
-                bfdebug_info(0, "record", msg);
-                bfdebug_subnhex(0, "val", record.val, msg);
-                bfdebug_subnhex(0, "shadow", record.shadow, msg);
-            }
-
-            bfdebug_lnbr(0, msg);
-        });
-    }
-
-    if (!m_cr4_log.empty()) {
-        bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_lnbr(0, msg);
-            bfdebug_info(0, "cr4 log", msg);
-            bfdebug_brk2(0, msg);
-
-            for (const auto &record : m_cr4_log) {
-                bfdebug_info(0, "record", msg);
-                bfdebug_subnhex(0, "val", record.val, msg);
-                bfdebug_subnhex(0, "shadow", record.shadow, msg);
-            }
-
-            bfdebug_lnbr(0, msg);
-        });
-    }
 }
 
 // -----------------------------------------------------------------------------
@@ -364,26 +297,14 @@ control_register_handler::handle_wrcr0(gsl::not_null<vmcs_t *> vmcs)
         false
     };
 
-    if (!ndebug && m_log_enabled) {
-        add_record(m_cr0_log, {
-            info.val, info.shadow
-        });
-    }
-
     info.shadow = info.val;
-    info.val |= m_eapis_vcpu_global_state->ia32_vmx_cr0_fixed0;
+    info.val |= m_vcpu->global_state()->ia32_vmx_cr0_fixed0;
 
     for (const auto &d : m_wrcr0_handlers) {
         if (d(vmcs, info)) {
             break;
         }
     }
-
-    // bfdebug_transaction(0, [&](std::string * msg) {
-    //     bfdebug_info(0, "handle_wrcr0", msg);
-    //     bfdebug_subnhex(0, "val", info.val, msg);
-    //     bfdebug_subnhex(0, "shadow", info.shadow, msg);
-    // });
 
     if (!info.ignore_write) {
         vmcs_n::guest_cr0::set(info.val);
@@ -406,12 +327,6 @@ control_register_handler::handle_rdcr3(gsl::not_null<vmcs_t *> vmcs)
         false,
         false
     };
-
-    if (!ndebug && m_log_enabled) {
-        add_record(m_cr3_log, {
-            info.val, info.shadow
-        });
-    }
 
     for (const auto &d : m_rdcr3_handlers) {
         if (d(vmcs, info)) {
@@ -440,12 +355,6 @@ control_register_handler::handle_wrcr3(gsl::not_null<vmcs_t *> vmcs)
         false
     };
 
-    if (!ndebug && m_log_enabled) {
-        add_record(m_cr3_log, {
-            info.val, info.shadow
-        });
-    }
-
     for (const auto &d : m_wrcr3_handlers) {
         if (d(vmcs, info)) {
             break;
@@ -473,26 +382,14 @@ control_register_handler::handle_wrcr4(gsl::not_null<vmcs_t *> vmcs)
         false
     };
 
-    if (!ndebug && m_log_enabled) {
-        add_record(m_cr4_log, {
-            info.val, info.shadow
-        });
-    }
-
     info.shadow = info.val;
-    info.val |= m_eapis_vcpu_global_state->ia32_vmx_cr4_fixed0;
+    info.val |= m_vcpu->global_state()->ia32_vmx_cr4_fixed0;
 
     for (const auto &d : m_wrcr4_handlers) {
         if (d(vmcs, info)) {
             break;
         }
     }
-
-    // bfdebug_transaction(0, [&](std::string * msg) {
-    //     bfdebug_info(0, "handle_wrcr4", msg);
-    //     bfdebug_subnhex(0, "val", info.val, msg);
-    //     bfdebug_subnhex(0, "shadow", info.shadow, msg);
-    // });
 
     if (!info.ignore_write) {
         vmcs_n::guest_cr4::set(info.val);
@@ -506,5 +403,4 @@ control_register_handler::handle_wrcr4(gsl::not_null<vmcs_t *> vmcs)
     return true;
 }
 
-}
 }

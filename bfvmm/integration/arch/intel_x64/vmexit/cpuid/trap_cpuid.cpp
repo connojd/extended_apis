@@ -72,11 +72,9 @@ public:
             hlt_delegate_t::create<test_hlt_delegate>()
         );
 
-        eapis()->add_cpuid_handler(
+        this->add_cpuid_handler(
             42, cpuid_handler::handler_delegate_t::create<test_cpuid_handler>()
         );
-
-        eapis()->cpuid()->enable_log();
     }
 };
 

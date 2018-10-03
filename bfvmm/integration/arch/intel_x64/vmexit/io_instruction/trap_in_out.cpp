@@ -49,19 +49,17 @@ public:
     explicit vcpu(vcpuid::type id) :
         eapis::intel_x64::vcpu{id}
     {
-        eapis()->add_io_instruction_handler(
+        this->add_io_instruction_handler(
             0xCF8,
             io_instruction_handler::handler_delegate_t::create<test_handler>(),
             io_instruction_handler::handler_delegate_t::create<test_handler>()
         );
 
-        eapis()->add_io_instruction_handler(
+        this->add_io_instruction_handler(
             0xCFC,
             io_instruction_handler::handler_delegate_t::create<test_handler>(),
             io_instruction_handler::handler_delegate_t::create<test_handler>()
         );
-
-        eapis()->io_instruction()->enable_log();
     }
 
     /// Destructor

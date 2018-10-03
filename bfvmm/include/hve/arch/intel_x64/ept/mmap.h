@@ -1,6 +1,6 @@
 //
-// Bareflank Hypervisor
-// Copyright (C) 2015 Assured Information Security, Inc.
+// Bareflank Extended APIs
+// Copyright (C) 2018 Assured Information Security, Inc.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -52,11 +52,7 @@
 // Definition
 // -----------------------------------------------------------------------------
 
-namespace eapis
-{
-namespace intel_x64
-{
-namespace ept
+namespace eapis::intel_x64::ept
 {
 
 /// EPT Memory Map
@@ -1159,8 +1155,6 @@ public:
     /// @endcond
 };
 
-}
-}
 }
 
 #endif

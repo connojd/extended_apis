@@ -19,26 +19,42 @@
 #ifndef RDMSR_INTEL_X64_EAPIS_H
 #define RDMSR_INTEL_X64_EAPIS_H
 
-#include "../base.h"
+#include <list>
+
+#include <bfvmm/hve/arch/intel_x64/vmcs.h>
+#include <bfvmm/hve/arch/intel_x64/exit_handler.h>
+
+// -----------------------------------------------------------------------------
+// Exports
+// -----------------------------------------------------------------------------
+
+#include <bfexports.h>
+
+#ifndef STATIC_EAPIS_HVE
+#ifdef SHARED_EAPIS_HVE
+#define EXPORT_EAPIS_HVE EXPORT_SYM
+#else
+#define EXPORT_EAPIS_HVE IMPORT_SYM
+#endif
+#else
+#define EXPORT_EAPIS_HVE
+#endif
 
 // -----------------------------------------------------------------------------
 // Definitions
 // -----------------------------------------------------------------------------
 
-namespace eapis
-{
-namespace intel_x64
+namespace eapis::intel_x64
 {
 
-class apis;
-class eapis_vcpu_global_state_t;
+class vcpu;
 
 /// RDMSR
 ///
 /// Provides an interface for registering handlers for rdmsr exits
 /// Handlers can be registered a specific MSR address.
 ///
-class EXPORT_EAPIS_HVE rdmsr_handler : public base
+class EXPORT_EAPIS_HVE rdmsr_handler
 {
 public:
 
@@ -96,19 +112,17 @@ public:
     /// @expects
     /// @ensures
     ///
-    /// @param apis the apis object for this rdmsr handler
-    /// @param eapis_vcpu_global_state a pointer to the vCPUs global state
+    /// @param vcpu the vcpu object for this rdmsr handler
     ///
     rdmsr_handler(
-        gsl::not_null<apis *> apis,
-        gsl::not_null<eapis_vcpu_global_state_t *> eapis_vcpu_global_state);
+        gsl::not_null<vcpu *> vcpu);
 
     /// Destructor
     ///
     /// @expects
     /// @ensures
     ///
-    ~rdmsr_handler() final;
+    ~rdmsr_handler() = default;
 
 public:
 
@@ -193,20 +207,6 @@ public:
 
 public:
 
-    /// Dump Log
-    ///
-    /// Example:
-    /// @code
-    /// this->dump_log();
-    /// @endcode
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    void dump_log() final;
-
-public:
-
     /// @cond
 
     bool handle(gsl::not_null<vmcs_t *> vmcs);
@@ -215,17 +215,10 @@ public:
 
 private:
 
+    vcpu *m_vcpu;
+
     gsl::span<uint8_t> m_msr_bitmap;
     std::unordered_map<vmcs_n::value_type, std::list<handler_delegate_t>> m_handlers;
-
-private:
-
-    struct record_t {
-        uint64_t msr;
-        uint64_t val;
-    };
-
-    std::list<record_t> m_log;
 
 public:
 
@@ -240,7 +233,6 @@ public:
     /// @endcond
 };
 
-}
 }
 
 #endif

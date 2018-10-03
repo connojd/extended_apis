@@ -59,7 +59,7 @@ public:
             hlt_delegate_t::create<test_hlt_delegate>()
         );
 
-        eapis()->add_ept_write_violation_handler(
+        this->add_ept_write_violation_handler(
             ept_violation_handler::handler_delegate_t::create<vcpu, &vcpu::test_write_violation_handler>(this)
         );
 
@@ -72,7 +72,7 @@ public:
         ::intel_x64::ept::pd::entry::write_access::disable(pte);
         ::intel_x64::ept::pd::entry::execute_access::disable(pte);
 
-        eapis()->set_eptp(g_guest_map);
+        this->set_eptp(g_guest_map);
     }
 
     bool
@@ -83,7 +83,7 @@ public:
         bfignored(info);
 
         bfdebug_info(0, "disabling EPT");
-        eapis()->disable_ept();
+        this->disable_ept();
 
         return true;
     }

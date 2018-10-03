@@ -16,28 +16,24 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-#include <bfdebug.h>
-#include <hve/arch/intel_x64/apis.h>
+#include <hve/arch/intel_x64/vcpu.h>
 
-namespace eapis
-{
-namespace intel_x64
+namespace eapis::intel_x64
 {
 
 init_signal_handler::init_signal_handler(
-    gsl::not_null<apis *> apis,
-    gsl::not_null<eapis_vcpu_global_state_t *> eapis_vcpu_global_state
+    gsl::not_null<vcpu *> vcpu
 ) :
-    m_eapis_vcpu_global_state{eapis_vcpu_global_state}
+    m_vcpu{vcpu}
 {
     using namespace vmcs_n;
 
-    apis->add_handler(
+    vcpu->add_handler(
         exit_reason::basic_exit_reason::init_signal,
         ::handler_delegate_t::create<init_signal_handler, &init_signal_handler::handle>(this)
     );
 
-    apis->add_wrmsr_handler(
+    vcpu->add_wrmsr_handler(
         ::intel_x64::msrs::ia32_x2apic_icr::addr,
         wrmsr_handler::handler_delegate_t::create<init_signal_handler, &init_signal_handler::handle_icr_write>(this)
     );
@@ -81,9 +77,9 @@ init_signal_handler::handle(gsl::not_null<vmcs_t *> vmcs)
     vmcs_n::guest_rflags::set(0x00000002);
     vmcs->save_state()->rip = 0x0000FFF0;
 
-    vmcs_n::guest_cr0::set(0x60000010 | m_eapis_vcpu_global_state->ia32_vmx_cr0_fixed0);
+    vmcs_n::guest_cr0::set(0x60000010 | m_vcpu->global_state()->ia32_vmx_cr0_fixed0);
     vmcs_n::guest_cr3::set(0);
-    vmcs_n::guest_cr4::set(0x00000000 | m_eapis_vcpu_global_state->ia32_vmx_cr4_fixed0);
+    vmcs_n::guest_cr4::set(0x00000000 | m_vcpu->global_state()->ia32_vmx_cr4_fixed0);
 
     vmcs_n::cr0_read_shadow::set(0x60000010);
     vmcs_n::cr4_read_shadow::set(0);
@@ -176,7 +172,7 @@ init_signal_handler::handle(gsl::not_null<vmcs_t *> vmcs)
     // Done
     // .........................................................................
 
-    return (m_eapis_vcpu_global_state->init_called = true);
+    return (m_vcpu->global_state()->init_called = true);
 }
 
 bool
@@ -186,14 +182,14 @@ init_signal_handler::handle_init_assert(
     using namespace ::intel_x64::msrs;
     bfignored(vmcs);
 
-    m_eapis_vcpu_global_state->init_called = false;
+    m_vcpu->global_state()->init_called = false;
 
     ::intel_x64::msrs::set(
         ia32_x2apic_icr::addr, info.val
     );
 
-    ::intel_x64::spin_until_true(m_eapis_vcpu_global_state->init_called);
-    m_eapis_vcpu_global_state->init_called = false;
+    ::intel_x64::spin_until_true(m_vcpu->global_state()->init_called);
+    m_vcpu->global_state()->init_called = false;
 
     return (info.ignore_write = true);
 }
@@ -232,5 +228,4 @@ init_signal_handler::handle_icr_write(
     }
 }
 
-}
 }

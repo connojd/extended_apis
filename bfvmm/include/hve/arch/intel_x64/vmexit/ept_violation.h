@@ -19,26 +19,42 @@
 #ifndef EPT_VIOLATION_INTEL_X64_H
 #define EPT_VIOLATION_INTEL_X64_H
 
-#include "../base.h"
+#include <list>
+
+#include <bfvmm/hve/arch/intel_x64/vmcs.h>
+#include <bfvmm/hve/arch/intel_x64/exit_handler.h>
+
+// -----------------------------------------------------------------------------
+// Exports
+// -----------------------------------------------------------------------------
+
+#include <bfexports.h>
+
+#ifndef STATIC_EAPIS_HVE
+#ifdef SHARED_EAPIS_HVE
+#define EXPORT_EAPIS_HVE EXPORT_SYM
+#else
+#define EXPORT_EAPIS_HVE IMPORT_SYM
+#endif
+#else
+#define EXPORT_EAPIS_HVE
+#endif
 
 // -----------------------------------------------------------------------------
 // Definitions
 // -----------------------------------------------------------------------------
 
-namespace eapis
-{
-namespace intel_x64
+namespace eapis::intel_x64
 {
 
-class apis;
-class eapis_vcpu_global_state_t;
+class vcpu;
 
 /// EPT Violation
 ///
 /// Provides an interface for registering handlers for EPT violation
 /// exits.
 ///
-class EXPORT_EAPIS_HVE ept_violation_handler : public base
+class EXPORT_EAPIS_HVE ept_violation_handler
 {
 public:
 
@@ -92,19 +108,17 @@ public:
     /// @expects
     /// @ensures
     ///
-    /// @param apis the apis object for this EPT violation handler
-    /// @param eapis_vcpu_global_state a pointer to the vCPUs global state
+    /// @param vcpu the vcpu object for this EPT violation handler
     ///
     ept_violation_handler(
-        gsl::not_null<apis *> apis,
-        gsl::not_null<eapis_vcpu_global_state_t *> eapis_vcpu_global_state);
+        gsl::not_null<vcpu *> vcpu);
 
     /// Destructor
     ///
     /// @expects
     /// @ensures
     ///
-    ~ept_violation_handler() final;
+    ~ept_violation_handler() = default;
 
 public:
 
@@ -135,18 +149,6 @@ public:
     ///
     void add_execute_handler(const handler_delegate_t &d);
 
-    /// Dump Log
-    ///
-    /// Example:
-    /// @code
-    /// this->dump_log();
-    /// @endcode
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    void dump_log() final;
-
 public:
 
     /// @cond
@@ -163,19 +165,11 @@ private:
 
 private:
 
+    vcpu *m_vcpu;
+
     std::list<handler_delegate_t> m_read_handlers;
     std::list<handler_delegate_t> m_write_handlers;
     std::list<handler_delegate_t> m_execute_handlers;
-
-private:
-
-    struct record_t {
-        uint64_t gva;
-        uint64_t gpa;
-        uint64_t exit_qualification;
-    };
-
-    std::list<record_t> m_log;
 
 public:
 
@@ -190,7 +184,6 @@ public:
     /// @endcond
 };
 
-}
 }
 
 #endif

@@ -16,22 +16,19 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-#include <bfdebug.h>
-#include <hve/arch/intel_x64/apis.h>
+#include <hve/arch/intel_x64/vcpu.h>
 
-namespace eapis
-{
-namespace intel_x64
+namespace eapis::intel_x64
 {
 
 interrupt_window_handler::interrupt_window_handler(
-    gsl::not_null<apis *> apis,
-    gsl::not_null<eapis_vcpu_global_state_t *> eapis_vcpu_global_state)
+    gsl::not_null<vcpu *> vcpu
+) :
+    m_vcpu{vcpu}
 {
     using namespace vmcs_n;
-    bfignored(eapis_vcpu_global_state);
 
-    apis->add_handler(
+    vcpu->add_handler(
         exit_reason::basic_exit_reason::interrupt_window,
         ::handler_delegate_t::create<interrupt_window_handler, &interrupt_window_handler::handle>(this)
     );
@@ -42,9 +39,38 @@ interrupt_window_handler::interrupt_window_handler(
 // -----------------------------------------------------------------------------
 
 void
-interrupt_window_handler::add_handler(
-    const handler_delegate_t &d)
-{ m_handlers.push_front(d); }
+interrupt_window_handler::queue_external_interrupt(uint64_t vector)
+{
+    if (this->is_open() && m_interrupt_queue.empty()) {
+        this->inject(vector);
+    }
+    else {
+        this->enable_exiting();
+        m_interrupt_queue.push(vector);
+    }
+}
+
+
+// -----------------------------------------------------------------------------
+// Handlers
+// -----------------------------------------------------------------------------
+
+bool
+interrupt_window_handler::handle(gsl::not_null<vmcs_t *> vmcs)
+{
+    bfignored(vmcs);
+    this->inject(m_interrupt_queue.pop());
+
+    if (m_interrupt_queue.empty()) {
+        this->disable_exiting();
+    }
+
+    return true;
+}
+
+// -----------------------------------------------------------------------------
+// Private
+// -----------------------------------------------------------------------------
 
 void
 interrupt_window_handler::enable_exiting()
@@ -93,7 +119,6 @@ interrupt_window_handler::is_open()
     return true;
 }
 
-
 void
 interrupt_window_handler::inject(uint64_t vector)
 {
@@ -107,30 +132,4 @@ interrupt_window_handler::inject(uint64_t vector)
     vmcs_n::vm_entry_interruption_information::set(info);
 }
 
-// -----------------------------------------------------------------------------
-// Handlers
-// -----------------------------------------------------------------------------
-
-bool
-interrupt_window_handler::handle(gsl::not_null<vmcs_t *> vmcs)
-{
-    struct info_t info {};
-
-    for (const auto &d : m_handlers) {
-        if (d(vmcs, info)) {
-
-            if (!info.ignore_disable) {
-                this->disable_exiting();
-            }
-
-            return true;
-        }
-    }
-
-    throw std::runtime_error(
-        "Unhandled interrupt window"
-    );
-}
-
-}
 }

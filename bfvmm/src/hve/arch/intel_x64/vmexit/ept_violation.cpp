@@ -16,32 +16,22 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-#include <bfdebug.h>
-#include <hve/arch/intel_x64/apis.h>
+#include <hve/arch/intel_x64/vcpu.h>
 
-namespace eapis
-{
-namespace intel_x64
+namespace eapis::intel_x64
 {
 
 ept_violation_handler::ept_violation_handler(
-    gsl::not_null<apis *> apis,
-    gsl::not_null<eapis_vcpu_global_state_t *> eapis_vcpu_global_state)
+    gsl::not_null<vcpu *> vcpu
+) :
+    m_vcpu{vcpu}
 {
     using namespace vmcs_n;
-    bfignored(eapis_vcpu_global_state);
 
-    apis->add_handler(
+    vcpu->add_handler(
         exit_reason::basic_exit_reason::ept_violation,
         ::handler_delegate_t::create<ept_violation_handler, &ept_violation_handler::handle>(this)
     );
-}
-
-ept_violation_handler::~ept_violation_handler()
-{
-    if (!ndebug && m_log_enabled) {
-        dump_log();
-    }
 }
 
 // -----------------------------------------------------------------------------
@@ -64,29 +54,6 @@ ept_violation_handler::add_execute_handler(
 { m_execute_handlers.push_front(d); }
 
 // -----------------------------------------------------------------------------
-// Debug
-// -----------------------------------------------------------------------------
-
-void
-ept_violation_handler::dump_log()
-{
-    bfdebug_transaction(0, [&](std::string * msg) {
-        bfdebug_lnbr(0, msg);
-        bfdebug_info(0, "ept violation log", msg);
-        bfdebug_brk2(0, msg);
-
-        for (const auto &record : m_log) {
-            bfdebug_info(0, "record", msg);
-            bfdebug_subnhex(0, "guest virtual address", record.gva, msg);
-            bfdebug_subnhex(0, "guest physical address", record.gpa, msg);
-            bfdebug_subnhex(0, "exit qualification", record.exit_qualification, msg);
-        }
-
-        bfdebug_lnbr(0, msg);
-    });
-}
-
-// -----------------------------------------------------------------------------
 // Handlers
 // -----------------------------------------------------------------------------
 
@@ -102,10 +69,6 @@ ept_violation_handler::handle(gsl::not_null<vmcs_t *> vmcs)
         qual,
         true
     };
-
-    if (!ndebug && m_log_enabled) {
-        add_record(m_log, {info.gva, info.gpa, info.exit_qualification});
-    }
 
     if (exit_qualification::ept_violation::data_read::is_enabled(qual)) {
         return handle_read(vmcs, info);
@@ -181,5 +144,4 @@ ept_violation_handler::handle_execute(gsl::not_null<vmcs_t *> vmcs, info_t &info
     );
 }
 
-}
 }

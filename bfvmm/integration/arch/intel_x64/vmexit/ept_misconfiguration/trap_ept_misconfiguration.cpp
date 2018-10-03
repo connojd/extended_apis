@@ -47,12 +47,11 @@ public:
             );
         });
 
-        eapis()->add_ept_misconfiguration_handler(
+        this->add_ept_misconfiguration_handler(
             ept_misconfiguration_handler::handler_delegate_t::create<vcpu, &vcpu::test_misconfiguration_handler>(this)
         );
 
-        eapis()->set_eptp(g_guest_map);
-        eapis()->ept_misconfiguration()->enable_log();
+        this->set_eptp(g_guest_map);
     }
 
     bool
@@ -63,7 +62,7 @@ public:
         bfignored(info);
 
         bfdebug_pass(0, "test");
-        eapis()->disable_ept();
+        this->disable_ept();
 
         return true;
     }

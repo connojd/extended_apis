@@ -56,7 +56,7 @@ public:
     explicit vcpu(vcpuid::type id) :
         eapis::intel_x64::vcpu{id}
     {
-        eapis()->add_cpuid_handler(
+        this->add_cpuid_handler(
             42, cpuid_handler::handler_delegate_t::create<vcpu, &vcpu::test_cpuid_handler>(this)
         );
 
@@ -106,7 +106,7 @@ public:
             ::intel_x64::ept::pt::entry::phys_addr::set(pte, gpa2_4k);
         });
 
-        eapis()->set_eptp(g_guest_map);
+        this->set_eptp(g_guest_map);
 
         return true;
     }

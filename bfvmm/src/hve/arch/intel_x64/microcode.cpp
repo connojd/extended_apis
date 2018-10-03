@@ -16,12 +16,9 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-#include <bfdebug.h>
-#include <hve/arch/intel_x64/apis.h>
+#include <hve/arch/intel_x64/vcpu.h>
 
-namespace eapis
-{
-namespace intel_x64
+namespace eapis::intel_x64
 {
 
 static bool
@@ -75,32 +72,31 @@ ia32_bios_sign_id__wrmsr_handler(
 }
 
 microcode_handler::microcode_handler(
-    gsl::not_null<apis *> apis,
-    gsl::not_null<eapis_vcpu_global_state_t *> eapis_vcpu_global_state)
+    gsl::not_null<vcpu *> vcpu
+) :
+    m_vcpu{vcpu}
 {
     using namespace vmcs_n;
-    bfignored(eapis_vcpu_global_state);
 
-    apis->add_rdmsr_handler(
+    vcpu->add_rdmsr_handler(
         ::intel_x64::msrs::ia32_bios_updt_trig::addr,
         rdmsr_handler::handler_delegate_t::create<ia32_bios_updt_trig__rdmsr_handler>()
     );
 
-    apis->add_wrmsr_handler(
+    vcpu->add_wrmsr_handler(
         ::intel_x64::msrs::ia32_bios_updt_trig::addr,
         wrmsr_handler::handler_delegate_t::create<ia32_bios_updt_trig__wrmsr_handler>()
     );
 
-    apis->add_rdmsr_handler(
+    vcpu->add_rdmsr_handler(
         ::intel_x64::msrs::ia32_bios_sign_id::addr,
         rdmsr_handler::handler_delegate_t::create<ia32_bios_sign_id__rdmsr_handler>()
     );
 
-    apis->add_wrmsr_handler(
+    vcpu->add_wrmsr_handler(
         ::intel_x64::msrs::ia32_bios_sign_id::addr,
         wrmsr_handler::handler_delegate_t::create<ia32_bios_sign_id__wrmsr_handler>()
     );
 }
 
-}
 }

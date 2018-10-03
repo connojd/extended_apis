@@ -80,15 +80,13 @@ public:
             hlt_delegate_t::create<test_hlt_delegate>()
         );
 
-        eapis()->add_rdcr3_handler(
+        this->add_rdcr3_handler(
             control_register_handler::handler_delegate_t::create<test_rdcr3_handler>()
         );
 
-        eapis()->add_wrcr3_handler(
+        this->add_wrcr3_handler(
             control_register_handler::handler_delegate_t::create<test_wrcr3_handler>()
         );
-
-        eapis()->control_register()->enable_log();
     }
 };
 
