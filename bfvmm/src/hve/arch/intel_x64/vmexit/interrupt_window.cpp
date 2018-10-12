@@ -56,9 +56,9 @@ interrupt_window_handler::queue_external_interrupt(uint64_t vector)
 // -----------------------------------------------------------------------------
 
 bool
-interrupt_window_handler::handle(gsl::not_null<vmcs_t *> vmcs)
+interrupt_window_handler::handle(gsl::not_null<vcpu_t *> vcpu)
 {
-    bfignored(vmcs);
+    bfignored(vcpu);
     this->inject(m_interrupt_queue.pop());
 
     if (m_interrupt_queue.empty()) {

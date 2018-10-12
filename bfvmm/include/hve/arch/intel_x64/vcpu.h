@@ -79,16 +79,6 @@ public:
     // EPT
     //--------------------------------------------------------------------------
 
-    /// Get EPT Handler
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @return Returns the EPT handler stored in the apis if EPT is
-    ///     enabled, otherwise an exception is thrown
-    ///
-    gsl::not_null<ept_handler *> ept();
-
     /// Set EPTP
     ///
     /// Enables EPT and sets the EPTP to point to the provided mmap.
@@ -111,16 +101,6 @@ public:
     // VPID
     //--------------------------------------------------------------------------
 
-    /// Get VPID Handler
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @return Returns the VPID handler stored in the apis if VPID is
-    ///     enabled, otherwise an exception is thrown
-    ///
-    gsl::not_null<vpid_handler *> vpid();
-
     /// Enable VPID
     ///
     /// @expects
@@ -142,16 +122,6 @@ public:
     //--------------------------------------------------------------------------
     // Control Register
     //--------------------------------------------------------------------------
-
-    /// Get Control Register Object
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @return Returns the CR handler stored in the apis if CR trapping is
-    ///     enabled, otherwise an exception is thrown
-    ///
-    gsl::not_null<control_register_handler *> control_register();
 
     /// Add Write CR0 Handler
     ///
@@ -201,16 +171,6 @@ public:
     // CPUID
     //--------------------------------------------------------------------------
 
-    /// Get CPUID Object
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @return Returns the CPUID handler stored in the apis if CPUID trapping is
-    ///     enabled, otherwise an exception is thrown
-    ///
-    gsl::not_null<cpuid_handler *> cpuid();
-
     /// Add CPUID Handler
     ///
     /// @expects
@@ -227,16 +187,6 @@ public:
     // EPT Misconfiguration
     //--------------------------------------------------------------------------
 
-    /// Get EPT misconfiguration object
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @return Returns the EPT misconfiguration handler stored in the apis if EPT
-    ///     trapping is enabled, otherwise an exception is thrown
-    ///
-    gsl::not_null<ept_misconfiguration_handler *> ept_misconfiguration();
-
     /// Add EPT Misconfiguration Handler
     ///
     /// @expects
@@ -250,16 +200,6 @@ public:
     //--------------------------------------------------------------------------
     // EPT Violation
     //--------------------------------------------------------------------------
-
-    /// Get EPT violation object
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @return Returns the EPT violation handler stored in the apis if EPT
-    ///     trapping is enabled, otherwise an exception is thrown
-    ///
-    gsl::not_null<ept_violation_handler *> ept_violation();
 
     /// Add EPT read violation handler
     ///
@@ -295,17 +235,6 @@ public:
     // External Interrupt
     //--------------------------------------------------------------------------
 
-    /// Get External Interrupt Object
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @return Returns the external interrupt handler stored in the apis if
-    ///     external-interrupt exiting is enabled, otherwise an exception is
-    ///     thrown
-    ///
-    gsl::not_null<external_interrupt_handler *> external_interrupt();
-
     /// Add External Interrupt Handler
     ///
     /// Turns on external interrupt handling and adds an external interrupt
@@ -330,15 +259,6 @@ public:
     // Interrupt Window
     //--------------------------------------------------------------------------
 
-    /// Get Interrupt Window Object
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @return Returns the interrupt-window handler stored in the apis if
-    ///
-    gsl::not_null<interrupt_window_handler *> interrupt_window();
-
     /// Queue External Interrupt
     ///
     /// Queues an external interrupt for injection. If the interrupt window
@@ -357,22 +277,12 @@ public:
     // IO Instruction
     //--------------------------------------------------------------------------
 
-    /// Get IO Instruction Object
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @return returns the IO Instruction handler stored in the apis if IO
-    ///     Instruction trapping is enabled, otherwise an exception is thrown
-    ///
-    gsl::not_null<io_instruction_handler *> io_instruction();
-
     /// Trap All IO Instruction Accesses
     ///
     /// @expects
     /// @ensures
     ///
-    VIRTUAL void trap_all_io_instruction_accesses();
+    VIRTUAL void trap_on_all_io_instruction_accesses();
 
     /// Pass Through All IO Instruction Accesses
     ///
@@ -400,16 +310,6 @@ public:
     // Monitor Trap
     //--------------------------------------------------------------------------
 
-    /// Get Monitor Trap Object
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @return Returns the Monitor Trap handler stored in the apis if Monitor
-    ///     Trap is enabled, otherwise an exception is thrown
-    ///
-    gsl::not_null<monitor_trap_handler *> monitor_trap();
-
     /// Add Monitor Trap Flag Handler
     ///
     /// @expects
@@ -431,22 +331,38 @@ public:
     // Read MSR
     //--------------------------------------------------------------------------
 
-    /// Get Read MSR Object
+    /// Trap On Access
+    ///
+    /// Sets a '1' in the MSR bitmap corresponding with the provided msr. All
+    /// attempts made by the guest to read from the provided msr will
+    /// trap to hypervisor.
     ///
     /// @expects
     /// @ensures
     ///
-    /// @return Returns the Read MSR handler stored in the apis if Read MSR
-    ///     trapping is enabled, otherwise an exception is thrown
+    /// @param msr the msr to trap on
     ///
-    gsl::not_null<rdmsr_handler *> rdmsr();
+    VIRTUAL void trap_on_rdmsr_access(vmcs_n::value_type msr);
 
     /// Trap All Read MSR Accesses
     ///
     /// @expects
     /// @ensures
     ///
-    VIRTUAL void trap_all_rdmsr_accesses();
+    VIRTUAL void trap_on_all_rdmsr_accesses();
+
+    /// Pass Through Access
+    ///
+    /// Sets a '0' in the MSR bitmap corresponding with the provided msr. All
+    /// attempts made by the guest to read from the provided msr will be
+    /// executed by the guest and will not trap to the hypervisor.
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param msr the msr to pass through
+    ///
+    VIRTUAL void pass_through_rdmsr_access(vmcs_n::value_type msr);
 
     /// Pass Through All Read MSR Accesses
     ///
@@ -470,22 +386,38 @@ public:
     // Write MSR
     //--------------------------------------------------------------------------
 
-    /// Get Write MSR Object
+    /// Trap On Access
+    ///
+    /// Sets a '1' in the MSR bitmap corresponding with the provided msr. All
+    /// attempts made by the guest to read from the provided msr will
+    /// trap to hypervisor.
     ///
     /// @expects
     /// @ensures
     ///
-    /// @return Returns the Write MSR handler stored in the apis if Write MSR
-    ///     trapping is enabled, otherwise an exception is thrown
+    /// @param msr the msr to trap on
     ///
-    gsl::not_null<wrmsr_handler *> wrmsr();
+    VIRTUAL void trap_on_wrmsr_access(vmcs_n::value_type msr);
 
     /// Trap All Write MSR Accesses
     ///
     /// @expects
     /// @ensures
     ///
-    VIRTUAL void trap_all_wrmsr_accesses();
+    VIRTUAL void trap_on_all_wrmsr_accesses();
+
+    /// Pass Through Access
+    ///
+    /// Sets a '0' in the MSR bitmap corresponding with the provided msr. All
+    /// attempts made by the guest to read from the provided msr will be
+    /// executed by the guest and will not trap to the hypervisor.
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param msr the msr to pass through
+    ///
+    VIRTUAL void pass_through_wrmsr_access(vmcs_n::value_type msr);
 
     /// Pass Through All Write MSR Accesses
     ///
@@ -509,16 +441,6 @@ public:
     // XSetBV
     //--------------------------------------------------------------------------
 
-    /// Get XSetBV Object
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    /// @return Returns the XSetBV handler stored in the apis if XSetBV
-    ///     trapping is enabled, otherwise an exception is thrown
-    ///
-    gsl::not_null<xsetbv_handler *> xsetbv();
-
     /// Add XSetBV Handler
     ///
     /// @expects
@@ -533,13 +455,11 @@ public:
     // Resources
     //==========================================================================
 
-    gsl::not_null<vcpu_global_state_t *> global_state() const
+    VIRTUAL gsl::not_null<vcpu_global_state_t *> global_state() const
     { return m_vcpu_global_state; }
 
 private:
 
-    bfvmm::intel_x64::vmcs *m_vmcs;
-    bfvmm::intel_x64::exit_handler *m_exit_handler;
     vcpu_global_state_t *m_vcpu_global_state;
 
 private:

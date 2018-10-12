@@ -55,9 +55,9 @@ public:
 
     bool
     test_external_interrupt_handler(
-        gsl::not_null<vmcs_t *> vmcs, external_interrupt_handler::info_t &info)
+        gsl::not_null<vcpu_t *> vcpu, external_interrupt_handler::info_t &info)
     {
-        bfignored(vmcs);
+        bfignored(vcpu);
 
         this->queue_external_interrupt(info.vector);
         return true;

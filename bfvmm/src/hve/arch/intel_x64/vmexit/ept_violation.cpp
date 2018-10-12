@@ -58,7 +58,7 @@ ept_violation_handler::add_execute_handler(
 // -----------------------------------------------------------------------------
 
 bool
-ept_violation_handler::handle(gsl::not_null<vmcs_t *> vmcs)
+ept_violation_handler::handle(gsl::not_null<vcpu_t *> vcpu)
 {
     using namespace vmcs_n;
     auto qual = exit_qualification::ept_violation::get();
@@ -71,15 +71,15 @@ ept_violation_handler::handle(gsl::not_null<vmcs_t *> vmcs)
     };
 
     if (exit_qualification::ept_violation::data_read::is_enabled(qual)) {
-        return handle_read(vmcs, info);
+        return handle_read(vcpu, info);
     }
 
     if (exit_qualification::ept_violation::data_write::is_enabled(qual)) {
-        return handle_write(vmcs, info);
+        return handle_write(vcpu, info);
     }
 
     if (exit_qualification::ept_violation::instruction_fetch::is_enabled(qual)) {
-        return handle_execute(vmcs, info);
+        return handle_execute(vcpu, info);
     }
 
     throw std::runtime_error(
@@ -88,13 +88,13 @@ ept_violation_handler::handle(gsl::not_null<vmcs_t *> vmcs)
 }
 
 bool
-ept_violation_handler::handle_read(gsl::not_null<vmcs_t *> vmcs, info_t &info)
+ept_violation_handler::handle_read(gsl::not_null<vcpu_t *> vcpu, info_t &info)
 {
     for (const auto &d : m_read_handlers) {
-        if (d(vmcs, info)) {
+        if (d(vcpu, info)) {
 
             if (!info.ignore_advance) {
-                return advance(vmcs);
+                return advance(vcpu);
             }
 
             return true;
@@ -107,13 +107,13 @@ ept_violation_handler::handle_read(gsl::not_null<vmcs_t *> vmcs, info_t &info)
 }
 
 bool
-ept_violation_handler::handle_write(gsl::not_null<vmcs_t *> vmcs, info_t &info)
+ept_violation_handler::handle_write(gsl::not_null<vcpu_t *> vcpu, info_t &info)
 {
     for (const auto &d : m_write_handlers) {
-        if (d(vmcs, info)) {
+        if (d(vcpu, info)) {
 
             if (!info.ignore_advance) {
-                return advance(vmcs);
+                return advance(vcpu);
             }
 
             return true;
@@ -126,13 +126,13 @@ ept_violation_handler::handle_write(gsl::not_null<vmcs_t *> vmcs, info_t &info)
 }
 
 bool
-ept_violation_handler::handle_execute(gsl::not_null<vmcs_t *> vmcs, info_t &info)
+ept_violation_handler::handle_execute(gsl::not_null<vcpu_t *> vcpu, info_t &info)
 {
     for (const auto &d : m_execute_handlers) {
-        if (d(vmcs, info)) {
+        if (d(vcpu, info)) {
 
             if (!info.ignore_advance) {
-                return advance(vmcs);
+                return advance(vcpu);
             }
 
             return true;

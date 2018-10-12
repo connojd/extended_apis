@@ -133,7 +133,7 @@ public:
     /// handlers
     ///
     using handler_delegate_t =
-        delegate<bool(gsl::not_null<vmcs_t *>, info_t &)>;
+        delegate<bool(gsl::not_null<vcpu_t *>, info_t &)>;
 
     /// Constructor
     ///
@@ -241,20 +241,20 @@ public:
 
     /// @cond
 
-    bool handle(gsl::not_null<vmcs_t *> vmcs);
+    bool handle(gsl::not_null<vcpu_t *> vcpu);
 
     /// @endcond
 
 private:
 
-    bool handle_in(gsl::not_null<vmcs_t *> vmcs, info_t &info);
-    bool handle_out(gsl::not_null<vmcs_t *> vmcs, info_t &info);
+    bool handle_in(gsl::not_null<vcpu_t *> vcpu, info_t &info);
+    bool handle_out(gsl::not_null<vcpu_t *> vcpu, info_t &info);
 
     void emulate_in(info_t &info);
     void emulate_out(info_t &info);
 
-    void load_operand(gsl::not_null<vmcs_t *> vmcs, info_t &info);
-    void store_operand(gsl::not_null<vmcs_t *> vmcs, info_t &info);
+    void load_operand(gsl::not_null<vcpu_t *> vcpu, info_t &info);
+    void store_operand(gsl::not_null<vcpu_t *> vcpu, info_t &info);
 
 private:
 

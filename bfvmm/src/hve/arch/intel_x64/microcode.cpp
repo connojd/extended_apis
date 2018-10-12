@@ -23,9 +23,9 @@ namespace eapis::intel_x64
 
 static bool
 ia32_bios_updt_trig__rdmsr_handler(
-    gsl::not_null<vmcs_t *> vmcs, rdmsr_handler::info_t &info)
+    gsl::not_null<vcpu_t *> vcpu, rdmsr_handler::info_t &info)
 {
-    bfignored(vmcs);
+    bfignored(vcpu);
 
     info.val = 0;
     return true;
@@ -33,9 +33,9 @@ ia32_bios_updt_trig__rdmsr_handler(
 
 static bool
 ia32_bios_updt_trig__wrmsr_handler(
-    gsl::not_null<vmcs_t *> vmcs, wrmsr_handler::info_t &info)
+    gsl::not_null<vcpu_t *> vcpu, wrmsr_handler::info_t &info)
 {
-    bfignored(vmcs);
+    bfignored(vcpu);
 
     info.ignore_write = true;
     return true;
@@ -43,9 +43,9 @@ ia32_bios_updt_trig__wrmsr_handler(
 
 static bool
 ia32_bios_sign_id__rdmsr_handler(
-    gsl::not_null<vmcs_t *> vmcs, rdmsr_handler::info_t &info)
+    gsl::not_null<vcpu_t *> vcpu, rdmsr_handler::info_t &info)
 {
-    bfignored(vmcs);
+    bfignored(vcpu);
 
     // QUIRK
     //
@@ -63,9 +63,9 @@ ia32_bios_sign_id__rdmsr_handler(
 
 static bool
 ia32_bios_sign_id__wrmsr_handler(
-    gsl::not_null<vmcs_t *> vmcs, wrmsr_handler::info_t &info)
+    gsl::not_null<vcpu_t *> vcpu, wrmsr_handler::info_t &info)
 {
-    bfignored(vmcs);
+    bfignored(vcpu);
 
     info.ignore_write = true;
     return true;

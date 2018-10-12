@@ -27,8 +27,6 @@ vcpu::vcpu(
 ) :
     bfvmm::intel_x64::vcpu(id),
 
-    m_vmcs{this->vmcs()},
-    m_exit_handler{this->exit_handler()},
     m_vcpu_global_state{vcpu_global_state != nullptr ? vcpu_global_state : &g_vcpu_global_state},
 
     m_msr_bitmap{static_cast<uint8_t *>(alloc_page()), free_page},
@@ -74,10 +72,6 @@ vcpu::vcpu(
 // EPT
 //--------------------------------------------------------------------------
 
-gsl::not_null<ept_handler *>
-vcpu::ept()
-{ return &m_ept_handler; }
-
 void
 vcpu::set_eptp(ept::mmap &map)
 { m_ept_handler.set_eptp(&map); }
@@ -89,10 +83,6 @@ vcpu::disable_ept()
 //--------------------------------------------------------------------------
 // VPID
 //--------------------------------------------------------------------------
-
-gsl::not_null<vpid_handler *>
-vcpu::vpid()
-{ return &m_vpid_handler; }
 
 void
 vcpu::enable_vpid()
@@ -109,10 +99,6 @@ vcpu::disable_vpid()
 //--------------------------------------------------------------------------
 // Control Register
 //--------------------------------------------------------------------------
-
-gsl::not_null<control_register_handler *>
-vcpu::control_register()
-{ return &m_control_register_handler; }
 
 void
 vcpu::add_wrcr0_handler(
@@ -152,10 +138,6 @@ vcpu::add_wrcr4_handler(
 // CPUID
 //--------------------------------------------------------------------------
 
-gsl::not_null<cpuid_handler *>
-vcpu::cpuid()
-{ return &m_cpuid_handler; }
-
 void
 vcpu::add_cpuid_handler(
     cpuid_handler::leaf_t leaf, const cpuid_handler::handler_delegate_t &d)
@@ -165,10 +147,6 @@ vcpu::add_cpuid_handler(
 // EPT Misconfiguration
 //--------------------------------------------------------------------------
 
-gsl::not_null<ept_misconfiguration_handler *>
-vcpu::ept_misconfiguration()
-{ return &m_ept_misconfiguration_handler; }
-
 void
 vcpu::add_ept_misconfiguration_handler(
     const ept_misconfiguration_handler::handler_delegate_t &d)
@@ -177,10 +155,6 @@ vcpu::add_ept_misconfiguration_handler(
 //--------------------------------------------------------------------------
 // EPT Violation
 //--------------------------------------------------------------------------
-
-gsl::not_null<ept_violation_handler *>
-vcpu::ept_violation()
-{ return &m_ept_violation_handler; }
 
 void
 vcpu::add_ept_read_violation_handler(
@@ -201,10 +175,6 @@ vcpu::add_ept_execute_violation_handler(
 // External Interrupt
 //--------------------------------------------------------------------------
 
-gsl::not_null<external_interrupt_handler *>
-vcpu::external_interrupt()
-{ return &m_external_interrupt_handler; }
-
 void
 vcpu::add_external_interrupt_handler(
     const external_interrupt_handler::handler_delegate_t &d)
@@ -221,10 +191,6 @@ vcpu::disable_external_interrupts()
 // Interrupt Window
 //--------------------------------------------------------------------------
 
-gsl::not_null<interrupt_window_handler *>
-vcpu::interrupt_window()
-{ return &m_interrupt_window_handler; }
-
 void
 vcpu::queue_external_interrupt(uint64_t vector)
 { m_interrupt_window_handler.queue_external_interrupt(vector); }
@@ -233,12 +199,8 @@ vcpu::queue_external_interrupt(uint64_t vector)
 // IO Instruction
 //--------------------------------------------------------------------------
 
-gsl::not_null<io_instruction_handler *>
-vcpu::io_instruction()
-{ return &m_io_instruction_handler; }
-
 void
-vcpu::trap_all_io_instruction_accesses()
+vcpu::trap_on_all_io_instruction_accesses()
 { m_io_instruction_handler.trap_on_all_accesses(); }
 
 void
@@ -259,10 +221,6 @@ vcpu::add_io_instruction_handler(
 // Monitor Trap
 //--------------------------------------------------------------------------
 
-gsl::not_null<monitor_trap_handler *>
-vcpu::monitor_trap()
-{ return &m_monitor_trap_handler; }
-
 void
 vcpu::add_monitor_trap_handler(
     const monitor_trap_handler::handler_delegate_t &d)
@@ -276,13 +234,17 @@ vcpu::enable_monitor_trap_flag()
 // Read MSR
 //--------------------------------------------------------------------------
 
-gsl::not_null<rdmsr_handler *>
-vcpu::rdmsr()
-{ return &m_rdmsr_handler; }
+void
+vcpu::trap_on_rdmsr_access(vmcs_n::value_type msr)
+{ m_rdmsr_handler.trap_on_access(msr); }
 
 void
-vcpu::trap_all_rdmsr_accesses()
+vcpu::trap_on_all_rdmsr_accesses()
 { m_rdmsr_handler.trap_on_all_accesses(); }
+
+void
+vcpu::pass_through_rdmsr_access(vmcs_n::value_type msr)
+{ m_rdmsr_handler.pass_through_access(msr); }
 
 void
 vcpu::pass_through_all_rdmsr_accesses()
@@ -300,13 +262,17 @@ vcpu::add_rdmsr_handler(
 // Write MSR
 //--------------------------------------------------------------------------
 
-gsl::not_null<wrmsr_handler *>
-vcpu::wrmsr()
-{ return &m_wrmsr_handler; }
+void
+vcpu::trap_on_wrmsr_access(vmcs_n::value_type msr)
+{ m_wrmsr_handler.trap_on_access(msr); }
 
 void
-vcpu::trap_all_wrmsr_accesses()
+vcpu::trap_on_all_wrmsr_accesses()
 { m_wrmsr_handler.trap_on_all_accesses(); }
+
+void
+vcpu::pass_through_wrmsr_access(vmcs_n::value_type msr)
+{ m_wrmsr_handler.pass_through_access(msr); }
 
 void
 vcpu::pass_through_all_wrmsr_accesses()
@@ -323,10 +289,6 @@ vcpu::add_wrmsr_handler(
 //--------------------------------------------------------------------------
 // XSetBV
 //--------------------------------------------------------------------------
-
-gsl::not_null<xsetbv_handler *>
-vcpu::xsetbv()
-{ return &m_xsetbv_handler; }
 
 void
 vcpu::add_xsetbv_handler(

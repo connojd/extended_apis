@@ -47,7 +47,7 @@ ept_misconfiguration_handler::add_handler(const handler_delegate_t &d)
 // -----------------------------------------------------------------------------
 
 bool
-ept_misconfiguration_handler::handle(gsl::not_null<vmcs_t *> vmcs)
+ept_misconfiguration_handler::handle(gsl::not_null<vcpu_t *> vcpu)
 {
     struct info_t info = {
         vmcs_n::guest_linear_address::get(),
@@ -56,10 +56,10 @@ ept_misconfiguration_handler::handle(gsl::not_null<vmcs_t *> vmcs)
     };
 
     for (const auto &d : m_handlers) {
-        if (d(vmcs, info)) {
+        if (d(vcpu, info)) {
 
             if (!info.ignore_advance) {
-                return advance(vmcs);
+                return advance(vcpu);
             }
 
             return true;

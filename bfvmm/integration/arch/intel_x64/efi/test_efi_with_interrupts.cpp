@@ -56,9 +56,9 @@ public:
 
     bool
     external_interrupt_handler(
-        gsl::not_null<vmcs_t *> vmcs, external_interrupt_handler::info_t &info)
+        gsl::not_null<vcpu_t *> v, external_interrupt_handler::info_t &info)
     {
-        bfignored(vmcs);
+        bfignored(v);
         this->queue_external_interrupt(info.vector);
 
         return true;
@@ -66,9 +66,9 @@ public:
 
     bool
     ia32_apic_base__wrmsr_handler(
-        gsl::not_null<vmcs_t *> vmcs, wrmsr_handler::info_t &info)
+        gsl::not_null<vcpu_t *> v, wrmsr_handler::info_t &info)
     {
-        bfignored(vmcs);
+        bfignored(v);
 
         if (::intel_x64::msrs::ia32_apic_base::extd::is_enabled(info.val)) {
             this->add_external_interrupt_handler(

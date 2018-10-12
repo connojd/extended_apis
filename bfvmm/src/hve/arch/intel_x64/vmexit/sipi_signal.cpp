@@ -39,12 +39,12 @@ sipi_signal_handler::sipi_signal_handler(
 // -----------------------------------------------------------------------------
 
 bool
-sipi_signal_handler::handle(gsl::not_null<vmcs_t *> vmcs)
+sipi_signal_handler::handle(gsl::not_null<vcpu_t *> vcpu)
 {
 
     using namespace vmcs_n::guest_activity_state;
     using namespace vmcs_n::vm_entry_controls;
-    bfignored(vmcs);
+    bfignored(vcpu);
 
     // .........................................................................
     // Ignore SIPI - SIPI
@@ -91,7 +91,7 @@ sipi_signal_handler::handle(gsl::not_null<vmcs_t *> vmcs)
     vmcs_n::guest_cs_limit::set(0xFFFF);
     vmcs_n::guest_cs_access_rights::set(0x9B);
 
-    vmcs->save_state()->rip = 0;
+    vcpu->set_rip(0);
 
     vmcs_n::guest_activity_state::set(
         vmcs_n::guest_activity_state::active

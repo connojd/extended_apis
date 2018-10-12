@@ -44,12 +44,12 @@ init_signal_handler::init_signal_handler(
 // -----------------------------------------------------------------------------
 
 bool
-init_signal_handler::handle(gsl::not_null<vmcs_t *> vmcs)
+init_signal_handler::handle(gsl::not_null<vcpu_t *> vcpu)
 {
     using namespace vmcs_n::guest_activity_state;
     using namespace vmcs_n::vm_entry_controls;
 
-    bfignored(vmcs);
+    bfignored(vcpu);
 
     // TODO:
     //
@@ -75,7 +75,7 @@ init_signal_handler::handle(gsl::not_null<vmcs_t *> vmcs)
     //
 
     vmcs_n::guest_rflags::set(0x00000002);
-    vmcs->save_state()->rip = 0x0000FFF0;
+    vcpu->set_rip(0x0000FFF0);
 
     vmcs_n::guest_cr0::set(0x60000010 | m_vcpu->global_state()->ia32_vmx_cr0_fixed0);
     vmcs_n::guest_cr3::set(0);
@@ -114,14 +114,14 @@ init_signal_handler::handle(gsl::not_null<vmcs_t *> vmcs)
     vmcs_n::guest_gs_limit::set(0xFFFF);
     vmcs_n::guest_gs_access_rights::set(0x93);
 
-    vmcs->save_state()->rdx = 0x00000600;
-    vmcs->save_state()->rax = 0;
-    vmcs->save_state()->rbx = 0;
-    vmcs->save_state()->rcx = 0;
-    vmcs->save_state()->rsi = 0;
-    vmcs->save_state()->rdi = 0;
-    vmcs->save_state()->rbp = 0;
-    vmcs->save_state()->rsp = 0;
+    vcpu->set_rdx(0x00000600);
+    vcpu->set_rax(0);
+    vcpu->set_rbx(0);
+    vcpu->set_rcx(0);
+    vcpu->set_rsi(0);
+    vcpu->set_rdi(0);
+    vcpu->set_rbp(0);
+    vcpu->set_rsp(0);
 
     vmcs_n::guest_gdtr_base::set(0);
     vmcs_n::guest_gdtr_limit::set(0xFFFF);
@@ -141,14 +141,14 @@ init_signal_handler::handle(gsl::not_null<vmcs_t *> vmcs)
 
     vmcs_n::guest_dr7::set(0x00000400);
 
-    vmcs->save_state()->r08 = 0;
-    vmcs->save_state()->r09 = 0;
-    vmcs->save_state()->r10 = 0;
-    vmcs->save_state()->r11 = 0;
-    vmcs->save_state()->r12 = 0;
-    vmcs->save_state()->r13 = 0;
-    vmcs->save_state()->r14 = 0;
-    vmcs->save_state()->r15 = 0;
+    vcpu->set_r08(0);
+    vcpu->set_r09(0);
+    vcpu->set_r10(0);
+    vcpu->set_r11(0);
+    vcpu->set_r12(0);
+    vcpu->set_r13(0);
+    vcpu->set_r14(0);
+    vcpu->set_r15(0);
 
     vmcs_n::guest_ia32_efer::set(0);
     vmcs_n::guest_fs_base::set(0);
@@ -177,10 +177,10 @@ init_signal_handler::handle(gsl::not_null<vmcs_t *> vmcs)
 
 bool
 init_signal_handler::handle_init_assert(
-    gsl::not_null<vmcs_t *> vmcs, wrmsr_handler::info_t &info)
+    gsl::not_null<vcpu_t *> vcpu, wrmsr_handler::info_t &info)
 {
     using namespace ::intel_x64::msrs;
-    bfignored(vmcs);
+    bfignored(vcpu);
 
     m_vcpu->global_state()->init_called = false;
 
@@ -196,9 +196,9 @@ init_signal_handler::handle_init_assert(
 
 bool
 init_signal_handler::handle_init_deassert(
-    gsl::not_null<vmcs_t *> vmcs, wrmsr_handler::info_t &info)
+    gsl::not_null<vcpu_t *> vcpu, wrmsr_handler::info_t &info)
 {
-    bfignored(vmcs);
+    bfignored(vcpu);
     bfignored(info);
 
     // Note
@@ -212,7 +212,7 @@ init_signal_handler::handle_init_deassert(
 
 bool
 init_signal_handler::handle_icr_write(
-    gsl::not_null<vmcs_t *> vmcs, wrmsr_handler::info_t &info)
+    gsl::not_null<vcpu_t *> vcpu, wrmsr_handler::info_t &info)
 {
     using namespace ::intel_x64::lapic;
 
@@ -221,10 +221,10 @@ init_signal_handler::handle_icr_write(
     }
 
     if (icr::level::is_enabled(info.val)) {
-        return handle_init_assert(vmcs, info);
+        return handle_init_assert(vcpu, info);
     }
     else {
-        return handle_init_deassert(vmcs, info);
+        return handle_init_deassert(vcpu, info);
     }
 }
 

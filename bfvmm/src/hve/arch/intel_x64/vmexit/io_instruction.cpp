@@ -110,14 +110,14 @@ io_instruction_handler::pass_through_all_accesses()
 // -----------------------------------------------------------------------------
 
 bool
-io_instruction_handler::handle(gsl::not_null<vmcs_t *> vmcs)
+io_instruction_handler::handle(gsl::not_null<vcpu_t *> vcpu)
 {
     namespace io_instruction = vmcs_n::exit_qualification::io_instruction;
     auto eq = io_instruction::get();
 
     auto reps = 1ULL;
     if (io_instruction::rep_prefixed::is_enabled(eq)) {
-        reps = vmcs->save_state()->rcx & 0x00000000FFFFFFFFULL;
+        reps = vcpu->rcx() & 0x00000000FFFFFFFFULL;
     }
 
     struct info_t info = {
@@ -131,7 +131,7 @@ io_instruction_handler::handle(gsl::not_null<vmcs_t *> vmcs)
 
     switch (io_instruction::operand_encoding::get(eq)) {
         case io_instruction::operand_encoding::dx:
-            info.port_number = vmcs->save_state()->rdx & 0x000000000000FFFFULL;
+            info.port_number = vcpu->rdx() & 0x000000000000FFFFULL;
             break;
 
         default:
@@ -146,11 +146,11 @@ io_instruction_handler::handle(gsl::not_null<vmcs_t *> vmcs)
     for (auto i = 0ULL; i < reps; i++) {
         switch (io_instruction::direction_of_access::get(eq)) {
             case io_instruction::direction_of_access::in:
-                handle_in(vmcs, info);
+                handle_in(vcpu, info);
                 break;
 
             default:
-                handle_out(vmcs, info);
+                handle_out(vcpu, info);
                 break;
         }
 
@@ -161,7 +161,7 @@ io_instruction_handler::handle(gsl::not_null<vmcs_t *> vmcs)
 }
 
 bool
-io_instruction_handler::handle_in(gsl::not_null<vmcs_t *> vmcs, info_t &info)
+io_instruction_handler::handle_in(gsl::not_null<vcpu_t *> vcpu, info_t &info)
 {
     namespace io_instruction = vmcs_n::exit_qualification::io_instruction;
 
@@ -172,14 +172,14 @@ io_instruction_handler::handle_in(gsl::not_null<vmcs_t *> vmcs, info_t &info)
         emulate_in(info);
 
         for (const auto &d : hdlrs->second) {
-            if (d(vmcs, info)) {
+            if (d(vcpu, info)) {
 
                 if (!info.ignore_write) {
-                    store_operand(vmcs, info);
+                    store_operand(vcpu, info);
                 }
 
                 if (!info.ignore_advance) {
-                    return advance(vmcs);
+                    return advance(vcpu);
                 }
 
                 return true;
@@ -192,7 +192,7 @@ io_instruction_handler::handle_in(gsl::not_null<vmcs_t *> vmcs, info_t &info)
 }
 
 bool
-io_instruction_handler::handle_out(gsl::not_null<vmcs_t *> vmcs, info_t &info)
+io_instruction_handler::handle_out(gsl::not_null<vcpu_t *> vcpu, info_t &info)
 {
     namespace io_instruction = vmcs_n::exit_qualification::io_instruction;
 
@@ -200,17 +200,17 @@ io_instruction_handler::handle_out(gsl::not_null<vmcs_t *> vmcs, info_t &info)
         m_in_handlers.find(info.port_number);
 
     if (GSL_LIKELY(hdlrs != m_in_handlers.end())) {
-        load_operand(vmcs, info);
+        load_operand(vcpu, info);
 
         for (const auto &d : hdlrs->second) {
-            if (d(vmcs, info)) {
+            if (d(vcpu, info)) {
 
                 if (!info.ignore_write) {
                     emulate_out(info);
                 }
 
                 if (!info.ignore_advance) {
-                    return advance(vmcs);
+                    return advance(vcpu);
                 }
 
                 return true;
@@ -273,7 +273,7 @@ io_instruction_handler::emulate_out(info_t &info)
 
 void
 io_instruction_handler::load_operand(
-    gsl::not_null<vmcs_t *> vmcs, info_t &info)
+    gsl::not_null<vcpu_t *> vcpu, info_t &info)
 {
     namespace io_instruction = vmcs_n::exit_qualification::io_instruction;
 
@@ -319,15 +319,15 @@ io_instruction_handler::load_operand(
     else {
         switch (info.size_of_access) {
             case io_instruction::size_of_access::one_byte:
-                info.val = vmcs->save_state()->rax & 0x00000000000000FFULL;
+                info.val = vcpu->rax() & 0x00000000000000FFULL;
                 break;
 
             case io_instruction::size_of_access::two_byte:
-                info.val = vmcs->save_state()->rax & 0x000000000000FFFFULL;
+                info.val = vcpu->rax() & 0x000000000000FFFFULL;
                 break;
 
             default:
-                info.val = vmcs->save_state()->rax & 0x00000000FFFFFFFFULL;
+                info.val = vcpu->rax() & 0x00000000FFFFFFFFULL;
                 break;
         }
     }
@@ -335,7 +335,7 @@ io_instruction_handler::load_operand(
 
 void
 io_instruction_handler::store_operand(
-    gsl::not_null<vmcs_t *> vmcs, info_t &info)
+    gsl::not_null<vcpu_t *> vcpu, info_t &info)
 {
     namespace io_instruction = vmcs_n::exit_qualification::io_instruction;
 
@@ -381,18 +381,24 @@ io_instruction_handler::store_operand(
     else {
         switch (info.size_of_access) {
             case io_instruction::size_of_access::one_byte:
-                vmcs->save_state()->rax =
-                    set_bits(vmcs->save_state()->rax, 0x00000000000000FFULL, info.val);
+                vcpu->set_rax(
+                    set_bits(vcpu->rax(), 0x00000000000000FFULL, info.val)
+                );
+
                 break;
 
             case io_instruction::size_of_access::two_byte:
-                vmcs->save_state()->rax =
-                    set_bits(vmcs->save_state()->rax, 0x000000000000FFFFULL, info.val);
+                vcpu->set_rax(
+                    set_bits(vcpu->rax(), 0x000000000000FFFFULL, info.val)
+                );
+
                 break;
 
             default:
-                vmcs->save_state()->rax =
-                    set_bits(vmcs->save_state()->rax, 0x00000000FFFFFFFFULL, info.val);
+                vcpu->set_rax(
+                    set_bits(vcpu->rax(), 0x00000000FFFFFFFFULL, info.val)
+                );
+
                 break;
         }
     }

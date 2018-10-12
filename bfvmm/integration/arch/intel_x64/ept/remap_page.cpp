@@ -78,9 +78,9 @@ public:
 
     bool
     test_cpuid_handler(
-        gsl::not_null<vmcs_t *> vmcs, cpuid_handler::info_t &info)
+        gsl::not_null<vcpu_t *> vcpu, cpuid_handler::info_t &info)
     {
-        bfignored(vmcs);
+        bfignored(vcpu);
         bfignored(info);
 
         bfn::call_once(flag, [&] {

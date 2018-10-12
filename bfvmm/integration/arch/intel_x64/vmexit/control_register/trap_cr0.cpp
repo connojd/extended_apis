@@ -29,9 +29,9 @@ uint64_t g_cr0;
 
 bool
 test_handler(
-    gsl::not_null<vmcs_t *> vmcs, control_register_handler::info_t &info)
+    gsl::not_null<vcpu_t *> vcpu, control_register_handler::info_t &info)
 {
-    bfignored(vmcs);
+    bfignored(vcpu);
     bfignored(info);
 
     info.val = g_cr0;

@@ -54,7 +54,7 @@ monitor_trap_handler::enable()
 // -----------------------------------------------------------------------------
 
 bool
-monitor_trap_handler::handle(gsl::not_null<vmcs_t *> vmcs)
+monitor_trap_handler::handle(gsl::not_null<vcpu_t *> vcpu)
 {
     using namespace vmcs_n;
 
@@ -63,7 +63,7 @@ monitor_trap_handler::handle(gsl::not_null<vmcs_t *> vmcs)
     };
 
     for (const auto &d : m_handlers) {
-        if (d(vmcs, info)) {
+        if (d(vcpu, info)) {
             break;
         }
     }

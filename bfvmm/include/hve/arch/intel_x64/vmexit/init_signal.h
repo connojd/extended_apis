@@ -78,7 +78,7 @@ public:
 
     /// @cond
 
-    bool handle(gsl::not_null<vmcs_t *> vmcs);
+    bool handle(gsl::not_null<vcpu_t *> vcpu);
 
     /// @endcond
 
@@ -87,11 +87,11 @@ private:
     vcpu *m_vcpu;
 
     bool handle_init_assert(
-        gsl::not_null<vmcs_t *> vmcs, wrmsr_handler::info_t &info);
+        gsl::not_null<vcpu_t *> vcpu, wrmsr_handler::info_t &info);
     bool handle_init_deassert(
-        gsl::not_null<vmcs_t *> vmcs, wrmsr_handler::info_t &info);
+        gsl::not_null<vcpu_t *> vcpu, wrmsr_handler::info_t &info);
     bool handle_icr_write(
-        gsl::not_null<vmcs_t *> vmcs, wrmsr_handler::info_t &info);
+        gsl::not_null<vcpu_t *> vcpu, wrmsr_handler::info_t &info);
 
 public:
 

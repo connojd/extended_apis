@@ -85,7 +85,7 @@ wrmsr_handler::pass_through_all_accesses()
 // -----------------------------------------------------------------------------
 
 bool
-wrmsr_handler::handle(gsl::not_null<vmcs_t *> vmcs)
+wrmsr_handler::handle(gsl::not_null<vcpu_t *> vcpu)
 {
 
     // TODO: IMPORTANT!!!
@@ -103,24 +103,24 @@ wrmsr_handler::handle(gsl::not_null<vmcs_t *> vmcs)
 
     const auto &hdlrs =
         m_handlers.find(
-            vmcs->save_state()->rcx
+            vcpu->rcx()
         );
 
     if (GSL_LIKELY(hdlrs != m_handlers.end())) {
 
         struct info_t info = {
-            vmcs->save_state()->rcx,
+            vcpu->rcx(),
             0,
             false,
             false
         };
 
         info.val =
-            ((vmcs->save_state()->rax & 0x00000000FFFFFFFF) << 0) |
-            ((vmcs->save_state()->rdx & 0x00000000FFFFFFFF) << 32);
+            ((vcpu->rax() & 0x00000000FFFFFFFF) << 0) |
+            ((vcpu->rdx() & 0x00000000FFFFFFFF) << 32);
 
         for (const auto &d : hdlrs->second) {
-            if (d(vmcs, info)) {
+            if (d(vcpu, info)) {
 
                 if (!info.ignore_write) {
                     emulate_wrmsr(
@@ -130,7 +130,7 @@ wrmsr_handler::handle(gsl::not_null<vmcs_t *> vmcs)
                 }
 
                 if (!info.ignore_advance) {
-                    return advance(vmcs);
+                    return advance(vcpu);
                 }
 
                 return true;

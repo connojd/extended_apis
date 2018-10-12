@@ -20,9 +20,7 @@
 #define CONTROL_REGISTER_INTEL_X64_EAPIS_H
 
 #include <list>
-
-#include <bfvmm/hve/arch/intel_x64/vmcs.h>
-#include <bfvmm/hve/arch/intel_x64/exit_handler.h>
+#include <bfvmm/hve/arch/intel_x64/vcpu.h>
 
 // -----------------------------------------------------------------------------
 // Exports
@@ -109,7 +107,7 @@ public:
     /// handlers
     ///
     using handler_delegate_t =
-        delegate<bool(gsl::not_null<vmcs_t *>, info_t &)>;
+        delegate<bool(gsl::not_null<vcpu_t *>, info_t &)>;
 
     /// Constructor
     ///
@@ -222,20 +220,20 @@ public:
 
     /// @cond
 
-    bool handle(gsl::not_null<vmcs_t *> vmcs);
+    bool handle(gsl::not_null<vcpu_t *> vcpu);
 
     /// @endcond
 
 private:
 
-    bool handle_cr0(gsl::not_null<vmcs_t *> vmcs);
-    bool handle_cr3(gsl::not_null<vmcs_t *> vmcs);
-    bool handle_cr4(gsl::not_null<vmcs_t *> vmcs);
+    bool handle_cr0(gsl::not_null<vcpu_t *> vcpu);
+    bool handle_cr3(gsl::not_null<vcpu_t *> vcpu);
+    bool handle_cr4(gsl::not_null<vcpu_t *> vcpu);
 
-    bool handle_wrcr0(gsl::not_null<vmcs_t *> vmcs);
-    bool handle_rdcr3(gsl::not_null<vmcs_t *> vmcs);
-    bool handle_wrcr3(gsl::not_null<vmcs_t *> vmcs);
-    bool handle_wrcr4(gsl::not_null<vmcs_t *> vmcs);
+    bool handle_wrcr0(gsl::not_null<vcpu_t *> vcpu);
+    bool handle_rdcr3(gsl::not_null<vcpu_t *> vcpu);
+    bool handle_wrcr3(gsl::not_null<vcpu_t *> vcpu);
+    bool handle_wrcr4(gsl::not_null<vcpu_t *> vcpu);
 
 private:
 

@@ -101,7 +101,7 @@ public:
     /// handlers
     ///
     using handler_delegate_t =
-        delegate<bool(gsl::not_null<vmcs_t *>, info_t &)>;
+        delegate<bool(gsl::not_null<vcpu_t *>, info_t &)>;
 
     /// Constructor
     ///
@@ -153,15 +153,15 @@ public:
 
     /// @cond
 
-    bool handle(gsl::not_null<vmcs_t *> vmcs);
+    bool handle(gsl::not_null<vcpu_t *> vcpu);
 
     /// @endcond
 
 private:
 
-    bool handle_read(gsl::not_null<vmcs_t *> vmcs, info_t &info);
-    bool handle_write(gsl::not_null<vmcs_t *> vmcs, info_t &info);
-    bool handle_execute(gsl::not_null<vmcs_t *> vmcs, info_t &info);
+    bool handle_read(gsl::not_null<vcpu_t *> vcpu, info_t &info);
+    bool handle_write(gsl::not_null<vcpu_t *> vcpu, info_t &info);
+    bool handle_execute(gsl::not_null<vcpu_t *> vcpu, info_t &info);
 
 private:
 

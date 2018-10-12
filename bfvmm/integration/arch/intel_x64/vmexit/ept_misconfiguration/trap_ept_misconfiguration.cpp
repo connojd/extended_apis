@@ -56,9 +56,9 @@ public:
 
     bool
     test_misconfiguration_handler(
-        gsl::not_null<vmcs_t *> vmcs, ept_misconfiguration_handler::info_t &info)
+        gsl::not_null<vcpu_t *> vcpu, ept_misconfiguration_handler::info_t &info)
     {
-        bfignored(vmcs);
+        bfignored(vcpu);
         bfignored(info);
 
         bfdebug_pass(0, "test");

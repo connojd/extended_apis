@@ -85,7 +85,7 @@ rdmsr_handler::pass_through_all_accesses()
 // -----------------------------------------------------------------------------
 
 bool
-rdmsr_handler::handle(gsl::not_null<vmcs_t *> vmcs)
+rdmsr_handler::handle(gsl::not_null<vcpu_t *> vcpu)
 {
 
     // TODO: IMPORTANT!!!
@@ -103,13 +103,13 @@ rdmsr_handler::handle(gsl::not_null<vmcs_t *> vmcs)
 
     const auto &hdlrs =
         m_handlers.find(
-            vmcs->save_state()->rcx
+            vcpu->rcx()
         );
 
     if (GSL_LIKELY(hdlrs != m_handlers.end())) {
 
         struct info_t info = {
-            vmcs->save_state()->rcx,
+            vcpu->rcx(),
             0,
             false,
             false
@@ -117,19 +117,19 @@ rdmsr_handler::handle(gsl::not_null<vmcs_t *> vmcs)
 
         info.val =
             emulate_rdmsr(
-                gsl::narrow_cast<::x64::msrs::field_type>(vmcs->save_state()->rcx)
+                gsl::narrow_cast<::x64::msrs::field_type>(vcpu->rcx())
             );
 
         for (const auto &d : hdlrs->second) {
-            if (d(vmcs, info)) {
+            if (d(vcpu, info)) {
 
                 if (!info.ignore_write) {
-                    vmcs->save_state()->rax = ((info.val >> 0x00) & 0x00000000FFFFFFFF);
-                    vmcs->save_state()->rdx = ((info.val >> 0x20) & 0x00000000FFFFFFFF);
+                    vcpu->set_rax(((info.val >> 0x00) & 0x00000000FFFFFFFF));
+                    vcpu->set_rdx(((info.val >> 0x20) & 0x00000000FFFFFFFF));
                 }
 
                 if (!info.ignore_advance) {
-                    return advance(vmcs);
+                    return advance(vcpu);
                 }
 
                 return true;

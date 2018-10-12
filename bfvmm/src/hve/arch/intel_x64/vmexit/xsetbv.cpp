@@ -47,7 +47,7 @@ xsetbv_handler::add_handler(const handler_delegate_t &d)
 // -----------------------------------------------------------------------------
 
 bool
-xsetbv_handler::handle(gsl::not_null<vmcs_t *> vmcs)
+xsetbv_handler::handle(gsl::not_null<vcpu_t *> vcpu)
 {
     struct info_t info = {
         0,
@@ -55,11 +55,11 @@ xsetbv_handler::handle(gsl::not_null<vmcs_t *> vmcs)
         false
     };
 
-    info.val |= ((vmcs->save_state()->rax & 0x00000000FFFFFFFF) << 0x00);
-    info.val |= ((vmcs->save_state()->rdx & 0x00000000FFFFFFFF) << 0x20);
+    info.val |= ((vcpu->rax() & 0x00000000FFFFFFFF) << 0x00);
+    info.val |= ((vcpu->rdx() & 0x00000000FFFFFFFF) << 0x20);
 
     for (const auto &d : m_handlers) {
-        if (d(vmcs, info)) {
+        if (d(vcpu, info)) {
             break;
         }
     }
@@ -69,7 +69,7 @@ xsetbv_handler::handle(gsl::not_null<vmcs_t *> vmcs)
     }
 
     if (!info.ignore_advance) {
-        return advance(vmcs);
+        return advance(vcpu);
     }
 
     return true;

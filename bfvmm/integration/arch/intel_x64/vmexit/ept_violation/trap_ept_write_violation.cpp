@@ -77,9 +77,9 @@ public:
 
     bool
     test_write_violation_handler(
-        gsl::not_null<vmcs_t *> vmcs, ept_violation_handler::info_t &info)
+        gsl::not_null<vcpu_t *> vcpu, ept_violation_handler::info_t &info)
     {
-        bfignored(vmcs);
+        bfignored(vcpu);
         bfignored(info);
 
         bfdebug_info(0, "disabling EPT");

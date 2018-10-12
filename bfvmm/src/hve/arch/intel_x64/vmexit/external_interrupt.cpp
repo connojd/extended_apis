@@ -62,14 +62,14 @@ external_interrupt_handler::disable_exiting()
 // -----------------------------------------------------------------------------
 
 bool
-external_interrupt_handler::handle(gsl::not_null<vmcs_t *> vmcs)
+external_interrupt_handler::handle(gsl::not_null<vcpu_t *> vcpu)
 {
     struct info_t info = {
         vmcs_n::vm_exit_interruption_information::vector::get()
     };
 
     for (const auto &d : m_handlers) {
-        if (d(vmcs, info)) {
+        if (d(vcpu, info)) {
             return true;
         }
     }

@@ -50,10 +50,10 @@ emulate_ia_32e_mode_switch(
 
 static bool
 default_wrcr0_handler(
-    gsl::not_null<vmcs_t *> vmcs, control_register_handler::info_t &info)
+    gsl::not_null<vcpu_t *> vcpu, control_register_handler::info_t &info)
 {
     using namespace vmcs_n::guest_cr0;
-    bfignored(vmcs);
+    bfignored(vcpu);
 
     if (paging::is_enabled() != paging::is_enabled(info.val)) {
         return emulate_ia_32e_mode_switch(info);
@@ -64,9 +64,9 @@ default_wrcr0_handler(
 
 static bool
 default_rdcr3_handler(
-    gsl::not_null<vmcs_t *> vmcs, control_register_handler::info_t &info)
+    gsl::not_null<vcpu_t *> vcpu, control_register_handler::info_t &info)
 {
-    bfignored(vmcs);
+    bfignored(vcpu);
     bfignored(info);
 
     return true;
@@ -74,9 +74,9 @@ default_rdcr3_handler(
 
 static bool
 default_wrcr3_handler(
-    gsl::not_null<vmcs_t *> vmcs, control_register_handler::info_t &info)
+    gsl::not_null<vcpu_t *> vcpu, control_register_handler::info_t &info)
 {
-    bfignored(vmcs);
+    bfignored(vcpu);
     bfignored(info);
 
     ::intel_x64::vmx::invept_global();
@@ -85,9 +85,9 @@ default_wrcr3_handler(
 
 static bool
 default_wrcr4_handler(
-    gsl::not_null<vmcs_t *> vmcs, control_register_handler::info_t &info)
+    gsl::not_null<vcpu_t *> vcpu, control_register_handler::info_t &info)
 {
-    bfignored(vmcs);
+    bfignored(vcpu);
     bfignored(info);
 
     return true;
@@ -190,19 +190,19 @@ control_register_handler::enable_wrcr4_exiting(
 // -----------------------------------------------------------------------------
 
 bool
-control_register_handler::handle(gsl::not_null<vmcs_t *> vmcs)
+control_register_handler::handle(gsl::not_null<vcpu_t *> vcpu)
 {
     using namespace vmcs_n::exit_qualification::control_register_access;
 
     switch (control_register_number::get()) {
         case 0:
-            return handle_cr0(vmcs);
+            return handle_cr0(vcpu);
 
         case 3:
-            return handle_cr3(vmcs);
+            return handle_cr3(vcpu);
 
         case 4:
-            return handle_cr4(vmcs);
+            return handle_cr4(vcpu);
 
         default:
             throw std::runtime_error(
@@ -212,13 +212,13 @@ control_register_handler::handle(gsl::not_null<vmcs_t *> vmcs)
 }
 
 bool
-control_register_handler::handle_cr0(gsl::not_null<vmcs_t *> vmcs)
+control_register_handler::handle_cr0(gsl::not_null<vcpu_t *> vcpu)
 {
     using namespace vmcs_n::exit_qualification::control_register_access;
 
     switch (access_type::get()) {
         case access_type::mov_to_cr:
-            return handle_wrcr0(vmcs);
+            return handle_wrcr0(vcpu);
 
         case access_type::mov_from_cr:
             throw std::runtime_error(
@@ -238,16 +238,16 @@ control_register_handler::handle_cr0(gsl::not_null<vmcs_t *> vmcs)
 }
 
 bool
-control_register_handler::handle_cr3(gsl::not_null<vmcs_t *> vmcs)
+control_register_handler::handle_cr3(gsl::not_null<vcpu_t *> vcpu)
 {
     using namespace vmcs_n::exit_qualification::control_register_access;
 
     switch (access_type::get()) {
         case access_type::mov_to_cr:
-            return handle_wrcr3(vmcs);
+            return handle_wrcr3(vcpu);
 
         case access_type::mov_from_cr:
-            return handle_rdcr3(vmcs);
+            return handle_rdcr3(vcpu);
 
         case access_type::clts:
             throw std::runtime_error(
@@ -262,13 +262,13 @@ control_register_handler::handle_cr3(gsl::not_null<vmcs_t *> vmcs)
 }
 
 bool
-control_register_handler::handle_cr4(gsl::not_null<vmcs_t *> vmcs)
+control_register_handler::handle_cr4(gsl::not_null<vcpu_t *> vcpu)
 {
     using namespace vmcs_n::exit_qualification::control_register_access;
 
     switch (access_type::get()) {
         case access_type::mov_to_cr:
-            return handle_wrcr4(vmcs);
+            return handle_wrcr4(vcpu);
 
         case access_type::mov_from_cr:
             throw std::runtime_error(
@@ -288,10 +288,10 @@ control_register_handler::handle_cr4(gsl::not_null<vmcs_t *> vmcs)
 }
 
 bool
-control_register_handler::handle_wrcr0(gsl::not_null<vmcs_t *> vmcs)
+control_register_handler::handle_wrcr0(gsl::not_null<vcpu_t *> vcpu)
 {
     struct info_t info = {
-        emulate_rdgpr(vmcs),
+        emulate_rdgpr(vcpu),
         vmcs_n::cr0_read_shadow::get(),
         false,
         false
@@ -301,7 +301,7 @@ control_register_handler::handle_wrcr0(gsl::not_null<vmcs_t *> vmcs)
     info.val |= m_vcpu->global_state()->ia32_vmx_cr0_fixed0;
 
     for (const auto &d : m_wrcr0_handlers) {
-        if (d(vmcs, info)) {
+        if (d(vcpu, info)) {
             break;
         }
     }
@@ -312,14 +312,14 @@ control_register_handler::handle_wrcr0(gsl::not_null<vmcs_t *> vmcs)
     }
 
     if (!info.ignore_advance) {
-        return advance(vmcs);
+        return advance(vcpu);
     }
 
     return true;
 }
 
 bool
-control_register_handler::handle_rdcr3(gsl::not_null<vmcs_t *> vmcs)
+control_register_handler::handle_rdcr3(gsl::not_null<vcpu_t *> vcpu)
 {
     struct info_t info = {
         vmcs_n::guest_cr3::get(),
@@ -329,34 +329,34 @@ control_register_handler::handle_rdcr3(gsl::not_null<vmcs_t *> vmcs)
     };
 
     for (const auto &d : m_rdcr3_handlers) {
-        if (d(vmcs, info)) {
+        if (d(vcpu, info)) {
             break;
         }
     }
 
     if (!info.ignore_write) {
-        emulate_wrgpr(vmcs, info.val);
+        emulate_wrgpr(vcpu, info.val);
     }
 
     if (!info.ignore_advance) {
-        return advance(vmcs);
+        return advance(vcpu);
     }
 
     return true;
 }
 
 bool
-control_register_handler::handle_wrcr3(gsl::not_null<vmcs_t *> vmcs)
+control_register_handler::handle_wrcr3(gsl::not_null<vcpu_t *> vcpu)
 {
     struct info_t info = {
-        emulate_rdgpr(vmcs),
+        emulate_rdgpr(vcpu),
         0,
         false,
         false
     };
 
     for (const auto &d : m_wrcr3_handlers) {
-        if (d(vmcs, info)) {
+        if (d(vcpu, info)) {
             break;
         }
     }
@@ -366,17 +366,17 @@ control_register_handler::handle_wrcr3(gsl::not_null<vmcs_t *> vmcs)
     }
 
     if (!info.ignore_advance) {
-        return advance(vmcs);
+        return advance(vcpu);
     }
 
     return true;
 }
 
 bool
-control_register_handler::handle_wrcr4(gsl::not_null<vmcs_t *> vmcs)
+control_register_handler::handle_wrcr4(gsl::not_null<vcpu_t *> vcpu)
 {
     struct info_t info = {
-        emulate_rdgpr(vmcs),
+        emulate_rdgpr(vcpu),
         vmcs_n::cr4_read_shadow::get(),
         false,
         false
@@ -386,7 +386,7 @@ control_register_handler::handle_wrcr4(gsl::not_null<vmcs_t *> vmcs)
     info.val |= m_vcpu->global_state()->ia32_vmx_cr4_fixed0;
 
     for (const auto &d : m_wrcr4_handlers) {
-        if (d(vmcs, info)) {
+        if (d(vcpu, info)) {
             break;
         }
     }
@@ -397,7 +397,7 @@ control_register_handler::handle_wrcr4(gsl::not_null<vmcs_t *> vmcs)
     }
 
     if (!info.ignore_advance) {
-        return advance(vmcs);
+        return advance(vcpu);
     }
 
     return true;
