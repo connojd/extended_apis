@@ -20,7 +20,6 @@
 
 #include <bfvmm/vcpu/vcpu_factory.h>
 #include <eapis/hve/arch/intel_x64/vcpu.h>
-#include <bfvmm/memory_manager/arch/x64/unique_map.h>
 
 using namespace eapis::intel_x64;
 
@@ -85,8 +84,8 @@ public:
 
         bfn::call_once(flag, [&] {
             auto cr3 = intel_x64::vmcs::guest_cr3::get();
-            auto gpa1 = bfvmm::x64::virt_to_phys_with_cr3(buffer1.data(), cr3);
-            auto gpa2 = bfvmm::x64::virt_to_phys_with_cr3(buffer2.data(), cr3);
+            auto [gpa1, unused1] = bfvmm::x64::cr3::gva_to_gpa(buffer1.data(), cr3);
+            auto [gpa2, unused2] = bfvmm::x64::cr3::gva_to_gpa(buffer2.data(), cr3);
 
             auto gpa1_2m = bfn::upper(gpa1, ::intel_x64::ept::pd::from);
             auto gpa1_4k = bfn::upper(gpa1, ::intel_x64::ept::pt::from);
