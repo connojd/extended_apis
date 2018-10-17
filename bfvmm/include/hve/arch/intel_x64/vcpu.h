@@ -177,11 +177,20 @@ public:
     /// @ensures
     ///
     /// @param leaf the leaf to call d on
-    /// @param d the delegate to call when the guest executes CPUID at the given
-    ///        leaf and subleaf
+    /// @param d the delegate to call when the guest executes CPUID
     ///
     VIRTUAL void add_cpuid_handler(
         cpuid_handler::leaf_t leaf, const cpuid_handler::handler_delegate_t &d);
+
+    /// Add CPUID Default Handler
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param d the delegate to call when the guest executes CPUID
+    ///
+    VIRTUAL void add_default_cpuid_handler(
+        const ::handler_delegate_t &d);
 
     //--------------------------------------------------------------------------
     // EPT Misconfiguration
@@ -382,6 +391,16 @@ public:
     VIRTUAL void add_rdmsr_handler(
         vmcs_n::value_type msr, const rdmsr_handler::handler_delegate_t &d);
 
+    /// Add Read MSR Default Handler
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param d the delegate to call when the guest executes rdmsr
+    ///
+    VIRTUAL void add_default_rdmsr_handler(
+        const ::handler_delegate_t &d);
+
     //--------------------------------------------------------------------------
     // Write MSR
     //--------------------------------------------------------------------------
@@ -436,6 +455,16 @@ public:
     ///
     VIRTUAL void add_wrmsr_handler(
         vmcs_n::value_type msr, const wrmsr_handler::handler_delegate_t &d);
+
+    /// Add Write MSR Default Handler
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param d the delegate to call when the guest executes wrmsr
+    ///
+    VIRTUAL void add_default_wrmsr_handler(
+        const ::handler_delegate_t &d);
 
     //--------------------------------------------------------------------------
     // XSetBV

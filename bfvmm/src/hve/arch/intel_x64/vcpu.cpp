@@ -143,6 +143,11 @@ vcpu::add_cpuid_handler(
     cpuid_handler::leaf_t leaf, const cpuid_handler::handler_delegate_t &d)
 { m_cpuid_handler.add_handler(leaf, std::move(d)); }
 
+void
+vcpu::add_default_cpuid_handler(
+    const ::handler_delegate_t &d)
+{ m_cpuid_handler.set_default_handler(std::move(d)); }
+
 //--------------------------------------------------------------------------
 // EPT Misconfiguration
 //--------------------------------------------------------------------------
@@ -258,6 +263,11 @@ vcpu::add_rdmsr_handler(
     m_rdmsr_handler.add_handler(msr, std::move(d));
 }
 
+void
+vcpu::add_default_rdmsr_handler(
+    const ::handler_delegate_t &d)
+{ m_rdmsr_handler.set_default_handler(std::move(d)); }
+
 //--------------------------------------------------------------------------
 // Write MSR
 //--------------------------------------------------------------------------
@@ -285,6 +295,11 @@ vcpu::add_wrmsr_handler(
     m_wrmsr_handler.trap_on_access(msr);
     m_wrmsr_handler.add_handler(msr, std::move(d));
 }
+
+void
+vcpu::add_default_wrmsr_handler(
+    const ::handler_delegate_t &d)
+{ m_wrmsr_handler.set_default_handler(std::move(d)); }
 
 //--------------------------------------------------------------------------
 // XSetBV

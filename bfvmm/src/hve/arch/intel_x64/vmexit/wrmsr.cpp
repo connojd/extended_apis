@@ -36,13 +36,22 @@ wrmsr_handler::wrmsr_handler(
 }
 
 // -----------------------------------------------------------------------------
-// Add Handler / Enablers
+// Add Handler
 // -----------------------------------------------------------------------------
 
 void
 wrmsr_handler::add_handler(
     vmcs_n::value_type msr, const handler_delegate_t &d)
 { m_handlers[msr].push_front(d); }
+
+void
+wrmsr_handler::set_default_handler(
+    const ::handler_delegate_t &d)
+{ m_default_handler = d; }
+
+// -----------------------------------------------------------------------------
+// Enablers
+// -----------------------------------------------------------------------------
 
 void
 wrmsr_handler::trap_on_access(vmcs_n::value_type msr)
@@ -136,6 +145,10 @@ wrmsr_handler::handle(gsl::not_null<vcpu_t *> vcpu)
                 return true;
             }
         }
+    }
+
+    if (m_default_handler.is_valid()) {
+        return m_default_handler(vcpu);
     }
 
     return false;

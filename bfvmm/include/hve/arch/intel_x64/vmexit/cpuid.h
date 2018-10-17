@@ -134,12 +134,7 @@ public:
 
 public:
 
-    /// Add CPUID Handler
-    ///
-    /// @note the handler is called only for the (leaf, subleaf)
-    ///       pairs passed into this function. If you need to handle
-    ///       accesses to leaf not at subleaf, you will need to make
-    ///       additional calls with the appropriate subleaves
+    /// Add Handler
     ///
     /// @expects
     /// @ensures
@@ -148,6 +143,24 @@ public:
     /// @param d the handler to call when an exit occurs
     ///
     void add_handler(leaf_t leaf, const handler_delegate_t &d);
+
+    /// Add Default Handler
+    ///
+    /// This is called when no registered handlers have been called and
+    /// the internal implementation is needed. Note that this function
+    /// can still return false and let the internal implementation pass
+    /// the instruction through
+    ///
+    /// Also note that the handler registered here is a base exit handler
+    /// delegate. The info structure is not passed, and therefor,
+    /// no emulation is provided to this handler.
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param d the handler to call when an exit occurs
+    ///
+    void set_default_handler(const ::handler_delegate_t &d);
 
 public:
 
@@ -160,6 +173,8 @@ public:
 private:
 
     vcpu *m_vcpu;
+
+    ::handler_delegate_t m_default_handler;
     std::unordered_map<leaf_t, std::list<handler_delegate_t>> m_handlers;
 
 public:

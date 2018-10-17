@@ -61,9 +61,15 @@ cpuid_handler::cpuid_handler(
 // Add Handler / Enablers
 // -----------------------------------------------------------------------------
 
-void cpuid_handler::add_handler(
+void
+cpuid_handler::add_handler(
     leaf_t leaf, const handler_delegate_t &d)
 { m_handlers[leaf].push_front(d); }
+
+void
+cpuid_handler::set_default_handler(
+    const ::handler_delegate_t &d)
+{ m_default_handler = d; }
 
 // -----------------------------------------------------------------------------
 // Handlers
@@ -106,6 +112,10 @@ cpuid_handler::handle(gsl::not_null<vcpu_t *> vcpu)
                 return true;
             }
         }
+    }
+
+    if (m_default_handler.is_valid()) {
+        return m_default_handler(vcpu);
     }
 
     return false;

@@ -138,6 +138,26 @@ public:
     void add_handler(
         vmcs_n::value_type msr, const handler_delegate_t &d);
 
+    /// Add Default Handler
+    ///
+    /// This is called when no registered handlers have been called and
+    /// the internal implementation is needed. Note that this function
+    /// can still return false and let the internal implementation pass
+    /// the instruction through
+    ///
+    /// Also note that the handler registered here is a base exit handler
+    /// delegate. The info structure is not passed, and therefor,
+    /// no emulation is provided to this handler.
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param d the handler to call when an exit occurs
+    ///
+    void set_default_handler(const ::handler_delegate_t &d);
+
+public:
+
     /// Trap On Access
     ///
     /// Sets a '1' in the MSR bitmap corresponding with the provided msr. All
@@ -217,8 +237,9 @@ public:
 private:
 
     vcpu *m_vcpu;
-
     gsl::span<uint8_t> m_msr_bitmap;
+
+    ::handler_delegate_t m_default_handler;
     std::unordered_map<vmcs_n::value_type, std::list<handler_delegate_t>> m_handlers;
 
 public:

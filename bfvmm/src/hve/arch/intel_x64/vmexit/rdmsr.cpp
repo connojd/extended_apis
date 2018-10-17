@@ -45,6 +45,15 @@ rdmsr_handler::add_handler(
 { m_handlers[msr].push_front(d); }
 
 void
+rdmsr_handler::set_default_handler(
+    const ::handler_delegate_t &d)
+{ m_default_handler = d; }
+
+// -----------------------------------------------------------------------------
+// Enablers
+// -----------------------------------------------------------------------------
+
+void
 rdmsr_handler::trap_on_access(vmcs_n::value_type msr)
 {
     if (msr <= 0x00001FFFUL) {
@@ -135,6 +144,10 @@ rdmsr_handler::handle(gsl::not_null<vcpu_t *> vcpu)
                 return true;
             }
         }
+    }
+
+    if (m_default_handler.is_valid()) {
+        return m_default_handler(vcpu);
     }
 
     return false;
