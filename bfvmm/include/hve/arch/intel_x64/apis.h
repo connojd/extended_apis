@@ -31,6 +31,7 @@
 #include "vmexit/mov_dr.h"
 #include "vmexit/rdmsr.h"
 #include "vmexit/sipi_signal.h"
+#include "vmexit/vmx_preemption_timer.h"
 #include "vmexit/wrmsr.h"
 #include "vmexit/xsetbv.h"
 
@@ -664,6 +665,64 @@ public:
         vmcs_n::value_type msr, const wrmsr_handler::handler_delegate_t &d);
 
     //--------------------------------------------------------------------------
+    // VMX-preemption Timer
+    //--------------------------------------------------------------------------
+
+    /// Get VMX-preemption Timer Object
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @return Returns the VMX-preeemption timer handler stored in the apis if
+    ///     VMX-preemption timer trapping is enabled, otherwise an exception
+    ///     is thrown
+    ///
+    gsl::not_null<vmx_preemption_timer_handler *> vmx_preemption_timer();
+
+    /// Add VMX-preemption Timer Handler
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param d the delegate to call when a VMX-preemption timer exit occurs
+    ///
+    VIRTUAL void add_vmx_preemption_timer_handler(
+        const vmx_preemption_timer_handler::handler_delegate_t &d);
+
+    /// Enable VMX-preemption Timer
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    VIRTUAL void enable_vmx_preemption_timer();
+
+    /// Disable VMX-preemption Timer
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    VIRTUAL void disable_vmx_preemption_timer();
+
+    /// Set VMX-preemption Timer
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param val the value of the timer to write
+    ///
+    VIRTUAL void set_vmx_preemption_timer(
+        vmx_preemption_timer_handler::value_t val);
+
+    /// Get VMX-preemption Timer
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @return the current value of the timer
+    ///
+    VIRTUAL vmx_preemption_timer_handler::value_t get_vmx_preemption_timer();
+
+    //--------------------------------------------------------------------------
     // XSetBV
     //--------------------------------------------------------------------------
 
@@ -745,6 +804,7 @@ private:
     ept_handler m_ept_handler;
     microcode_handler m_microcode_handler;
     vpid_handler m_vpid_handler;
+    vmx_preemption_timer_handler m_vmx_preemption_timer_handler;
 
 private:
 

@@ -53,7 +53,8 @@ apis::apis(
 
     m_ept_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
     m_microcode_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
-    m_vpid_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()}
+    m_vpid_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()},
+    m_vmx_preemption_timer_handler{this, eapis_vcpu_state->eapis_vcpu_global_state()}
 {
     using namespace vmcs_n;
 
@@ -350,6 +351,35 @@ apis::add_wrmsr_handler(
     m_wrmsr_handler.trap_on_access(msr);
     m_wrmsr_handler.add_handler(msr, std::move(d));
 }
+
+//--------------------------------------------------------------------------
+// VMX-preemption Timer
+//----------------------------------------------------------------- ---------
+
+gsl::not_null<vmx_preemption_timer_handler *>
+apis::vmx_preemption_timer()
+{ return &m_vmx_preemption_timer_handler; }
+
+void
+apis::add_vmx_preemption_timer_handler(
+    const vmx_preemption_timer_handler::handler_delegate_t &d)
+{ m_vmx_preemption_timer_handler.add_handler(std::move(d)); }
+
+void
+apis::enable_vmx_preemption_timer()
+{ m_vmx_preemption_timer_handler.enable_exiting(); }
+
+void
+apis::disable_vmx_preemption_timer()
+{ m_vmx_preemption_timer_handler.disable_exiting(); }
+
+void
+apis::set_vmx_preemption_timer(vmx_preemption_timer_handler::value_t val)
+{ m_vmx_preemption_timer_handler.set_timer(val); }
+
+vmx_preemption_timer_handler::value_t
+apis::get_vmx_preemption_timer()
+{ return m_vmx_preemption_timer_handler.get_timer(); }
 
 //--------------------------------------------------------------------------
 // XSetBV
