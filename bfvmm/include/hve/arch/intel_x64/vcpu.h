@@ -41,6 +41,10 @@
 #include "vcpu_global_state.h"
 #include "vpid.h"
 
+//------------------------------------------------------------------------------
+// Definition
+//------------------------------------------------------------------------------
+
 namespace eapis::intel_x64
 {
 
@@ -524,6 +528,42 @@ private:
     friend class rdmsr_handler;
     friend class wrmsr_handler;
 };
+
+//------------------------------------------------------------------------------
+// Helpers
+//------------------------------------------------------------------------------
+
+// Note:
+//
+// Undefine previously defined helper macros. Note that these are used by
+// each extension to provide quick access to the vcpu in the extension. If
+// include files are not handled properly, you could end up with the wrong
+// vcpu, resulting in compilation errors
+//
+
+#ifdef get_vcpu
+#undef get_vcpu
+#endif
+
+#ifdef vcpu_cast
+#undef vcpu_cast
+#endif
+
+/// Get Guest vCPU
+///
+/// Gets a guest vCPU from the vCPU manager given a vcpuid
+///
+/// @expects
+/// @ensures
+///
+/// @return returns a pointer to the vCPU being queried or throws
+///     and exception.
+///
+#define get_vcpu(a) \
+    g_vcm->get<eapis::intel_x64::vcpu *>(a, __FILE__ ": invalid eapis vcpuid")
+
+#define vcpu_cast(a) \
+    static_cast<eapis::intel_x64::vcpu *>(a.get())
 
 }
 

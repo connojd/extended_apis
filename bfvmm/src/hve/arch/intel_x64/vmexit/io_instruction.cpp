@@ -280,7 +280,7 @@ io_instruction_handler::load_operand(
         switch (info.size_of_access) {
             case io_instruction::size_of_access::one_byte: {
                 auto map =
-                    map_gva_4k<uint8_t>(
+                    bfvmm::x64::map_gva_4k<uint8_t>(
                         info.address,
                         vmcs_n::guest_cr3::get(),
                         info.size_of_access
@@ -292,7 +292,7 @@ io_instruction_handler::load_operand(
 
             case io_instruction::size_of_access::two_byte: {
                 auto map =
-                    map_gva_4k<uint16_t>(
+                    bfvmm::x64::map_gva_4k<uint16_t>(
                         info.address,
                         vmcs_n::guest_cr3::get(),
                         info.size_of_access
@@ -304,7 +304,7 @@ io_instruction_handler::load_operand(
 
             default: {
                 auto map =
-                    map_gva_4k<uint32_t>(
+                    bfvmm::x64::map_gva_4k<uint32_t>(
                         info.address,
                         vmcs_n::guest_cr3::get(),
                         info.size_of_access
@@ -342,7 +342,7 @@ io_instruction_handler::store_operand(
         switch (info.size_of_access) {
             case io_instruction::size_of_access::one_byte: {
                 auto map =
-                    map_gva_4k<uint8_t>(
+                    bfvmm::x64::map_gva_4k<uint8_t>(
                         info.address,
                         vmcs_n::guest_cr3::get(),
                         info.size_of_access
@@ -354,7 +354,7 @@ io_instruction_handler::store_operand(
 
             case io_instruction::size_of_access::two_byte: {
                 auto map =
-                    map_gva_4k<uint16_t>(
+                    bfvmm::x64::map_gva_4k<uint16_t>(
                         info.address,
                         vmcs_n::guest_cr3::get(),
                         info.size_of_access
@@ -366,7 +366,7 @@ io_instruction_handler::store_operand(
 
             default: {
                 auto map =
-                    map_gva_4k<uint32_t>(
+                    bfvmm::x64::map_gva_4k<uint32_t>(
                         info.address,
                         vmcs_n::guest_cr3::get(),
                         info.size_of_access

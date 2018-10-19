@@ -84,8 +84,8 @@ public:
 
         bfn::call_once(flag, [&] {
             auto cr3 = intel_x64::vmcs::guest_cr3::get();
-            auto [gpa1, unused1] = bfvmm::x64::cr3::gva_to_gpa(buffer1.data(), cr3);
-            auto [gpa2, unused2] = bfvmm::x64::cr3::gva_to_gpa(buffer2.data(), cr3);
+            auto [gpa1, unused1] = bfvmm::x64::gva_to_gpa(buffer1.data(), cr3);
+            auto [gpa2, unused2] = bfvmm::x64::gva_to_gpa(buffer2.data(), cr3);
 
             auto gpa1_2m = bfn::upper(gpa1, ::intel_x64::ept::pd::from);
             auto gpa1_4k = bfn::upper(gpa1, ::intel_x64::ept::pt::from);
