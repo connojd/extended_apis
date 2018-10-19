@@ -403,7 +403,7 @@ public:
     /// @param virt_addr the virtual address to be converted
     /// @return returns entry for the map
     ///
-    std::pair<entry_type &, uintptr_t>
+    std::pair<std::reference_wrapper<entry_type>, uintptr_t>
     entry(void *virt_addr)
     {
         std::lock_guard lock(m_mutex);
@@ -449,7 +449,8 @@ public:
     /// @param virt_addr the virtual address to be converted
     /// @return returns entry for the map
     ///
-    inline std::pair<entry_type &, uintptr_t> entry(virt_addr_t virt_addr)
+    inline std::pair<std::reference_wrapper<entry_type>, uintptr_t>
+    entry(virt_addr_t virt_addr)
     { return entry(reinterpret_cast<void *>(virt_addr)); }
 
     /// Virtual Address to Physical Address

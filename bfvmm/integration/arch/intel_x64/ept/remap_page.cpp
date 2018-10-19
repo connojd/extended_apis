@@ -101,7 +101,7 @@ public:
                 gpa1_2m
             );
 
-            auto &pte = g_guest_map.entry(gpa1_4k);
+            auto [pte, unused] = g_guest_map.entry(gpa1_4k);
             ::intel_x64::ept::pt::entry::phys_addr::set(pte, gpa2_4k);
         });
 

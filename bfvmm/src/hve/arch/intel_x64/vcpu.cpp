@@ -74,11 +74,17 @@ vcpu::vcpu(
 
 void
 vcpu::set_eptp(ept::mmap &map)
-{ m_ept_handler.set_eptp(&map); }
+{
+    m_ept_handler.set_eptp(&map);
+    m_mmap = &map;
+}
 
 void
 vcpu::disable_ept()
-{ m_ept_handler.set_eptp(nullptr); }
+{
+    m_ept_handler.set_eptp(nullptr);
+    m_mmap = nullptr;
+}
 
 //--------------------------------------------------------------------------
 // VPID
@@ -309,5 +315,100 @@ void
 vcpu::add_xsetbv_handler(
     const xsetbv_handler::handler_delegate_t &d)
 { m_xsetbv_handler.add_handler(std::move(d)); }
+
+//==============================================================================
+// Memory Mapping
+//==============================================================================
+
+/// TODO
+///
+/// There are several things that still need to be implemented for memory
+/// mapping to make this a complete set of APIs.
+/// - Currently, there is no support for a 32bit guest. We currently assume
+///   that CR3 is 64bit.
+/// - Currently, there is no support for paging being disabled.
+/// - Currently, we have a lot of support for the different page sizes, but
+///   we do not handle them in the guest WRT to mapping a GVA to the VMM. We
+///   only support 4k granularity.
+
+uintptr_t
+vcpu::get_entry(
+    uintptr_t tble_gpa, std::ptrdiff_t index)
+{
+    auto tble = this->map_gpa_4k<uintptr_t>(tble_gpa);
+    auto span = gsl::span(tble.get(), ::x64::pt::num_entries);
+
+    return span[index];
+}
+
+std::pair<uintptr_t, uintptr_t>
+vcpu::gpa_to_hpa(uintptr_t gpa)
+{
+    if (m_mmap == nullptr) {
+        return {gpa, 0};
+    }
+
+    return m_mmap->virt_to_phys(gpa);
+}
+
+std::pair<uintptr_t, uintptr_t>
+vcpu::gva_to_gpa(uint64_t gva)
+{
+    std::pair<uintptr_t, uintptr_t> ret;
+
+    if (m_mmap == nullptr) {
+        ret = bfvmm::x64::gva_to_gpa(
+            gva, vmcs_n::guest_cr3::get());
+    }
+    else {
+        ret = bfvmm::x64::gva_to_gpa(
+            gva, vmcs_n::guest_cr3::get(), get_entry_delegate);
+    }
+
+    return ret;
+}
+
+std::pair<uintptr_t, uintptr_t>
+vcpu::gva_to_hpa(uint64_t gva)
+{
+    auto ret = this->gva_to_gpa(gva);
+
+    if (m_mmap == nullptr) {
+        return ret;
+    }
+    else {
+        return this->gpa_to_hpa(ret.first);
+    }
+}
+
+void
+vcpu::map_gpa_to_hpa_1g(uintptr_t gpa, uintptr_t hpa)
+{
+    if (m_mmap == nullptr) {
+        throw std::runtime_error("map_gpa_to_hpa_1g: EPT not set");
+    }
+
+    m_mmap->map_1g(gpa, hpa);
+}
+
+void
+vcpu::map_gpa_to_hpa_2m(uintptr_t gpa, uintptr_t hpa)
+{
+    if (m_mmap == nullptr) {
+        throw std::runtime_error("map_gpa_to_hpa_2m: EPT not set");
+    }
+
+    m_mmap->map_2m(gpa, hpa);
+}
+
+void
+vcpu::map_gpa_to_hpa_4k(uintptr_t gpa, uintptr_t hpa)
+{
+    if (m_mmap == nullptr) {
+        throw std::runtime_error("map_gpa_to_hpa_4k: EPT not set");
+    }
+
+    m_mmap->map_4k(gpa, hpa);
+}
 
 }

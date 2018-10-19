@@ -63,7 +63,7 @@ public:
             ept_violation_handler::handler_delegate_t::create<vcpu, &vcpu::test_read_violation_handler>(this)
         );
 
-        auto &pte =
+        auto [pte, unused] =
             g_guest_map.entry(
                 g_mm->virtptr_to_physint(buffer.data())
             );
