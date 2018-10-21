@@ -38,5 +38,4 @@ add_vmm_executable(
     eapis_bfvmm
     SOURCES ${SOURCES}
     LIBRARIES eapis_hve
-    LIBRARIES capstone
 )

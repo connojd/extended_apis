@@ -32,7 +32,7 @@ add_project_include(${EAPIS_SOURCE_CMAKE_DIR}/macros.cmake)
 # General Dependencies
 # ------------------------------------------------------------------------------
 
-include_dependency(EAPIS_SOURCE_DEPENDS_DIR capstone)
+include_dependency(EAPIS_SOURCE_DEPENDS_DIR zydis)
 
 # ------------------------------------------------------------------------------
 # VMM Components
@@ -43,7 +43,6 @@ if(ENABLE_BUILD_VMM)
         eapis_bfvmm vmm
         DEPENDS bfvmm
         DEPENDS bfintrinsics
-        DEPENDS capstone
         SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/bfvmm/src
     )
 
@@ -68,14 +67,12 @@ if(ENABLE_BUILD_TEST)
     add_subproject(
         eapis_bfvmm test
         DEPENDS bfvmm
-        DEPENDS capstone
         SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/bfvmm/tests/
     )
 
     add_subproject(
         eapis_bfsdk test
         DEPENDS bfvmm
-        DEPENDS capstone
         SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/bfsdk/tests/
     )
 endif()

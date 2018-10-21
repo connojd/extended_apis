@@ -56,12 +56,12 @@ set(EAPIS_SOURCE_BFVMM_DIR ${CMAKE_SOURCE_DIR}/../../../bfvmm
 # Links
 # ------------------------------------------------------------------------------
 
-set(CAPSTONE_URL "https://github.com/bareflank/capstone/archive/v2.0.zip"
+set(ZYDIS_URL "https://github.com/Bareflank/zydis/archive/master.zip"
     CACHE INTERNAL FORCE
-    "Capstone URL"
+    "Zydis URL"
 )
 
-set(CAPSTONE_URL_MD5 "2d3809e48b97d93e29e6b6ac7a0dd1aa"
+set(ZYDIS_URL_MD5 "d39b5a1c3a54d2078076116e7fac71a6"
     CACHE INTERNAL FORCE
-    "Capstone URL MD5 hash"
+    "Zydis URL MD5 hash"
 )
