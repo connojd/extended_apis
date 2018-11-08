@@ -221,13 +221,13 @@ bool
 init_signal_handler::handle_icr_write(
     gsl::not_null<vcpu_t *> vcpu, wrmsr_handler::info_t &info)
 {
-    using namespace ::intel_x64::lapic;
+    using namespace eapis::intel_x64::lapic;
 
-    if (icr::delivery_mode::get(info.val) != icr::delivery_mode::init) {
+    if (icr_low::delivery_mode::get(info.val) != icr_low::delivery_mode::init) {
         return false;
     }
 
-    if (icr::level::is_enabled(info.val)) {
+    if (icr_low::level::is_enabled(info.val)) {
         return handle_init_assert(vcpu, info);
     }
     else {
