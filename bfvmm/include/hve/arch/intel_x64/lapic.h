@@ -135,6 +135,7 @@ namespace version
 constexpr const auto name = "version";
 constexpr const auto indx = (0x030U >> 2U);
 constexpr const auto reset_val = 0x00040010U;
+constexpr const auto integrated_apic = 0x10U;
 
 namespace version
 {
