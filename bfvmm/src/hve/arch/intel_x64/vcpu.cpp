@@ -51,7 +51,8 @@ vcpu::vcpu(
     m_ept_handler{this},
     m_microcode_handler{this},
     m_vpid_handler{this},
-    m_vmx_preemption_timer_handler{this}
+    m_vmx_preemption_timer_handler{this},
+    m_pci_handler{this}
 {
     using namespace vmcs_n;
 
@@ -304,6 +305,22 @@ void
 vcpu::add_default_io_instruction_handler(
     const ::handler_delegate_t &d)
 { m_io_instruction_handler.set_default_handler(std::move(d)); }
+
+//--------------------------------------------------------------------------
+// PCI Configuration Space
+//--------------------------------------------------------------------------
+
+void
+vcpu::add_pci_iocfg_in_handler(
+    const pci_handler::pred_t &pred,
+    const pci_handler::hdlr_t &hdlr)
+{ m_pci_handler.add_in_handler(pred, hdlr); }
+
+void
+vcpu::add_pci_iocfg_out_handler(
+    const pci_handler::pred_t &pred,
+    const pci_handler::hdlr_t &hdlr)
+{ m_pci_handler.add_out_handler(pred, hdlr); }
 
 //--------------------------------------------------------------------------
 // Monitor Trap

@@ -40,6 +40,7 @@
 #include "interrupt_queue.h"
 #include "lapic.h"
 #include "microcode.h"
+#include "pci.h"
 #include "vcpu_global_state.h"
 #include "vpid.h"
 
@@ -443,6 +444,34 @@ public:
     ///
     VIRTUAL void add_default_io_instruction_handler(
         const ::handler_delegate_t &d);
+
+    //--------------------------------------------------------------------------
+    // PCI Configuration Space
+    //--------------------------------------------------------------------------
+
+    /// Add PCI configuration portio in handler
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param pred the predicate to call on PCI configuration data reads
+    /// @param hdlr the handler to call if @param pred returns true
+    ///
+    VIRTUAL void add_pci_iocfg_in_handler(
+        const pci_handler::pred_t &pred,
+        const pci_handler::hdlr_t &hdlr);
+
+    /// Add PCI configuration portio out handler
+    ///
+    /// @expects
+    /// @ensures
+    ///
+    /// @param pred the predicate to call on PCI configuration data writes
+    /// @param hdlr the handler to call if @param pred returns true
+    ///
+    VIRTUAL void add_pci_iocfg_out_handler(
+        const pci_handler::pred_t &pred,
+        const pci_handler::hdlr_t &hdlr);
 
     //--------------------------------------------------------------------------
     // Monitor Trap
@@ -1418,6 +1447,7 @@ private:
     microcode_handler m_microcode_handler;
     vpid_handler m_vpid_handler;
     vmx_preemption_timer_handler m_vmx_preemption_timer_handler;
+    pci_handler m_pci_handler;
 
 private:
 

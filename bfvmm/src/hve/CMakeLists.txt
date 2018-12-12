@@ -37,6 +37,7 @@ if(${BUILD_TARGET_ARCH} STREQUAL "x86_64")
         arch/intel_x64/interrupt_queue.cpp
         arch/intel_x64/microcode.cpp
         arch/intel_x64/mtrrs.cpp
+        arch/intel_x64/pci.cpp
         arch/intel_x64/vcpu.cpp
         arch/intel_x64/vpid.cpp
         arch/x64/unmapper.cpp

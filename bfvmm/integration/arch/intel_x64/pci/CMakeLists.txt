@@ -17,21 +17,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 eapis_add_vmm_executable(
-    eapis_integration_intel_x64_test_all
-    SOURCES test_all.cpp
+    eapis_integration_intel_x64_pci
+    SOURCES pci.cpp
 )
-
-add_subdirectory(efi)
-add_subdirectory(ept)
-add_subdirectory(vmexit/control_register)
-add_subdirectory(vmexit/cpuid)
-add_subdirectory(vmexit/ept_misconfiguration)
-add_subdirectory(vmexit/ept_violation)
-add_subdirectory(vmexit/external_interrupt)
-add_subdirectory(vmexit/io_instruction)
-add_subdirectory(vmexit/monitor_trap)
-add_subdirectory(vmexit/rdmsr)
-add_subdirectory(vmexit/wrmsr)
-add_subdirectory(vmexit/vmx_preemption_timer)
-add_subdirectory(vpid)
-add_subdirectory(pci)
