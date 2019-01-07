@@ -44,7 +44,7 @@
 namespace eapis::intel_x64
 {
 
-class EXPORT_EAPIS_HVE interrupt_queue
+class interrupt_queue
 {
 public:
 

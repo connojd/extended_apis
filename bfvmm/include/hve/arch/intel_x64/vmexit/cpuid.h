@@ -54,7 +54,7 @@ class vcpu;
 /// Provides an interface for registering handlers for cpuid exits
 /// at a given (leaf, subleaf).
 ///
-class EXPORT_EAPIS_HVE cpuid_handler
+class cpuid_handler
 {
 public:
 
