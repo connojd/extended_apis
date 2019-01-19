@@ -46,11 +46,11 @@ if(ENABLE_BUILD_VMM)
         SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/bfvmm/src/main
     )
 
-    add_subproject(
-        eapis_integration vmm
-        DEPENDS eapis_bfvmm
-        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/bfvmm/integration/
-    )
+#    add_subproject(
+#        eapis_integration vmm
+#        DEPENDS eapis_bfvmm
+#        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/bfvmm/integration/
+#    )
 endif()
 
 # ------------------------------------------------------------------------------

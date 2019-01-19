@@ -32,6 +32,12 @@ interrupt_window_handler::interrupt_window_handler(
         exit_reason::basic_exit_reason::interrupt_window,
         ::handler_delegate_t::create<interrupt_window_handler, &interrupt_window_handler::handle>(this)
     );
+
+    if (vcpu->id() >= 0x10000) {
+        vcpu->add_exit_handler(
+            ::handler_delegate_t::create<interrupt_window_handler, &interrupt_window_handler::check_queue>(this)
+        );
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -39,22 +45,11 @@ interrupt_window_handler::interrupt_window_handler(
 // -----------------------------------------------------------------------------
 
 void
-interrupt_window_handler::queue_external_interrupt(uint64_t vector)
+interrupt_window_handler::queue_external_interrupt(uint64_t vector, bool enable)
 {
-    if (this->is_open()) {
-
-        if (m_interrupt_queue.empty()) {
-            this->inject_external_interrupt(vector);
-            return;
-        }
-
-        this->inject_external_interrupt(m_interrupt_queue.pop());
-        m_interrupt_queue.push(vector);
-        return;
-    }
-    else {
+    m_interrupt_queue.push(vector);
+    if (enable) {
         this->enable_exiting();
-        m_interrupt_queue.push(vector);
     }
 }
 
@@ -80,6 +75,19 @@ interrupt_window_handler::handle(gsl::not_null<vcpu_t *> vcpu)
 
     return true;
 }
+
+bool
+interrupt_window_handler::check_queue(gsl::not_null<vcpu_t *> vcpu)
+{
+    bfignored(vcpu);
+
+    if (!m_interrupt_queue.empty()) {
+        this->enable_exiting();
+    }
+
+    return true;
+}
+
 
 // -----------------------------------------------------------------------------
 // Private

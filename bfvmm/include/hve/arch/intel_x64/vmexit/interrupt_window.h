@@ -86,7 +86,7 @@ public:
     ///
     /// @param vector the vector to inject into the guest
     ///
-    void queue_external_interrupt(uint64_t vector);
+    void queue_external_interrupt(uint64_t vector, bool enable = true);
 
     /// Inject General Protection Fault
     ///
@@ -103,6 +103,7 @@ public:
     /// @cond
 
     bool handle(gsl::not_null<vcpu_t *> vcpu);
+    bool check_queue(gsl::not_null<vcpu_t *> vcpu);
 
     /// @endcond
 

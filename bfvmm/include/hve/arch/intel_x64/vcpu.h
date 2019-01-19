@@ -362,7 +362,7 @@ public:
     ///
     /// @param vector the vector to queue for injection
     ///
-    VIRTUAL void queue_external_interrupt(uint64_t vector);
+    VIRTUAL void queue_external_interrupt(uint64_t vector, bool enable = true);
 
     /// Inject General Protection Fault
     ///

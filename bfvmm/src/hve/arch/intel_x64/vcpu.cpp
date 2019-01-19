@@ -257,8 +257,8 @@ vcpu::disable_external_interrupts()
 //--------------------------------------------------------------------------
 
 void
-vcpu::queue_external_interrupt(uint64_t vector)
-{ m_interrupt_window_handler.queue_external_interrupt(vector); }
+vcpu::queue_external_interrupt(uint64_t vector, bool enable)
+{ m_interrupt_window_handler.queue_external_interrupt(vector, enable); }
 
 void
 vcpu::inject_gpf()
