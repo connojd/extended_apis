@@ -284,8 +284,8 @@ private:
     bool handle_in(gsl::not_null<vcpu_t *> vcpu, info_t &info);
     bool handle_out(gsl::not_null<vcpu_t *> vcpu, info_t &info);
 
-    void emulate_in(info_t &info);
-    void emulate_out(info_t &info);
+    void phys_in(info_t &info);
+    void phys_out(info_t &info);
 
     void load_operand(gsl::not_null<vcpu_t *> vcpu, info_t &info);
     void store_operand(gsl::not_null<vcpu_t *> vcpu, info_t &info);

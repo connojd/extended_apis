@@ -63,8 +63,7 @@ io_instruction_handler::emulate(vmcs_n::value_type port)
 { m_emulate[port] = true; }
 
 void
-io_instruction_handler::set_default_handler(
-    const ::handler_delegate_t &d)
+io_instruction_handler::set_default_handler(const ::handler_delegate_t &d)
 { m_default_handler = d; }
 
 // -----------------------------------------------------------------------------
@@ -74,13 +73,13 @@ io_instruction_handler::set_default_handler(
 void
 io_instruction_handler::trap_on_access(vmcs_n::value_type port)
 {
-    if (port < 0x8000) {
+    if (port < 0x8000U) {
         set_bit(m_io_bitmap_a, port);
         return;
     }
 
-    if (port < 0x10000) {
-        set_bit(m_io_bitmap_b, port - 0x8000);
+    if (port < 0x10000U) {
+        set_bit(m_io_bitmap_b, port - 0x8000U);
         return;
     }
 
@@ -97,13 +96,13 @@ io_instruction_handler::trap_on_all_accesses()
 void
 io_instruction_handler::pass_through_access(vmcs_n::value_type port)
 {
-    if (port < 0x8000) {
+    if (port < 0x8000U) {
         clear_bit(m_io_bitmap_a, port);
         return;
     }
 
-    if (port < 0x10000) {
-        clear_bit(m_io_bitmap_b, port - 0x8000);
+    if (port < 0x10000U) {
+        clear_bit(m_io_bitmap_b, port - 0x8000U);
         return;
     }
 
@@ -175,15 +174,12 @@ io_instruction_handler::handle(gsl::not_null<vcpu_t *> vcpu)
 bool
 io_instruction_handler::handle_in(gsl::not_null<vcpu_t *> vcpu, info_t &info)
 {
-    namespace io_instruction = vmcs_n::exit_qualification::io_instruction;
-
-    const auto &hdlrs =
-        m_in_handlers.find(info.port_number);
+    const auto &hdlrs = m_in_handlers.find(info.port_number);
 
     if (GSL_LIKELY(hdlrs != m_in_handlers.end())) {
 
         if (!m_emulate[info.port_number]) {
-            emulate_in(info);
+            phys_in(info);
         }
 
         for (const auto &d : hdlrs->second) {
@@ -213,10 +209,7 @@ io_instruction_handler::handle_in(gsl::not_null<vcpu_t *> vcpu, info_t &info)
 bool
 io_instruction_handler::handle_out(gsl::not_null<vcpu_t *> vcpu, info_t &info)
 {
-    namespace io_instruction = vmcs_n::exit_qualification::io_instruction;
-
-    const auto &hdlrs =
-        m_out_handlers.find(info.port_number);
+    const auto &hdlrs = m_out_handlers.find(info.port_number);
 
     if (GSL_LIKELY(hdlrs != m_out_handlers.end())) {
         load_operand(vcpu, info);
@@ -225,7 +218,7 @@ io_instruction_handler::handle_out(gsl::not_null<vcpu_t *> vcpu, info_t &info)
             if (d(vcpu, info)) {
 
                 if (!info.ignore_write && !m_emulate[info.port_number]) {
-                    emulate_out(info);
+                    phys_out(info);
                 }
 
                 if (!info.ignore_advance) {
@@ -246,50 +239,43 @@ io_instruction_handler::handle_out(gsl::not_null<vcpu_t *> vcpu, info_t &info)
 }
 
 void
-io_instruction_handler::emulate_in(info_t &info)
+io_instruction_handler::phys_in(info_t &info)
 {
     namespace io_instruction = vmcs_n::exit_qualification::io_instruction;
+    const auto port = gsl::narrow_cast<uint16_t>(info.port_number);
 
     switch (info.size_of_access) {
         case io_instruction::size_of_access::one_byte:
-            info.val = ::x64::portio::inb(gsl::narrow_cast<uint16_t>(info.port_number));
+            info.val = ::x64::portio::inb(port);
             break;
 
         case io_instruction::size_of_access::two_byte:
-            info.val = ::x64::portio::inw(gsl::narrow_cast<uint16_t>(info.port_number));
+            info.val = ::x64::portio::inw(port);
             break;
 
         default:
-            info.val = ::x64::portio::ind(gsl::narrow_cast<uint16_t>(info.port_number));
+            info.val = ::x64::portio::ind(port);
             break;
     }
 }
 
 void
-io_instruction_handler::emulate_out(info_t &info)
+io_instruction_handler::phys_out(info_t &info)
 {
     namespace io_instruction = vmcs_n::exit_qualification::io_instruction;
+    const auto port = gsl::narrow_cast<uint16_t>(info.port_number);
 
     switch (info.size_of_access) {
         case io_instruction::size_of_access::one_byte:
-            ::x64::portio::outb(
-                gsl::narrow_cast<uint16_t>(info.port_number),
-                gsl::narrow_cast<uint8_t>(info.val)
-            );
+            ::x64::portio::outb(port, gsl::narrow_cast<uint8_t>(info.val));
             break;
 
         case io_instruction::size_of_access::two_byte:
-            ::x64::portio::outw(
-                gsl::narrow_cast<uint16_t>(info.port_number),
-                gsl::narrow_cast<uint16_t>(info.val)
-            );
+            ::x64::portio::outw(port, gsl::narrow_cast<uint16_t>(info.val));
             break;
 
         default:
-            ::x64::portio::outd(
-                gsl::narrow_cast<uint16_t>(info.port_number),
-                gsl::narrow_cast<uint32_t>(info.val)
-            );
+            ::x64::portio::outd(port, gsl::narrow_cast<uint32_t>(info.val));
             break;
     }
 }
@@ -303,35 +289,20 @@ io_instruction_handler::load_operand(
     if (info.address != 0ULL) {
         switch (info.size_of_access) {
             case io_instruction::size_of_access::one_byte: {
-                auto map =
-                    m_vcpu->map_gva_4k<uint8_t>(
-                        info.address,
-                        info.size_of_access
-                    );
-
-                info.val = map.get()[0] & 0x00000000000000FFULL;
+                auto map = m_vcpu->map_gva_4k<uint8_t>(info.address, 1);
+                info.val = map.get()[0];
                 break;
             }
 
             case io_instruction::size_of_access::two_byte: {
-                auto map =
-                    m_vcpu->map_gva_4k<uint16_t>(
-                        info.address,
-                        info.size_of_access
-                    );
-
-                info.val = map.get()[0] & 0x000000000000FFFFULL;
+                auto map = m_vcpu->map_gva_4k<uint16_t>(info.address, 1);
+                info.val = map.get()[0];
                 break;
             }
 
             default: {
-                auto map =
-                    m_vcpu->map_gva_4k<uint32_t>(
-                        info.address,
-                        info.size_of_access
-                    );
-
-                info.val = map.get()[0] & 0x00000000FFFFFFFFULL;
+                auto map = m_vcpu->map_gva_4k<uint32_t>(info.address, 1);
+                info.val = map.get()[0];
                 break;
             }
         }
@@ -362,34 +333,19 @@ io_instruction_handler::store_operand(
     if (info.address != 0ULL) {
         switch (info.size_of_access) {
             case io_instruction::size_of_access::one_byte: {
-                auto map =
-                    m_vcpu->map_gva_4k<uint8_t>(
-                        info.address,
-                        info.size_of_access
-                    );
-
+                auto map = m_vcpu->map_gva_4k<uint8_t>(info.address, 1);
                 map.get()[0] = gsl::narrow_cast<uint8_t>(info.val);
                 break;
             }
 
             case io_instruction::size_of_access::two_byte: {
-                auto map =
-                    m_vcpu->map_gva_4k<uint16_t>(
-                        info.address,
-                        info.size_of_access
-                    );
-
+                auto map = m_vcpu->map_gva_4k<uint16_t>(info.address, 1);
                 map.get()[0] = gsl::narrow_cast<uint16_t>(info.val);
                 break;
             }
 
             default: {
-                auto map =
-                    m_vcpu->map_gva_4k<uint32_t>(
-                        info.address,
-                        info.size_of_access
-                    );
-
+                auto map = m_vcpu->map_gva_4k<uint32_t>(info.address, 1);
                 map.get()[0] = gsl::narrow_cast<uint32_t>(info.val);
                 break;
             }
