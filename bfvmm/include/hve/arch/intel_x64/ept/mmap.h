@@ -364,8 +364,8 @@ public:
     ///
     /// @param virt_addr the virtual address to unmap
     ///
-    inline void unmap(virt_addr_t virt_addr)
-    { unmap(reinterpret_cast<void *>(virt_addr)); }
+    inline uintptr_t unmap(virt_addr_t virt_addr)
+    { return unmap(reinterpret_cast<void *>(virt_addr)); }
 
     /// Release Virtual Address
     ///
