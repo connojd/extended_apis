@@ -1604,38 +1604,26 @@ namespace rtaddr_reg
 	inline auto set(value_type val) noexcept
 	{ return write_64(offset, val); }
 
-	namespace rtt
+	namespace ttm
 	{
-		constexpr const auto mask = 0x800ULL;
-		constexpr const auto from = 11ULL;
-		constexpr const auto name = "root_table_type";
+		constexpr const auto mask = 0xC00ULL;
+		constexpr const auto from = 10ULL;
+		constexpr const auto name = "translation_table_mode";
 
-		inline auto is_enabled() noexcept
-		{ return is_bit_set(get(), from); }
+		inline auto get() noexcept
+		{ return get_bits(read_64(offset), mask) >> from; }
 
-		inline auto is_enabled(const value_type &rtaddr_reg) noexcept
-		{ return is_bit_set(rtaddr_reg, from); }
+		inline auto get(const value_type &rtaddr_reg) noexcept
+		{ return get_bits(rtaddr_reg, mask) >> from; }
 
-		inline auto is_disabled() noexcept
-		{ return !is_bit_set(get(), from); }
+		inline void set(uint64_t val) noexcept
+		{ set(set_bits(read_64(offset), mask, val << from)); }
 
-		inline auto is_disabled(const value_type &rtaddr_reg) noexcept
-		{ return !is_bit_set(rtaddr_reg, from); }
-
-		inline void enable() noexcept
-		{ set(set_bit(get(), from)); }
-
-		inline void enable(value_type &rtaddr_reg) noexcept
-		{ rtaddr_reg = set_bit(rtaddr_reg, from); }
-
-		inline void disable() noexcept
-		{ set(clear_bit(get(), from)); }
-
-		inline void disable(value_type &rtaddr_reg) noexcept
-		{ rtaddr_reg = clear_bit(rtaddr_reg, from); }
+		inline void set(value_type &rtaddr_reg, uint64_t val) noexcept
+		{ rtaddr_reg = set_bits(rtaddr_reg, mask, val << from); }
 
 		inline void dump(int level, const value_type &rtaddr_reg, std::string *msg = nullptr)
-		{ bfdebug_subbool(level, name, is_enabled(rtaddr_reg), msg); }
+		{ bfdebug_subnhex(level, name, get(rtaddr_reg), msg); }
 	}
 
 	namespace rta
@@ -1664,7 +1652,7 @@ namespace rtaddr_reg
 	{
 		bfdebug_nhex(level, name, rtaddr_reg, msg);
 
-		rtt::dump(level, rtaddr_reg, msg);
+		ttm::dump(level, rtaddr_reg, msg);
 		rta::dump(level, rtaddr_reg, msg);
 	}
 
