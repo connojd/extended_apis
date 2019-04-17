@@ -88,7 +88,7 @@ cpuid_handler::handle(gsl::not_null<vcpu_t *> vcpu)
     if (hdlrs != m_handlers.end()) {
 
         struct info_t info = {
-            0, 0, 0, 0, false, false
+            vcpu->rax(), 0, vcpu->rcx(), 0, false, false
         };
 
         if (!m_emulate[vcpu->rax()]) {
