@@ -61,7 +61,7 @@ set(CAPSTONE_URL "https://github.com/bareflank/capstone/archive/v2.0.zip"
     "Capstone URL"
 )
 
-set(CAPSTONE_URL_MD5 "2d3809e48b97d93e29e6b6ac7a0dd1aa"
+set(CAPSTONE_URL_MD5 "9cdf0439244777a54ab5ce632db35a65"
     CACHE INTERNAL FORCE
     "Capstone URL MD5 hash"
 )
